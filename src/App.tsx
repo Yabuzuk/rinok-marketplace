@@ -148,11 +148,14 @@ const AppContent: React.FC = () => {
         p.id === productId ? { ...p, ...updates } : p
       );
       
-      // Обновляем localStorage для продавца
-      if (currentUser?.role === 'seller') {
-        const sellerProducts = updatedProducts.filter(p => p.sellerId === currentUser.id);
-        localStorage.setItem(`sellerProducts_${currentUser.id}`, JSON.stringify(sellerProducts));
-      }
+      // Обновляем localStorage для всех продавцов
+      const allSellerIds = mockUsers.filter(u => u.role === 'seller').map(u => u.id);
+      allSellerIds.forEach(sellerId => {
+        const sellerProducts = updatedProducts.filter(p => p.sellerId === sellerId);
+        if (sellerProducts.length > 0) {
+          localStorage.setItem(`sellerProducts_${sellerId}`, JSON.stringify(sellerProducts));
+        }
+      });
       
       return updatedProducts;
     });
@@ -162,11 +165,12 @@ const AppContent: React.FC = () => {
     setProducts(prev => {
       const updatedProducts = prev.filter(p => p.id !== productId);
       
-      // Обновляем localStorage для продавца
-      if (currentUser?.role === 'seller') {
-        const sellerProducts = updatedProducts.filter(p => p.sellerId === currentUser.id);
-        localStorage.setItem(`sellerProducts_${currentUser.id}`, JSON.stringify(sellerProducts));
-      }
+      // Обновляем localStorage для всех продавцов
+      const allSellerIds = mockUsers.filter(u => u.role === 'seller').map(u => u.id);
+      allSellerIds.forEach(sellerId => {
+        const sellerProducts = updatedProducts.filter(p => p.sellerId === sellerId);
+        localStorage.setItem(`sellerProducts_${sellerId}`, JSON.stringify(sellerProducts));
+      });
       
       return updatedProducts;
     });
@@ -358,6 +362,8 @@ const AppContent: React.FC = () => {
                     }))}
                     products={products}
                     users={mockUsers}
+                    onUpdateProduct={handleUpdateProduct}
+                    onDeleteProduct={handleDeleteProduct}
                   />
                 ) : (
                   <Navigate to="/" replace />
