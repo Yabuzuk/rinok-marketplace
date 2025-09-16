@@ -17,9 +17,15 @@ import './styles/globals.css';
 
 const AppContent: React.FC = () => {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('currentUser');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [products, setProducts] = useState<Product[]>([]);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem('cart');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -45,36 +51,44 @@ const AppContent: React.FC = () => {
   };
 
   const handleLogin = (userType: 'customer' | 'seller' | 'admin', userData?: any) => {
+    let user;
     if (userData) {
-      setCurrentUser({ 
+      user = { 
         ...userData, 
         role: userType,
-        type: userType // Убеждаемся что оба поля установлены
-      });
+        type: userType
+      };
     } else {
-      const user = mockUsers.find(u => u.role === userType);
-      if (user) {
-        setCurrentUser(user);
-      }
+      user = mockUsers.find(u => u.role === userType);
+    }
+    
+    if (user) {
+      setCurrentUser(user);
+      localStorage.setItem('currentUser', JSON.stringify(user));
     }
     setShowAuthModal(false);
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('currentUser');
   };
 
   const handleAddToCart = (product: Product, quantity: number = 1) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.product.id === product.id);
+      let newCart;
       if (existingItem) {
-        return prevCart.map(item =>
+        newCart = prevCart.map(item =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
+      } else {
+        newCart = [...prevCart, { product, quantity }];
       }
-      return [...prevCart, { product, quantity }];
+      localStorage.setItem('cart', JSON.stringify(newCart));
+      return newCart;
     });
   };
 
@@ -92,6 +106,7 @@ const AppContent: React.FC = () => {
       const order = await api.createOrder(orderData);
       setOrders(prev => [...prev, order]);
       setCart([]);
+      localStorage.removeItem('cart');
       return order;
     } catch (error) {
       console.error('Error creating order:', error);
@@ -99,15 +114,20 @@ const AppContent: React.FC = () => {
   };
 
   const handleUpdateCartQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      setCart(prev => prev.filter(item => item.product.id !== productId));
-    } else {
-      setCart(prev => prev.map(item => 
-        item.product.id === productId 
-          ? { ...item, quantity }
-          : item
-      ));
-    }
+    setCart(prev => {
+      let newCart;
+      if (quantity <= 0) {
+        newCart = prev.filter(item => item.product.id !== productId);
+      } else {
+        newCart = prev.map(item => 
+          item.product.id === productId 
+            ? { ...item, quantity }
+            : item
+        );
+      }
+      localStorage.setItem('cart', JSON.stringify(newCart));
+      return newCart;
+    });
   };
 
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
