@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Star } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductCardProps {
@@ -51,17 +51,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
           {product.name}
         </h3>
         
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '4px',
-          marginBottom: '8px'
-        }}>
-          <Star size={14} fill="#ffd700" color="#ffd700" />
-          <span style={{ fontSize: '14px', color: '#666' }}>
-            {product.rating} ({product.reviews})
-          </span>
-        </div>
+
       </div>
 
       <div style={{ 
