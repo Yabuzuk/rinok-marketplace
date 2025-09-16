@@ -53,6 +53,14 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const uniqueSellerIds = sellerIds.filter((id, index) => sellerIds.indexOf(id) === index);
   console.log('Unique seller IDs in products:', uniqueSellerIds);
   console.log('Current user ID:', String(user.id));
+  console.log('IDs match?', uniqueSellerIds.includes(String(user.id)));
+  
+  // Показываем первые 5 товаров для примера
+  console.log('First 5 products:', products.slice(0, 5).map(p => ({
+    name: p.name,
+    sellerId: p.sellerId,
+    sellerIdString: String(p.sellerId)
+  })));
   
   console.log('Products with sellerId:', products.map(p => ({ 
     id: p.id, 
