@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
+import AuthModal from './components/AuthModal';
 import Cart from './components/Cart';
 import HomePage from './pages/HomePage';
 import CustomerDashboard from './pages/CustomerDashboard';
@@ -45,6 +46,7 @@ function App() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -65,11 +67,16 @@ function App() {
     }
   };
 
-  const handleLogin = (userType: 'customer' | 'seller') => {
-    const user = mockUsers.find(u => u.role === userType);
-    if (user) {
-      setCurrentUser(user);
+  const handleLogin = (userType: 'customer' | 'seller', userData?: any) => {
+    if (userData) {
+      setCurrentUser({ ...userData, role: userType });
+    } else {
+      const user = mockUsers.find(u => u.role === userType);
+      if (user) {
+        setCurrentUser(user);
+      }
     }
+    setShowAuthModal(false);
   };
 
   const handleLogout = () => {
@@ -140,6 +147,13 @@ function App() {
           cartItemsCount={cartItemsCount}
           onAuthClick={handleAuthClick}
           onCartClick={() => setIsCartOpen(true)}
+          onLogin={handleLogin}
+          onShowAuthModal={() => setShowAuthModal(true)}
+        />
+        
+        <AuthModal 
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
           onLogin={handleLogin}
         />
 
