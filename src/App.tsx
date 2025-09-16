@@ -46,7 +46,11 @@ const AppContent: React.FC = () => {
 
   const handleLogin = (userType: 'customer' | 'seller' | 'admin', userData?: any) => {
     if (userData) {
-      setCurrentUser({ ...userData, role: userType });
+      setCurrentUser({ 
+        ...userData, 
+        role: userType,
+        type: userType // Убеждаемся что оба поля установлены
+      });
     } else {
       const user = mockUsers.find(u => u.role === userType);
       if (user) {

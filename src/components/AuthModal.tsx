@@ -55,6 +55,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
+      role: userType,
       type: userType,
       ...(userType === 'seller' && {
         inn: formData.inn,
