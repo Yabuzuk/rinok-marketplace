@@ -29,44 +29,25 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [uploading, setUploading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // Принудительно восстанавливаем товары из localStorage
-  const [localProducts, setLocalProducts] = React.useState<any[]>([]);
-  
+  // Очищаем localStorage при загрузке
   React.useEffect(() => {
-    const savedProducts = localStorage.getItem(`sellerProducts_${user.id}`);
-    console.log('Loading products from localStorage for user:', user.id);
-    if (savedProducts) {
-      try {
-        const parsed = JSON.parse(savedProducts);
-        console.log('Found saved products:', parsed.length);
-        setLocalProducts(parsed);
-      } catch (e) {
-        console.error('Error parsing saved products:', e);
-        setLocalProducts([]);
+    // Удаляем все товары из localStorage
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('sellerProducts_')) {
+        localStorage.removeItem(key);
+        console.log('Removed from localStorage:', key);
       }
-    } else {
-      setLocalProducts([]);
-    }
-  }, [user.id]);
+    });
+  }, []);
 
-  // Объединяем товары из общего списка и localStorage
-  const globalSellerProducts = products.filter(p => String(p.sellerId) === String(user.id));
-  const allSellerProducts = [...globalSellerProducts];
-  
-  // Добавляем товары из localStorage, которых нет в общем списке
-  localProducts.forEach(localProduct => {
-    const exists = allSellerProducts.find(p => p.id === localProduct.id);
-    if (!exists) {
-      allSellerProducts.push(localProduct);
-    }
-  });
-  
-  const sellerProducts = allSellerProducts;
+  // Только товары с сервера
+  const sellerProducts = products.filter(p => String(p.sellerId) === String(user.id));
   
   console.log('=== SELLER DASHBOARD DEBUG ===');
   console.log('All products:', products.length);
   console.log('User ID:', user.id, 'Type:', typeof user.id);
   console.log('User ID as string:', String(user.id));
+  const matchingProducts = products.filter(p => String(p.sellerId) === String(user.id));
   console.log('Products with sellerId:', products.map(p => ({ 
     id: p.id, 
     name: p.name, 
@@ -75,23 +56,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
     sellerIdString: String(p.sellerId),
     match: String(p.sellerId) === String(user.id)
   })));
+  console.log('Matching products from global:', matchingProducts.length);
   console.log('Seller products:', sellerProducts.length);
-  console.log('LocalStorage check:', localStorage.getItem(`sellerProducts_${user.id}`));
-  
-  // Проверяем все ключи localStorage
-  const allKeys = Object.keys(localStorage).filter(key => key.startsWith('sellerProducts_'));
-  console.log('All localStorage keys:', allKeys);
-  allKeys.forEach(key => {
-    const data = localStorage.getItem(key);
-    if (data) {
-      try {
-        const products = JSON.parse(data);
-        console.log(`${key}: ${products.length} products`);
-      } catch (e) {
-        console.log(`${key}: invalid data`);
-      }
-    }
-  });
+
   console.log('==============================');
   const sellerOrders = orders.filter(order => 
     order.items.some(item => 
@@ -144,16 +111,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
       await onAddProduct(newProduct);
       
-      // Обновляем локальное состояние
-      const savedProducts = localStorage.getItem(`sellerProducts_${user.id}`);
-      if (savedProducts) {
-        try {
-          const parsed = JSON.parse(savedProducts);
-          setLocalProducts(parsed);
-        } catch (e) {
-          console.error('Error updating local products:', e);
-        }
-      }
+
       
       setShowAddProduct(false);
       setSelectedImage(null);
