@@ -1,4 +1,4 @@
-const API_BASE = 'https://rinok-server.onrender.com';
+const API_BASE = 'https://rinok-server.onrender.com/api';
 
 export const api = {
   // Products
