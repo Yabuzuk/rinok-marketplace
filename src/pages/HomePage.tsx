@@ -9,15 +9,19 @@ interface HomePageProps {
 }
 
 const categories = [
+  { id: 'all', name: 'Все', icon: '🛒' },
   { id: 'fruits', name: 'Фрукты', icon: '🍎' },
   { id: 'vegetables', name: 'Овощи', icon: '🥕' },
-  { id: 'spices', name: 'Специи', icon: '🌶️' }
+  { id: 'dairy', name: 'Молочное', icon: '🥛' },
+  { id: 'meat', name: 'Мясо', icon: '🥩' },
+  { id: 'bakery', name: 'Выпечка', icon: '🍞' }
 ];
 
 const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -27,6 +31,14 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
   const handleAddToCartFromModal = (product: Product, quantity: number) => {
     onAddToCart(product, quantity);
   };
+
+  const handleCategoryClick = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+  };
+
+  const filteredProducts = selectedCategory === 'all' 
+    ? products 
+    : products.filter(product => product.category === selectedCategory);
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
@@ -153,11 +165,14 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
               <div 
                 key={category.id}
                 className="card"
+                onClick={() => handleCategoryClick(category.id)}
                 style={{
                   textAlign: 'center',
                   padding: '8px 4px',
                   cursor: 'pointer',
-                  transition: 'transform 0.2s ease'
+                  transition: 'transform 0.2s ease',
+                  background: selectedCategory === category.id ? '#8b4513' : '#f9f5f0',
+                  color: selectedCategory === category.id ? 'white' : '#3c2415'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -189,7 +204,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
             Популярные товары
           </h2>
           <div className="grid grid-4">
-            {products.map(product => (
+            {filteredProducts.map(product => (
               <ProductCard 
                 key={product.id}
                 product={product}
