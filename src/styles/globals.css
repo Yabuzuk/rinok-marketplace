@@ -100,4 +100,16 @@ body {
   .container {
     padding: 0 12px;
   }
+  
+  header .container {
+    height: 60px;
+  }
+  
+  header .container > div:first-child {
+    gap: 16px;
+  }
+  
+  header .container > div:first-child > div:first-child {
+    font-size: 20px;
+  }
 }

@@ -140,6 +140,7 @@ function App() {
           cartItemsCount={cartItemsCount}
           onAuthClick={handleAuthClick}
           onCartClick={() => setIsCartOpen(true)}
+          onLogin={handleLogin}
         />
 
         <main>
@@ -208,31 +209,14 @@ function App() {
           onCreateOrder={handleCreateOrder}
         />
 
-        {/* Demo Navigation */}
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-          zIndex: 1000
-        }}>
-          <button 
-            className="btn btn-primary"
-            onClick={() => handleLogin('customer')}
-            style={{ fontSize: '12px', padding: '8px 12px' }}
-          >
-            Войти как покупатель
-          </button>
-          <button 
-            className="btn btn-primary"
-            onClick={() => handleLogin('seller')}
-            style={{ fontSize: '12px', padding: '8px 12px' }}
-          >
-            Войти как продавец
-          </button>
-          {currentUser && (
+        {/* Logout button */}
+        {currentUser && (
+          <div style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            zIndex: 1000
+          }}>
             <button 
               className="btn btn-secondary"
               onClick={handleLogout}
@@ -240,8 +224,8 @@ function App() {
             >
               Выйти
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         <NavigationButton currentUser={currentUser} />
       </div>
