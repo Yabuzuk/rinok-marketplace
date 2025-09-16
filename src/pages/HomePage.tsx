@@ -40,7 +40,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                 fontWeight: '700',
                 marginBottom: '8px'
               }}>
-                Быстрая доставка продуктов
+                Свежее поступление
               </h1>
               <p style={{ 
                 fontSize: '14px',
