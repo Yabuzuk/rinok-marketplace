@@ -10,10 +10,7 @@ interface HomePageProps {
 const categories = [
   { id: 'fruits', name: 'Фрукты', icon: '🍎' },
   { id: 'vegetables', name: 'Овощи', icon: '🥕' },
-  { id: 'dairy', name: 'Молочные', icon: '🥛' },
-  { id: 'meat', name: 'Мясо', icon: '🥩' },
-  { id: 'bakery', name: 'Хлеб', icon: '🍞' },
-  { id: 'drinks', name: 'Напитки', icon: '🥤' }
+  { id: 'spices', name: 'Специи', icon: '🌶️' }
 ];
 
 const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
