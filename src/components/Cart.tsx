@@ -33,6 +33,7 @@ const Cart: React.FC<CartProps> = ({
       customerId: user.id,
       items: items.map(item => ({
         productId: item.product.id,
+        productName: item.product.name,
         quantity: item.quantity,
         price: item.product.price
       })),
