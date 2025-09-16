@@ -14,7 +14,8 @@ class TelegramDB {
 
   async getAll(collection) {
     try {
-      const updates = await this.bot.getUpdates({ limit: 100 });
+      const updates = await this.bot.getUpdates({ limit: 100, offset: -100 });
+      console.log(`Found ${updates.length} updates for ${collection}`);
       const messages = updates
         .filter(update => update.message?.text?.startsWith(`#${collection}`))
         .map(update => {
@@ -28,6 +29,7 @@ class TelegramDB {
         })
         .filter(Boolean);
       
+      console.log(`Parsed ${messages.length} ${collection} items`);
       return messages;
     } catch (error) {
       console.error('Error getting data:', error);
