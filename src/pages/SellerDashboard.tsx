@@ -40,9 +40,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
     });
   }, []);
 
-  // Временно показываем все товары для тестирования
-  const sellerProducts = products; // Показываем все товары
-  // const sellerProducts = products.filter(p => String(p.sellerId) === String(user.id));
+  // Фильтруем товары по sellerId
+  const sellerProducts = products.filter(p => String(p.sellerId) === String(user.id));
   
   console.log('=== SELLER DASHBOARD DEBUG ===');
   console.log('All products:', products.length);
