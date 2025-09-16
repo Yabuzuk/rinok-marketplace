@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { Package, Users, BarChart3, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Order, Product, User as UserType } from '../types';
 
+interface OrderWithCustomer extends Order {
+  customerName: string;
+}
+
 interface AdminDashboardProps {
-  orders: Order[];
+  orders: OrderWithCustomer[];
   products: Product[];
   users: UserType[];
 }
@@ -11,7 +15,7 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users }) => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'delivered'>('all');
 
-  const getStatusColor = (status: Order['status']) => {
+  const getStatusColor = (status: OrderWithCustomer['status']) => {
     switch (status) {
       case 'delivered': return '#4caf50';
       case 'delivering': return '#ff9800';
@@ -21,7 +25,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
     }
   };
 
-  const getStatusText = (status: Order['status']) => {
+  const getStatusText = (status: OrderWithCustomer['status']) => {
     switch (status) {
       case 'pending': return 'Ожидает';
       case 'confirmed': return 'Подтвержден';
