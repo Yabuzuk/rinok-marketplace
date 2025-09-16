@@ -48,7 +48,44 @@ export const api = {
     return response.json();
   },
 
-  // Convert image to base64 for local storage
+  // Upload image to Telegram and get URL
+  uploadImageToTelegram: async (file: File): Promise<string> => {
+    try {
+      const BOT_TOKEN = '7729785131:AAGvJhKJhJJhJhJhJhJhJhJhJhJhJhJhJhJ'; // Замените на ваш токен
+      const CHAT_ID = '@your_channel'; // Замените на ваш канал
+      
+      const formData = new FormData();
+      formData.append('chat_id', CHAT_ID);
+      formData.append('photo', file);
+      
+      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (result.ok) {
+        const fileId = result.result.photo[result.result.photo.length - 1].file_id;
+        
+        // Получаем прямую ссылку на файл
+        const fileResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${fileId}`);
+        const fileResult = await fileResponse.json();
+        
+        if (fileResult.ok) {
+          return `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileResult.result.file_path}`;
+        }
+      }
+      
+      throw new Error('Ошибка загрузки в Telegram');
+    } catch (error) {
+      console.error('Telegram upload error:', error);
+      // Fallback к base64
+      return api.convertImageToBase64(file);
+    }
+  },
+
+  // Convert image to base64 for local storage (fallback)
   convertImageToBase64: (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();

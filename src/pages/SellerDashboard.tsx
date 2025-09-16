@@ -124,7 +124,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       let imageUrl = formData.get('imageUrl') as string;
       
       if (selectedImage) {
-        imageUrl = await api.convertImageToBase64(selectedImage);
+        console.log('Загружаем изображение в Telegram...');
+        imageUrl = await api.uploadImageToTelegram(selectedImage);
+        console.log('Получена ссылка:', imageUrl);
       }
       
       const newProduct = {
@@ -187,7 +189,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       let imageUrl = formData.get('imageUrl') as string || editingProduct.image;
       
       if (selectedImage) {
-        imageUrl = await api.convertImageToBase64(selectedImage);
+        console.log('Обновляем изображение через Telegram...');
+        imageUrl = await api.uploadImageToTelegram(selectedImage);
+        console.log('Получена новая ссылка:', imageUrl);
       }
       
       const updates = {
