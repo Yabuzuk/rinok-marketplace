@@ -133,8 +133,8 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
           </h2>
           <div className="grid grid-6" style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-            gap: '16px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
+            gap: '12px'
           }}>
             {categories.map(category => (
               <div 
@@ -142,17 +142,17 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                 className="card"
                 style={{
                   textAlign: 'center',
-                  padding: '20px 16px',
+                  padding: '12px 8px',
                   cursor: 'pointer',
                   transition: 'transform 0.2s ease'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>
+                <div style={{ fontSize: '24px', marginBottom: '6px' }}>
                   {category.icon}
                 </div>
-                <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                <span style={{ fontSize: '12px', fontWeight: '500' }}>
                   {category.name}
                 </span>
               </div>
