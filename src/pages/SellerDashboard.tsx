@@ -56,8 +56,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       let imageUrl = formData.get('imageUrl') as string;
       
       if (selectedImage) {
-        const uploadResult = await api.uploadImage(selectedImage);
-        imageUrl = uploadResult.url;
+        imageUrl = await api.convertImageToBase64(selectedImage);
       }
       
       const newProduct = {

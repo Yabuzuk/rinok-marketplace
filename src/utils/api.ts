@@ -48,15 +48,13 @@ export const api = {
     return response.json();
   },
 
-  // Image upload
-  uploadImage: async (file: File) => {
-    const formData = new FormData();
-    formData.append('image', file);
-    
-    const response = await fetch(`${API_BASE}/upload`, {
-      method: 'POST',
-      body: formData
+  // Convert image to base64 for local storage
+  convertImageToBase64: (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
-    return response.json();
   }
 };
