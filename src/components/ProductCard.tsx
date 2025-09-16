@@ -74,19 +74,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
       </div>
 
       <div style={{ marginBottom: '8px' }}>
-        <h3 style={{ 
-          fontSize: '16px', 
-          fontWeight: '600',
-          marginBottom: '4px',
-          lineHeight: '1.3'
-        }}>
-          {product.name}
-        </h3>
-        
-
-      </div>
-
-      <div>
         <span style={{ 
           fontSize: '18px', 
           fontWeight: '700',
@@ -94,6 +81,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
         }}>
           {product.price} ₽
         </span>
+      </div>
+
+      <div>
+        <h3 style={{ 
+          fontSize: '16px', 
+          fontWeight: '600',
+          lineHeight: '1.3',
+          margin: 0
+        }}>
+          {product.name}
+        </h3>
       </div>
     </div>
   );
