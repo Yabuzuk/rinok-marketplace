@@ -56,18 +56,13 @@ const AppContent: React.FC = () => {
       setProducts(productsData);
       setOrders(ordersData);
       
-      // Объединяем пользователей с сервера и моковых данных
-      const allUsers = [...mockUsers];
-      usersData.forEach(serverUser => {
-        if (!allUsers.find(u => u.id === serverUser.id)) {
-          allUsers.push(serverUser);
-        }
-      });
+      // Используем только данные с сервера
+      // Моковые данные больше не нужны
       
       console.log('Loaded from server:', productsData.length, 'products,', usersData.length, 'users');
     } catch (error) {
       console.error('Error loading data from server:', error);
-      setProducts(mockProducts);
+      setProducts([]);
       setOrders([]);
     } finally {
       setLoading(false);
@@ -93,7 +88,15 @@ const AppContent: React.FC = () => {
         console.error('Error saving user:', error);
       }
     } else {
-      user = mockUsers.find(u => u.role === userType);
+      // Для тестов создаем тестового пользователя
+      user = {
+        id: `test_${userType}_${Date.now()}`,
+        name: userType === 'customer' ? 'Тестовый покупатель' : 
+              userType === 'seller' ? 'Тестовый продавец' : 'Администратор',
+        email: `${userType}@test.com`,
+        role: userType,
+        pavilionNumber: userType === 'seller' ? `${Math.floor(Math.random() * 50)}A` : undefined
+      };
     }
     
     if (user) {
@@ -154,12 +157,11 @@ const AppContent: React.FC = () => {
     console.log('Adding product:', newProduct);
     
     try {
-      // Добавляем номер павильона продавца
-      const seller = mockUsers.find(u => u.id === currentUser?.id);
+      // Номер павильона берем из текущего пользователя
       const productWithPavilion = {
         ...newProduct,
         sellerId: String(currentUser?.id),
-        pavilionNumber: seller?.pavilionNumber || ''
+        pavilionNumber: currentUser?.pavilionNumber || ''
       };
       
       const product = await api.createProduct(productWithPavilion);
@@ -263,7 +265,7 @@ const AppContent: React.FC = () => {
                 <HomePage 
                   products={products}
                   onAddToCart={handleAddToCart}
-                  users={mockUsers}
+                  users={[]}
                 />
               } 
             />
@@ -308,10 +310,10 @@ const AppContent: React.FC = () => {
                   <AdminDashboard 
                     orders={orders.map(order => ({
                       ...order,
-                      customerName: mockUsers.find(u => u.id === order.customerId)?.name || 'Неизвестный'
+                      customerName: 'Покупатель'
                     }))}
                     products={products}
-                    users={mockUsers}
+                    users={[]}
                     onUpdateProduct={handleUpdateProduct}
                     onDeleteProduct={handleDeleteProduct}
                   />
