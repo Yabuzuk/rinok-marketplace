@@ -22,7 +22,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
       <div className="container">
         {/* Hero Section */}
         <div style={{
-          background: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
+          background: 'linear-gradient(135deg, #4fd1c7 0%, #38b2ac 100%)',
           borderRadius: '20px',
           padding: '40px',
           marginBottom: '32px',
@@ -44,7 +44,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
           </p>
           <button className="btn" style={{
             background: 'white',
-            color: '#ff6b35',
+            color: '#38b2ac',
             fontWeight: '600'
           }}>
             Заказать сейчас
