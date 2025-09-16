@@ -81,9 +81,27 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '24px'
+                    fontSize: '24px',
+                    overflow: 'hidden'
                   }}>
-                    {product.image || '📦'}
+                    {product.image && product.image.startsWith('http') ? (
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '8px'
+                        }}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement.innerHTML = '📦';
+                        }}
+                      />
+                    ) : (
+                      product.image || '📦'
+                    )}
                   </div>
                   <div style={{
                     fontSize: '12px',
