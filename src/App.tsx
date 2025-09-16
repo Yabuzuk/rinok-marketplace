@@ -54,7 +54,7 @@ const AppContent: React.FC = () => {
           try {
             const sellerProducts = JSON.parse(savedProducts);
             console.log(`Loading ${sellerProducts.length} products for seller ${sellerId}`);
-            sellerProducts.forEach(product => {
+            sellerProducts.forEach((product: Product) => {
               if (!allProducts.find(p => p.id === product.id)) {
                 allProducts.push(product);
               }
@@ -81,7 +81,7 @@ const AppContent: React.FC = () => {
         if (savedProducts) {
           try {
             const sellerProducts = JSON.parse(savedProducts);
-            sellerProducts.forEach(product => {
+            sellerProducts.forEach((product: Product) => {
               if (!allProducts.find(p => p.id === product.id)) {
                 allProducts.push(product);
               }
