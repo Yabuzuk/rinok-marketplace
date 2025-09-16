@@ -205,7 +205,7 @@ const AppContent: React.FC = () => {
         }
         
         // Добавляем новый товар, если его еще нет
-        const exists = allSellerProducts.find(p => p.id === product.id);
+        const exists = allSellerProducts.find((p: any) => p.id === product.id);
         if (!exists) {
           allSellerProducts.push(product);
         }
@@ -244,7 +244,7 @@ const AppContent: React.FC = () => {
         }
         
         // Добавляем новый товар, если его еще нет
-        const exists = allSellerProducts.find(p => p.id === productWithId.id);
+        const exists = allSellerProducts.find((p: any) => p.id === productWithId.id);
         if (!exists) {
           allSellerProducts.push(productWithId);
         }
