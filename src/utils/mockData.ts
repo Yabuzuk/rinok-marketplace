@@ -32,7 +32,8 @@ export const mockProducts: Product[] = [
     description: 'Свежие красные яблоки, сладкие и сочные',
     stock: 50,
     rating: 4.8,
-    reviews: 124
+    reviews: 124,
+    minOrderQuantity: 1
   },
   {
     id: '2',
@@ -44,7 +45,8 @@ export const mockProducts: Product[] = [
     description: 'Натуральное коровье молоко 3.2% жирности',
     stock: 30,
     rating: 4.9,
-    reviews: 89
+    reviews: 89,
+    minOrderQuantity: 2
   },
   {
     id: '3',
@@ -56,7 +58,8 @@ export const mockProducts: Product[] = [
     description: 'Свежий белый хлеб, выпечен сегодня утром',
     stock: 20,
     rating: 4.7,
-    reviews: 67
+    reviews: 67,
+    minOrderQuantity: 1
   },
   {
     id: '4',
@@ -68,7 +71,8 @@ export const mockProducts: Product[] = [
     description: 'Свежая морковь, богатая витаминами',
     stock: 40,
     rating: 4.6,
-    reviews: 45
+    reviews: 45,
+    minOrderQuantity: 3
   },
   {
     id: '5',
@@ -80,7 +84,8 @@ export const mockProducts: Product[] = [
     description: 'Свежая куриная грудка без кости',
     stock: 15,
     rating: 4.9,
-    reviews: 156
+    reviews: 156,
+    minOrderQuantity: 1
   },
   {
     id: '6',
@@ -92,7 +97,8 @@ export const mockProducts: Product[] = [
     description: '100% натуральный апельсиновый сок',
     stock: 25,
     rating: 4.5,
-    reviews: 78
+    reviews: 78,
+    minOrderQuantity: 1
   },
   {
     id: '7',
@@ -104,7 +110,8 @@ export const mockProducts: Product[] = [
     description: 'Спелые желтые бананы',
     stock: 60,
     rating: 4.7,
-    reviews: 92
+    reviews: 92,
+    minOrderQuantity: 5
   },
   {
     id: '8',
@@ -116,7 +123,8 @@ export const mockProducts: Product[] = [
     description: 'Натуральный творог 5% жирности',
     stock: 18,
     rating: 4.8,
-    reviews: 134
+    reviews: 134,
+    minOrderQuantity: 1
   }
 ];
 

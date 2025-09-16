@@ -42,6 +42,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       category: formData.get('category') as string,
       description: formData.get('description') as string,
       stock: Number(formData.get('stock')),
+      minOrderQuantity: Number(formData.get('minOrderQuantity')),
       sellerId: user.id,
       rating: 0,
       reviews: 0
@@ -242,6 +243,16 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                           </label>
                           <input name="stock" type="number" className="input" required />
                         </div>
+                      </div>
+                      
+                      <div className="grid grid-2" style={{ marginBottom: '16px' }}>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                            Мин. количество для заказа
+                          </label>
+                          <input name="minOrderQuantity" type="number" min="1" className="input" defaultValue="1" required />
+                        </div>
+                        <div></div>
                       </div>
 
                       <div style={{ marginBottom: '16px' }}>

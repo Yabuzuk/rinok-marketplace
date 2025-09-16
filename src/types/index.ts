@@ -19,6 +19,7 @@ export interface Product {
   stock: number;
   rating: number;
   reviews: number;
+  minOrderQuantity: number;
 }
 
 export interface Order {

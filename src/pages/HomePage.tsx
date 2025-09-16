@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ProductCard from '../components/ProductCard';
+import ProductModal from '../components/ProductModal';
 import { Product } from '../types';
 
 interface HomePageProps {
   products: Product[];
-  onAddToCart: (product: Product) => void;
+  onAddToCart: (product: Product, quantity?: number) => void;
 }
 
 const categories = [
@@ -15,6 +16,17 @@ const categories = [
 
 const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleAddToCartFromModal = (product: Product, quantity: number) => {
+    onAddToCart(product, quantity);
+  };
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
@@ -182,10 +194,18 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                 key={product.id}
                 product={product}
                 onAddToCart={onAddToCart}
+                onProductClick={handleProductClick}
               />
             ))}
           </div>
         </div>
+        
+        <ProductModal 
+          product={selectedProduct}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onAddToCart={handleAddToCartFromModal}
+        />
       </div>
     </div>
   );
