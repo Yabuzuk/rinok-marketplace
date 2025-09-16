@@ -15,7 +15,8 @@ import './styles/globals.css';
 
 
 
-function App() {
+const AppContent: React.FC = () => {
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -120,13 +121,12 @@ function App() {
       const path = currentUser.role === 'customer' ? '/customer-dashboard' : 
                    currentUser.role === 'seller' ? '/seller-dashboard' : 
                    '/admin-dashboard';
-      window.location.href = path;
+      navigate(path);
     }
   };
 
   return (
-    <Router>
-      <div className="App">
+    <div className="App">
         <EmojiBackground />
         <Header 
           user={currentUser}
@@ -249,7 +249,14 @@ function App() {
         )}
 
 
-      </div>
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
