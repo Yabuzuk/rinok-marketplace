@@ -46,7 +46,8 @@ const AppContent: React.FC = () => {
       let allProducts = [...productsData];
       
       // Загружаем локальные товары для всех продавцов
-      const allSellerIds = [...new Set(mockUsers.filter(u => u.role === 'seller').map(u => u.id))];
+      const sellerIds = mockUsers.filter(u => u.role === 'seller').map(u => u.id);
+      const allSellerIds = sellerIds.filter((id, index) => sellerIds.indexOf(id) === index);
       allSellerIds.forEach(sellerId => {
         const savedProducts = localStorage.getItem(`sellerProducts_${sellerId}`);
         if (savedProducts) {
@@ -73,8 +74,9 @@ const AppContent: React.FC = () => {
       let allProducts = [...mockProducts];
       
       // Загружаем локальные товары для всех продавцов
-      const allSellerIds = [...new Set(mockUsers.filter(u => u.role === 'seller').map(u => u.id))];
-      allSellerIds.forEach(sellerId => {
+      const sellerIds2 = mockUsers.filter(u => u.role === 'seller').map(u => u.id);
+      const allSellerIds2 = sellerIds2.filter((id, index) => sellerIds2.indexOf(id) === index);
+      allSellerIds2.forEach(sellerId => {
         const savedProducts = localStorage.getItem(`sellerProducts_${sellerId}`);
         if (savedProducts) {
           try {

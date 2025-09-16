@@ -68,10 +68,12 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
   })();
 
   // Получаем уникальные номера павильонов
-  const pavilions = [...new Set(users
+  const pavilionNumbers = users
     .filter(u => u.role === 'seller' && u.pavilionNumber)
-    .map(u => u.pavilionNumber)
-  )].sort();
+    .map(u => u.pavilionNumber);
+  const pavilions = pavilionNumbers
+    .filter((num, index) => pavilionNumbers.indexOf(num) === index)
+    .sort();
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
