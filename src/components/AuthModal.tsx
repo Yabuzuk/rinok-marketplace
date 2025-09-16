@@ -28,6 +28,26 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       return;
     }
 
+    // Проверка для администратора
+    if (userType === 'admin') {
+      if (formData.email !== 'admin' || formData.password !== 'admin') {
+        alert('Неверный логин или пароль администратора');
+        return;
+      }
+      
+      const adminData = {
+        id: '3',
+        name: 'Администратор',
+        email: 'admin@rinok.com',
+        phone: '+7 (999) 000-00-00',
+        type: 'admin'
+      };
+      
+      onLogin('admin', adminData);
+      onClose();
+      return;
+    }
+
     const userData = {
       id: Date.now().toString(),
       name: formData.name,

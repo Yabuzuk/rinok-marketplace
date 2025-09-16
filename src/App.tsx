@@ -244,6 +244,34 @@ function App() {
           onCreateOrder={handleCreateOrder}
         />
 
+        {/* Demo buttons */}
+        {!currentUser && (
+          <div style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <button 
+              className="btn btn-secondary"
+              onClick={() => handleLogin('customer')}
+              style={{ fontSize: '12px', padding: '8px 12px' }}
+            >
+              Войти как покупатель
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={() => handleLogin('seller')}
+              style={{ fontSize: '12px', padding: '8px 12px' }}
+            >
+              Войти как продавец
+            </button>
+          </div>
+        )}
+
         {/* Logout button */}
         {currentUser && (
           <div style={{
