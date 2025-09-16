@@ -12,7 +12,7 @@ const EmojiBackground: React.FC = () => {
   useEffect(() => {
     const generateEmojis = () => {
       const newEmojis = [];
-      const density = Math.floor((window.innerWidth * window.innerHeight) / 12000); // Плотность эмодзи
+      const density = Math.floor((window.innerWidth * window.innerHeight) / 10000); // Плотность эмодзи
       
       for (let i = 0; i < density; i++) {
         newEmojis.push({
@@ -54,11 +54,11 @@ const EmojiBackground: React.FC = () => {
             position: 'absolute',
             left: `${item.x}%`,
             top: `${item.y}%`,
-            fontSize: '24px',
-            opacity: 0.08,
+            fontSize: '32px',
+            opacity: 0.15,
             transform: `rotate(${item.rotation}deg)`,
             userSelect: 'none',
-            filter: 'sepia(80%) saturate(70%) hue-rotate(25deg) brightness(0.9)'
+            filter: 'sepia(60%) saturate(80%) hue-rotate(25deg) brightness(1.1)'
           }}
         >
           {item.emoji}
