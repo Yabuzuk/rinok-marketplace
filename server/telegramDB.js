@@ -13,25 +13,13 @@ class TelegramDB {
     
     try {
       console.log('Restoring data from Telegram...');
-      const updates = await this.bot.getUpdates({ limit: 100 });
       
-      // Получаем дополнительные сообщения если нужно
-      let allUpdates = [...updates];
-      if (updates.length === 100) {
-        // Получаем еще партии сообщений
-        for (let i = 0; i < 9; i++) {
-          const moreUpdates = await this.bot.getUpdates({ 
-            limit: 100, 
-            offset: allUpdates[allUpdates.length - 1].update_id + 1 
-          });
-          allUpdates = [...allUpdates, ...moreUpdates];
-          if (moreUpdates.length < 100) break;
-        }
-      }
+      // Используем getChatHistory для получения старых сообщений
+      const messages = await this.getChatHistory();
       
-      allUpdates.forEach(update => {
-        if (update.message?.text?.startsWith('#')) {
-          const text = update.message.text;
+      messages.forEach(message => {
+        if (message.text?.startsWith('#')) {
+          const text = message.text;
           const collection = text.split('\n')[0].substring(1);
           const jsonStr = text.substring(text.indexOf('\n') + 1);
           
@@ -40,7 +28,11 @@ class TelegramDB {
             if (!this.storage[collection]) {
               this.storage[collection] = [];
             }
-            this.storage[collection].push(data);
+            // Проверяем дубликаты по ID
+            const exists = this.storage[collection].find(item => item.id === data.id);
+            if (!exists) {
+              this.storage[collection].push(data);
+            }
           } catch (e) {
             console.error('Parse error:', e.message);
           }
@@ -52,6 +44,20 @@ class TelegramDB {
     } catch (error) {
       console.error('Init error:', error);
       this.initialized = true;
+    }
+  }
+
+  async getChatHistory() {
+    try {
+      // Пытаемся получить историю через разные методы
+      const response = await fetch(`https://api.telegram.org/bot${this.bot.token}/getChat?chat_id=${this.chatId}`);
+      
+      // Если не получается через API, используем getUpdates с большим offset
+      const updates = await this.bot.getUpdates({ limit: 100, offset: -1000 });
+      return updates.map(u => u.message).filter(Boolean);
+    } catch (error) {
+      console.error('Error getting chat history:', error);
+      return [];
     }
   }
 
