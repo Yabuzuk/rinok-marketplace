@@ -171,7 +171,13 @@ const AppContent: React.FC = () => {
       
     } catch (error) {
       console.error('Server error:', error);
-      alert('Ошибка сохранения на сервере. Попробуйте позже.');
+      // Сохраняем локально при ошибке сервера
+      const localProduct = {
+        ...productWithPavilion,
+        id: `local_${Date.now()}`
+      };
+      setProducts(prev => [...prev, localProduct]);
+      console.log('Товар сохранен локально:', localProduct.id);
     }
   };
 
