@@ -263,8 +263,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
               </div>
             </div>
           ))}
-        </div>
-
           {filteredOrders.length === 0 && (
             <div style={{
               textAlign: 'center',
