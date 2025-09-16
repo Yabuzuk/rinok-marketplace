@@ -29,30 +29,39 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [uploading, setUploading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // Принудительно загружаем товары продавца при монтировании
+  // Принудительно восстанавливаем товары из localStorage
+  const [localProducts, setLocalProducts] = React.useState<any[]>([]);
+  
   React.useEffect(() => {
     const savedProducts = localStorage.getItem(`sellerProducts_${user.id}`);
-    console.log('SellerDashboard mounted, checking localStorage:', savedProducts);
-    if (savedProducts && onUpdateProduct) {
+    console.log('Loading products from localStorage for user:', user.id);
+    if (savedProducts) {
       try {
-        const sellerProducts = JSON.parse(savedProducts);
-        console.log('Found saved products:', sellerProducts.length);
-        // Проверяем, есть ли эти товары в общем списке
-        sellerProducts.forEach((product: any) => {
-          const exists = products.find(p => p.id === product.id);
-          console.log('Checking product:', product.name, 'exists:', !!exists);
-          console.log('Product sellerId:', product.sellerId, 'User ID:', user.id);
-          if (!exists) {
-            console.log('Product missing, need to restore:', product.name);
-          }
-        });
+        const parsed = JSON.parse(savedProducts);
+        console.log('Found saved products:', parsed.length);
+        setLocalProducts(parsed);
       } catch (e) {
         console.error('Error parsing saved products:', e);
+        setLocalProducts([]);
       }
+    } else {
+      setLocalProducts([]);
     }
-  }, [user.id, products.length]);
+  }, [user.id]);
 
-  const sellerProducts = products.filter(p => String(p.sellerId) === String(user.id));
+  // Объединяем товары из общего списка и localStorage
+  const globalSellerProducts = products.filter(p => String(p.sellerId) === String(user.id));
+  const allSellerProducts = [...globalSellerProducts];
+  
+  // Добавляем товары из localStorage, которых нет в общем списке
+  localProducts.forEach(localProduct => {
+    const exists = allSellerProducts.find(p => p.id === localProduct.id);
+    if (!exists) {
+      allSellerProducts.push(localProduct);
+    }
+  });
+  
+  const sellerProducts = allSellerProducts;
   
   console.log('=== SELLER DASHBOARD DEBUG ===');
   console.log('All products:', products.length);
