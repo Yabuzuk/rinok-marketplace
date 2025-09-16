@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import ProductCard from '../components/ProductCard';
 import { Product } from '../types';
 
@@ -14,6 +14,30 @@ const categories = [
 ];
 
 const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer || products.length === 0) return;
+
+    let scrollAmount = 0;
+    const scrollSpeed = 0.5;
+    const cardWidth = 172; // 160px + 12px gap
+
+    const scroll = () => {
+      scrollAmount += scrollSpeed;
+      const maxScroll = cardWidth * products.slice(-5).length;
+      
+      if (scrollAmount >= maxScroll) {
+        scrollAmount = 0;
+      }
+      
+      scrollContainer.scrollLeft = scrollAmount;
+    };
+
+    const interval = setInterval(scroll, 16); // ~60fps
+    return () => clearInterval(interval);
+  }, [products]);
   return (
     <div style={{ paddingTop: '24px' }}>
       <div className="container">
@@ -29,15 +53,20 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
           
           {/* Latest Products Carousel */}
           {products.length > 0 && (
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              overflowX: 'auto',
-              paddingBottom: '8px'
-            }}>
-              {products.slice(-5).map(product => (
+            <div 
+              ref={scrollRef}
+              style={{
+                display: 'flex',
+                gap: '12px',
+                overflowX: 'hidden',
+                paddingBottom: '8px'
+              }}
+            >
+              {/* Дублируем товары для бесконечной прокрутки */}
+              {[...products.slice(-5), ...products.slice(-5)].map((product, index) => (
+
                 <div 
-                  key={product.id}
+                  key={`${product.id}-${index}`}
                   style={{
                     minWidth: '160px',
                     background: 'rgba(255, 255, 255, 0.15)',
