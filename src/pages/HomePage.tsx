@@ -12,9 +12,7 @@ const categories = [
   { id: 'all', name: 'Все', icon: '🛒' },
   { id: 'fruits', name: 'Фрукты', icon: '🍎' },
   { id: 'vegetables', name: 'Овощи', icon: '🥕' },
-  { id: 'dairy', name: 'Молочное', icon: '🥛' },
-  { id: 'meat', name: 'Мясо', icon: '🥩' },
-  { id: 'bakery', name: 'Выпечка', icon: '🍞' }
+  { id: 'spices', name: 'Специи', icon: '🌶️' }
 ];
 
 const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
