@@ -28,14 +28,17 @@ app.get('/api/products', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
   try {
+    console.log('Creating product:', req.body);
     const product = {
       ...req.body,
       id: Date.now().toString(),
       createdAt: new Date().toISOString()
     };
-    await db.save('products', product);
+    const messageId = await db.save('products', product);
+    console.log('Product saved with message ID:', messageId);
     res.json(product);
   } catch (error) {
+    console.error('Error creating product:', error);
     res.status(500).json({ error: error.message });
   }
 });
