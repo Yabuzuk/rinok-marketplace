@@ -15,7 +15,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     email: '',
     password: '',
     phone: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    inn: '',
+    pavilionNumber: ''
   });
 
   if (!isOpen) return null;
@@ -53,7 +55,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
-      type: userType
+      type: userType,
+      ...(userType === 'seller' && {
+        inn: formData.inn,
+        pavilionNumber: formData.pavilionNumber
+      })
     };
 
     onLogin(userType, userData);
@@ -232,6 +238,51 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                 required
               />
             </div>
+          )}
+
+          {mode === 'register' && userType === 'seller' && (
+            <>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}>
+                  ИНН
+                </label>
+                <input
+                  name="inn"
+                  type="text"
+                  className="input"
+                  value={formData.inn}
+                  onChange={handleInputChange}
+                  placeholder="1234567890"
+                  maxLength={12}
+                  required
+                />
+              </div>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}>
+                  Номер павильона
+                </label>
+                <input
+                  name="pavilionNumber"
+                  type="text"
+                  className="input"
+                  value={formData.pavilionNumber}
+                  onChange={handleInputChange}
+                  placeholder="A-15"
+                  required
+                />
+              </div>
+            </>
           )}
 
           <div style={{ marginBottom: '16px' }}>

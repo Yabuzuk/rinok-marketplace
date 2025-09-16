@@ -4,6 +4,8 @@ export interface User {
   name: string;
   role: 'customer' | 'seller' | 'admin';
   avatar?: string;
+  inn?: string;
+  pavilionNumber?: string;
 }
 
 export interface Product {
