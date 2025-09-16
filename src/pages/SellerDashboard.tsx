@@ -29,11 +29,36 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [uploading, setUploading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  // Принудительно загружаем товары продавца при монтировании
+  React.useEffect(() => {
+    const savedProducts = localStorage.getItem(`sellerProducts_${user.id}`);
+    console.log('SellerDashboard mounted, checking localStorage:', savedProducts);
+    if (savedProducts && onUpdateProduct) {
+      try {
+        const sellerProducts = JSON.parse(savedProducts);
+        console.log('Found saved products:', sellerProducts.length);
+        // Проверяем, есть ли эти товары в общем списке
+        sellerProducts.forEach((product: any) => {
+          const exists = products.find(p => p.id === product.id);
+          if (!exists) {
+            console.log('Product missing, need to restore:', product.name);
+          }
+        });
+      } catch (e) {
+        console.error('Error parsing saved products:', e);
+      }
+    }
+  }, [user.id, products.length]);
+
   const sellerProducts = products.filter(p => p.sellerId === user.id);
   
+  console.log('=== SELLER DASHBOARD DEBUG ===');
   console.log('All products:', products.length);
-  console.log('Seller products:', sellerProducts.length);
   console.log('User ID:', user.id);
+  console.log('Products with sellerId:', products.map(p => ({ id: p.id, name: p.name, sellerId: p.sellerId })));
+  console.log('Seller products:', sellerProducts.length);
+  console.log('LocalStorage check:', localStorage.getItem(`sellerProducts_${user.id}`));
+  console.log('==============================');
   const sellerOrders = orders.filter(order => 
     order.items.some(item => 
       sellerProducts.some(product => product.id === item.productId)
@@ -278,15 +303,27 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   marginBottom: '24px'
                 }}>
                   <h2 style={{ fontSize: '24px', fontWeight: '600' }}>
-                    Мои товары
+                    Мои товары ({sellerProducts.length})
                   </h2>
-                  <button 
-                    className="btn btn-primary"
-                    onClick={() => setShowAddProduct(true)}
-                  >
-                    <Plus size={16} />
-                    Добавить товар
-                  </button>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button 
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        console.log('Force reload clicked');
+                        window.location.reload();
+                      }}
+                      style={{ fontSize: '14px' }}
+                    >
+                      🔄 Обновить
+                    </button>
+                    <button 
+                      className="btn btn-primary"
+                      onClick={() => setShowAddProduct(true)}
+                    >
+                      <Plus size={16} />
+                      Добавить товар
+                    </button>
+                  </div>
                 </div>
 
                 {showAddProduct && (
