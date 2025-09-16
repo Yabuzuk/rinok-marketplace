@@ -46,5 +46,17 @@ export const api = {
       body: JSON.stringify(user)
     });
     return response.json();
+  },
+
+  // Image upload
+  uploadImage: async (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const response = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    return response.json();
   }
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Package, Plus, BarChart3, Settings, Eye, Edit, Trash2 } from 'lucide-react';
+import { Package, Plus, BarChart3, Settings, Eye, Edit, Trash2, Upload } from 'lucide-react';
 import { Product, Order, User as UserType } from '../types';
+import { api } from '../utils/api';
 
 interface SellerDashboardProps {
   user: UserType;
@@ -19,6 +20,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'analytics' | 'settings'>('products');
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploading, setUploading] = useState(false);
 
   const sellerProducts = products.filter(p => p.sellerId === user.id);
   const sellerOrders = orders.filter(order => 
@@ -31,26 +35,55 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const totalProducts = sellerProducts.length;
   const totalOrders = sellerOrders.length;
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
+    setUploading(true);
     
-    const newProduct = {
-      name: formData.get('name') as string,
-      price: Number(formData.get('price')),
-      image: formData.get('image') as string,
-      category: formData.get('category') as string,
-      description: formData.get('description') as string,
-      stock: Number(formData.get('stock')),
-      minOrderQuantity: Number(formData.get('minOrderQuantity')),
-      sellerId: user.id,
-      rating: 0,
-      reviews: 0
-    };
+    try {
+      const formData = new FormData(e.target as HTMLFormElement);
+      let imageUrl = formData.get('imageUrl') as string;
+      
+      if (selectedImage) {
+        const uploadResult = await api.uploadImage(selectedImage);
+        imageUrl = uploadResult.url;
+      }
+      
+      const newProduct = {
+        name: formData.get('name') as string,
+        price: Number(formData.get('price')),
+        image: imageUrl,
+        category: formData.get('category') as string,
+        description: formData.get('description') as string,
+        stock: Number(formData.get('stock')),
+        minOrderQuantity: Number(formData.get('minOrderQuantity')),
+        sellerId: user.id,
+        rating: 0,
+        reviews: 0
+      };
 
-    await onAddProduct(newProduct);
-    setShowAddProduct(false);
-    (e.target as HTMLFormElement).reset();
+      await onAddProduct(newProduct);
+      setShowAddProduct(false);
+      setSelectedImage(null);
+      setImagePreview('');
+      (e.target as HTMLFormElement).reset();
+    } catch (error) {
+      console.error('Ошибка при добавлении товара:', error);
+      alert('Ошибка при добавлении товара');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -257,15 +290,66 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
                       <div style={{ marginBottom: '16px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                          URL изображения
+                          Изображение товара
                         </label>
-                        <input 
-                          name="image" 
-                          type="url" 
-                          className="input" 
-                          placeholder="https://example.com/image.jpg"
-                          required 
-                        />
+                        
+                        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ marginBottom: '12px' }}>
+                              <label style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 16px',
+                                background: '#f9f5f0',
+                                border: '2px dashed #d4c4b0',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                color: '#8b4513'
+                              }}>
+                                <Upload size={16} />
+                                Загрузить файл
+                                <input 
+                                  type="file" 
+                                  accept="image/*"
+                                  onChange={handleImageSelect}
+                                  style={{ display: 'none' }}
+                                />
+                              </label>
+                            </div>
+                            
+                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>или</div>
+                            
+                            <input 
+                              name="imageUrl" 
+                              type="url" 
+                              className="input" 
+                              placeholder="https://example.com/image.jpg"
+                            />
+                          </div>
+                          
+                          {imagePreview && (
+                            <div style={{
+                              width: '100px',
+                              height: '100px',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              border: '1px solid #d4c4b0'
+                            }}>
+                              <img 
+                                src={imagePreview} 
+                                alt="Предпросмотр"
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div style={{ marginBottom: '16px' }}>
@@ -282,8 +366,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       </div>
 
                       <div style={{ display: 'flex', gap: '12px' }}>
-                        <button type="submit" className="btn btn-primary">
-                          Добавить товар
+                        <button type="submit" className="btn btn-primary" disabled={uploading}>
+                          {uploading ? 'Загрузка...' : 'Добавить товар'}
                         </button>
                         <button 
                           type="button" 
