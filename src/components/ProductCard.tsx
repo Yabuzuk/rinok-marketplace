@@ -28,7 +28,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
         borderRadius: '12px',
         overflow: 'hidden',
         marginBottom: '12px',
-        background: '#f8f8f8'
+        background: '#f8f8f8',
+        position: 'relative'
       }}>
         <img 
           src={product.image} 
@@ -39,6 +40,37 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
             objectFit: 'cover' 
           }}
         />
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddToCart(product);
+          }}
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            border: 'none',
+            background: 'rgba(255, 255, 255, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          <Plus size={16} color="#38b2ac" />
+        </button>
       </div>
 
       <div style={{ marginBottom: '8px' }}>
@@ -54,35 +86,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
 
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between'
-      }}>
-        <div>
-          <span style={{ 
-            fontSize: '18px', 
-            fontWeight: '700',
-            color: '#1a1a1a'
-          }}>
-            {product.price} ₽
-          </span>
-        </div>
-
-        <button 
-          className="btn btn-primary"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddToCart(product);
-          }}
-          style={{ 
-            padding: '8px 12px',
-            fontSize: '14px',
-            minWidth: 'auto'
-          }}
-        >
-          <Plus size={16} />
-        </button>
+      <div>
+        <span style={{ 
+          fontSize: '18px', 
+          fontWeight: '700',
+          color: '#1a1a1a'
+        }}>
+          {product.price} ₽
+        </span>
       </div>
     </div>
   );
