@@ -59,7 +59,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
               overflowX: 'auto',
               paddingBottom: '8px'
             }}>
-              {products.slice(-4).map(product => (
+              {products.slice(-5).map(product => (
                 <div 
                   key={product.id}
                   style={{
