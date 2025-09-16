@@ -54,8 +54,8 @@ const EmojiBackground: React.FC = () => {
             position: 'absolute',
             left: `${item.x}%`,
             top: `${item.y}%`,
-            fontSize: '32px',
-            opacity: 0.15,
+            fontSize: '40px',
+            opacity: 0.2,
             transform: `rotate(${item.rotation}deg)`,
             userSelect: 'none',
             filter: 'sepia(60%) saturate(80%) hue-rotate(25deg) brightness(1.1)'
