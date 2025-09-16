@@ -15,8 +15,8 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
 
   return (
     <header style={{ 
-      background: '#fefcf8', 
-      borderBottom: '1px solid #e2e8f0',
+      background: '#f9f5f0', 
+      borderBottom: '1px solid #d4c4b0',
       position: 'sticky',
       top: 0,
       zIndex: 100
@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
           <div style={{ 
             fontSize: '24px', 
             fontWeight: '700',
-            background: 'linear-gradient(135deg, #4fd1c7 0%, #38b2ac 100%)',
+            background: 'linear-gradient(135deg, #8b4513 0%, #6b3410 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
@@ -79,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
               borderRadius: '8px',
               transition: 'background 0.2s ease'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#f7fafc'}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#f0e6d6'}
             onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
           >
             <ShoppingCart size={24} color="#666" />
@@ -88,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
                 position: 'absolute',
                 top: '0',
                 right: '0',
-                background: '#4fd1c7',
+                background: '#8b4513',
                 color: 'white',
                 borderRadius: '50%',
                 width: '20px',
@@ -118,7 +118,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
                 borderRadius: '8px',
                 transition: 'background 0.2s ease'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.background = '#faf6f0'}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#f0e6d6'}
               onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
             >
               <User size={20} color="#666" />

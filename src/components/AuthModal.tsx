@@ -61,7 +61,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       zIndex: 1000
     }}>
       <div style={{
-        background: '#fefcf8',
+        background: '#f9f5f0',
         borderRadius: '16px',
         padding: '32px',
         width: '100%',
@@ -108,7 +108,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
               padding: '8px 16px',
               border: 'none',
               borderRadius: '6px',
-              background: userType === 'customer' ? '#38b2ac' : 'transparent',
+              background: userType === 'customer' ? '#8b4513' : 'transparent',
               color: userType === 'customer' ? 'white' : '#666',
               fontSize: '14px',
               cursor: 'pointer'
@@ -123,7 +123,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
               padding: '8px 16px',
               border: 'none',
               borderRadius: '6px',
-              background: userType === 'seller' ? '#38b2ac' : 'transparent',
+              background: userType === 'seller' ? '#8b4513' : 'transparent',
               color: userType === 'seller' ? 'white' : '#666',
               fontSize: '14px',
               cursor: 'pointer'
@@ -256,7 +256,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
             style={{
               background: 'none',
               border: 'none',
-              color: '#38b2ac',
+              color: '#8b4513',
               fontSize: '14px',
               cursor: 'pointer',
               textDecoration: 'underline'

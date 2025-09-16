@@ -19,7 +19,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
       <div className="container">
         {/* Hero Section with Latest Products */}
         <div style={{
-          background: 'linear-gradient(135deg, #4fd1c7 0%, #38b2ac 100%)',
+          background: 'linear-gradient(135deg, #8b4513 0%, #6b3410 100%)',
           borderRadius: '20px',
           padding: '24px',
           marginBottom: '32px',
@@ -51,7 +51,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                   <div style={{
                     width: '130px',
                     height: '130px',
-                    background: '#fefcf8',
+                    background: '#f9f5f0',
                     borderRadius: '16px',
                     margin: '0 auto 8px',
                     display: 'flex',
