@@ -62,7 +62,8 @@ const AppContent: React.FC = () => {
       console.log('Loaded from server:', productsData.length, 'products,', usersData.length, 'users');
     } catch (error) {
       console.error('Error loading data from server:', error);
-      setProducts([]);
+      // Fallback на моковые данные при ошибке CORS
+      setProducts(mockProducts);
       setOrders([]);
     } finally {
       setLoading(false);

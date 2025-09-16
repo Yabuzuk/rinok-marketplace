@@ -1,6 +1,4 @@
-const API_BASE = process.env.NODE_ENV === 'production' 
-  ? 'https://rinok-server.onrender.com/api'
-  : 'http://localhost:3001/api';
+const API_BASE = 'https://rinok-server.onrender.com';
 
 export const api = {
   // Products
