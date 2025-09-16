@@ -209,7 +209,7 @@ const AppContent: React.FC = () => {
       const productWithId = {
         ...processedProduct,
         id: `local_${Date.now()}`,
-        sellerId: String(currentUser.id) // Приводим к строке
+        sellerId: String(currentUser?.id || 'unknown')
       };
       
       const updatedProducts = [...products, productWithId];
