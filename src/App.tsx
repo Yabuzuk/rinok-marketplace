@@ -129,6 +129,10 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const handleHomeClick = () => {
+    navigate('/');
+  };
+
   return (
     <div className="App">
         <EmojiBackground />
@@ -140,6 +144,7 @@ const AppContent: React.FC = () => {
           onLogin={handleLogin}
           onShowAuthModal={() => setShowAuthModal(true)}
           onDashboardClick={handleDashboardClick}
+          onHomeClick={handleHomeClick}
         />
         
         <AuthModal 

@@ -10,9 +10,10 @@ interface HeaderProps {
   onLogin: (userType: 'customer' | 'seller', userData?: any) => void;
   onShowAuthModal: () => void;
   onDashboardClick: () => void;
+  onHomeClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCartClick, onLogin, onShowAuthModal, onDashboardClick }) => {
+const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCartClick, onLogin, onShowAuthModal, onDashboardClick, onHomeClick }) => {
 
   return (
     <header style={{ 
@@ -29,13 +30,20 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
         height: '72px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          <div style={{ 
-            fontSize: '24px', 
-            fontWeight: '700',
-            background: 'linear-gradient(135deg, #8b4513 0%, #6b3410 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}>
+          <div 
+            onClick={onHomeClick}
+            style={{ 
+              fontSize: '24px', 
+              fontWeight: '700',
+              background: 'linear-gradient(135deg, #8b4513 0%, #6b3410 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
             Rinok
           </div>
           
