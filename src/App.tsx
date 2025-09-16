@@ -253,7 +253,7 @@ const AppContent: React.FC = () => {
               height: '50vh',
               fontSize: '18px'
             }}>
-              Загрузка данных из Telegram...
+              Формируем каталог товаров...
             </div>
           ) : (
           <Routes>
