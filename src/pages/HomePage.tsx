@@ -96,7 +96,9 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                         }}
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement.innerHTML = '📦';
+                          if (e.currentTarget.parentElement) {
+                            e.currentTarget.parentElement.innerHTML = '📦';
+                          }
                         }}
                       />
                     ) : (
