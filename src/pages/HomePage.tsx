@@ -12,6 +12,9 @@ const categories = [
   { id: 'all', name: 'Все', icon: '🛒' },
   { id: 'fruits', name: 'Фрукты', icon: '🍎' },
   { id: 'vegetables', name: 'Овощи', icon: '🥕' },
+  { id: 'greens', name: 'Зелень', icon: '🥬' },
+  { id: 'berries', name: 'Ягоды', icon: '🍓' },
+  { id: 'nuts', name: 'Орехи', icon: '🥜' },
   { id: 'spices', name: 'Специи', icon: '🌶️' }
 ];
 

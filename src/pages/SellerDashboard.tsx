@@ -315,10 +315,10 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                             <option value="">Выберите категорию</option>
                             <option value="fruits">Фрукты</option>
                             <option value="vegetables">Овощи</option>
-                            <option value="dairy">Молочные</option>
-                            <option value="meat">Мясо</option>
-                            <option value="bakery">Хлеб</option>
-                            <option value="drinks">Напитки</option>
+                            <option value="greens">Зелень</option>
+                            <option value="berries">Ягоды</option>
+                            <option value="nuts">Орехи</option>
+                            <option value="spices">Специи</option>
                           </select>
                         </div>
                         <div>
@@ -465,6 +465,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                           <select name="category" className="input" defaultValue={editingProduct.category} required>
                             <option value="fruits">Фрукты</option>
                             <option value="vegetables">Овощи</option>
+                            <option value="greens">Зелень</option>
+                            <option value="berries">Ягоды</option>
+                            <option value="nuts">Орехи</option>
                             <option value="spices">Специи</option>
                           </select>
                         </div>
