@@ -7,27 +7,50 @@ class TelegramDB {
     this.bot = new TelegramBot(token);
     this.chatId = chatId;
     this.storage = {};
-    this.dataFile = path.join(process.cwd(), 'data.json');
-    this.loadFromFile();
+    this.binId = process.env.JSONBIN_ID || 'default';
+    this.binKey = process.env.JSONBIN_KEY || '';
+    this.loadFromBin();
   }
 
-  loadFromFile() {
+  async loadFromBin() {
     try {
-      if (fs.existsSync(this.dataFile)) {
-        const data = fs.readFileSync(this.dataFile, 'utf8');
-        this.storage = JSON.parse(data);
-        console.log('Loaded from file:', Object.keys(this.storage).map(k => `${k}: ${this.storage[k].length}`));
+      if (!this.binKey) {
+        console.log('No JSONBin key, using memory only');
+        return;
+      }
+      
+      const response = await fetch(`https://api.jsonbin.io/v3/b/${this.binId}/latest`, {
+        headers: {
+          'X-Master-Key': this.binKey
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        this.storage = data.record || {};
+        console.log('Loaded from JSONBin:', Object.keys(this.storage).map(k => `${k}: ${this.storage[k]?.length || 0}`));
       }
     } catch (error) {
-      console.error('Error loading from file:', error);
+      console.error('Error loading from JSONBin:', error);
     }
   }
 
-  saveToFile() {
+  async saveToBin() {
     try {
-      fs.writeFileSync(this.dataFile, JSON.stringify(this.storage, null, 2));
+      if (!this.binKey) return;
+      
+      await fetch(`https://api.jsonbin.io/v3/b/${this.binId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': this.binKey
+        },
+        body: JSON.stringify(this.storage)
+      });
+      
+      console.log('Saved to JSONBin');
     } catch (error) {
-      console.error('Error saving to file:', error);
+      console.error('Error saving to JSONBin:', error);
     }
   }
 
@@ -89,7 +112,7 @@ class TelegramDB {
       this.storage[collection] = [];
     }
     this.storage[collection].push(data);
-    this.saveToFile();
+    this.saveToBin();
     
     try {
       const message = `#${collection}\n${JSON.stringify(data, null, 2)}`;
@@ -102,6 +125,7 @@ class TelegramDB {
   }
 
   async getAll(collection) {
+    await this.loadFromBin();
     const data = this.storage[collection] || [];
     console.log(`Getting ${collection}: ${data.length} items`);
     return data;
