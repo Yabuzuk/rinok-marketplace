@@ -30,6 +30,10 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const sellerProducts = products.filter(p => p.sellerId === user.id);
+  
+  console.log('All products:', products.length);
+  console.log('Seller products:', sellerProducts.length);
+  console.log('User ID:', user.id);
   const sellerOrders = orders.filter(order => 
     order.items.some(item => 
       sellerProducts.some(product => product.id === item.productId)
