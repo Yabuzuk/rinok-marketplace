@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import TelegramDB from './telegramDB.js';
+import MongoDB from './mongoDB.js';
 
 dotenv.config();
 
@@ -11,9 +11,8 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-const db = new TelegramDB(
-  process.env.TELEGRAM_BOT_TOKEN,
-  process.env.TELEGRAM_CHAT_ID
+const db = new MongoDB(
+  process.env.MONGODB_URI || 'mongodb://rinok_anywherehe:423c7d67d4e91c8b370846e868153e8be8ddbcf8@e4gb4v.h.filess.io:61004/rinok_anywherehe'
 );
 
 // Products API
