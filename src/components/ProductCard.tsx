@@ -47,7 +47,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
           }}
           style={{
             position: 'absolute',
-            top: '8px',
+            bottom: '8px',
             right: '8px',
             width: '32px',
             height: '32px',
@@ -69,7 +69,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
             e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          <Plus size={16} color="#38b2ac" />
+          <Plus size={18} color="#38b2ac" strokeWidth={3} />
         </button>
       </div>
 
