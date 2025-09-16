@@ -6,6 +6,7 @@ import { Product } from '../types';
 interface HomePageProps {
   products: Product[];
   onAddToCart: (product: Product, quantity?: number) => void;
+  users?: any[];
 }
 
 const categories = [
@@ -15,14 +16,17 @@ const categories = [
   { id: 'greens', name: 'Зелень', icon: '🥬' },
   { id: 'berries', name: 'Ягоды', icon: '🍓' },
   { id: 'nuts', name: 'Орехи', icon: '🥜' },
-  { id: 'spices', name: 'Специи', icon: '🌶️' }
+  { id: 'spices', name: 'Специи', icon: '🌶️' },
+  { id: 'pavilion', name: 'Павильон', icon: '🏢' }
 ];
 
-const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
+const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedPavilion, setSelectedPavilion] = useState<string>('all');
+  const [showPavilionFilter, setShowPavilionFilter] = useState(false);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -34,12 +38,40 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
   };
 
   const handleCategoryClick = (categoryId: string) => {
+    if (categoryId === 'pavilion') {
+      setShowPavilionFilter(true);
+      return;
+    }
     setSelectedCategory(categoryId);
+    setShowPavilionFilter(false);
+    setSelectedPavilion('all');
   };
 
-  const filteredProducts = selectedCategory === 'all' 
-    ? products 
-    : products.filter(product => product.category === selectedCategory);
+  const handlePavilionClick = (pavilionNumber: string) => {
+    setSelectedPavilion(pavilionNumber);
+  };
+
+  const filteredProducts = (() => {
+    if (showPavilionFilter) {
+      if (selectedPavilion === 'all') {
+        return products;
+      }
+      return products.filter(product => {
+        const seller = users.find(u => u.id === product.sellerId);
+        return seller?.pavilionNumber === selectedPavilion;
+      });
+    }
+    
+    return selectedCategory === 'all' 
+      ? products 
+      : products.filter(product => product.category === selectedCategory);
+  })();
+
+  // Получаем уникальные номера павильонов
+  const pavilions = [...new Set(users
+    .filter(u => u.role === 'seller' && u.pavilionNumber)
+    .map(u => u.pavilionNumber)
+  )].sort();
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
@@ -155,43 +187,127 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
             fontWeight: '600',
             marginBottom: '20px'
           }}>
-            Категории
+            {showPavilionFilter ? 'Павильоны' : 'Категории'}
           </h2>
+          
+          {showPavilionFilter && (
+            <div style={{ marginBottom: '16px' }}>
+              <button 
+                onClick={() => {
+                  setShowPavilionFilter(false);
+                  setSelectedCategory('all');
+                  setSelectedPavilion('all');
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#8b4513',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
+              >
+                ← Назад к категориям
+              </button>
+            </div>
+          )}
           <div className="grid grid-6" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(50px, 1fr))',
             gap: '8px'
           }}>
-            {categories.map(category => (
-              <div 
-                key={category.id}
-                className="card"
-                onClick={() => handleCategoryClick(category.id)}
-                style={{
-                  textAlign: 'center',
-                  padding: '8px 4px',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease',
-                  background: selectedCategory === category.id ? '#8b4513' : '#f9f5f0',
-                  color: selectedCategory === category.id ? 'white' : '#3c2415'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-              >
-                <div style={{ 
-                  fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
-                  marginBottom: window.innerWidth <= 768 ? '4px' : '6px' 
-                }}>
-                  {category.icon}
+            {showPavilionFilter ? (
+              <>
+                <div 
+                  className="card"
+                  onClick={() => handlePavilionClick('all')}
+                  style={{
+                    textAlign: 'center',
+                    padding: '8px 4px',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s ease',
+                    background: selectedPavilion === 'all' ? '#8b4513' : '#f9f5f0',
+                    color: selectedPavilion === 'all' ? 'white' : '#3c2415'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <div style={{ 
+                    fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
+                    marginBottom: window.innerWidth <= 768 ? '4px' : '6px' 
+                  }}>
+                    🛒
+                  </div>
+                  <span style={{ 
+                    fontSize: window.innerWidth <= 768 ? '10px' : '12px', 
+                    fontWeight: '500' 
+                  }}>
+                    Все
+                  </span>
                 </div>
-                <span style={{ 
-                  fontSize: window.innerWidth <= 768 ? '10px' : '12px', 
-                  fontWeight: '500' 
-                }}>
-                  {category.name}
-                </span>
-              </div>
-            ))}
+                {pavilions.map(pavilion => (
+                  <div 
+                    key={pavilion}
+                    className="card"
+                    onClick={() => handlePavilionClick(pavilion)}
+                    style={{
+                      textAlign: 'center',
+                      padding: '8px 4px',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s ease',
+                      background: selectedPavilion === pavilion ? '#8b4513' : '#f9f5f0',
+                      color: selectedPavilion === pavilion ? 'white' : '#3c2415'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                  >
+                    <div style={{ 
+                      fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
+                      marginBottom: window.innerWidth <= 768 ? '4px' : '6px' 
+                    }}>
+                      🏢
+                    </div>
+                    <span style={{ 
+                      fontSize: window.innerWidth <= 768 ? '10px' : '12px', 
+                      fontWeight: '500' 
+                    }}>
+                      {pavilion}
+                    </span>
+                  </div>
+                ))}
+              </>
+            ) : (
+              categories.map(category => (
+                <div 
+                  key={category.id}
+                  className="card"
+                  onClick={() => handleCategoryClick(category.id)}
+                  style={{
+                    textAlign: 'center',
+                    padding: '8px 4px',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s ease',
+                    background: selectedCategory === category.id && !showPavilionFilter ? '#8b4513' : '#f9f5f0',
+                    color: selectedCategory === category.id && !showPavilionFilter ? 'white' : '#3c2415'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <div style={{ 
+                    fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
+                    marginBottom: window.innerWidth <= 768 ? '4px' : '6px' 
+                  }}>
+                    {category.icon}
+                  </div>
+                  <span style={{ 
+                    fontSize: window.innerWidth <= 768 ? '10px' : '12px', 
+                    fontWeight: '500' 
+                  }}>
+                    {category.name}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

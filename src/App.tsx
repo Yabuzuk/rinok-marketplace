@@ -266,6 +266,7 @@ const AppContent: React.FC = () => {
                 <HomePage 
                   products={products}
                   onAddToCart={handleAddToCart}
+                  users={mockUsers}
                 />
               } 
             />
