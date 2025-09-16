@@ -20,35 +20,91 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
   return (
     <div style={{ paddingTop: '24px' }}>
       <div className="container">
-        {/* Hero Section */}
+        {/* Hero Section with Latest Products */}
         <div style={{
           background: 'linear-gradient(135deg, #4fd1c7 0%, #38b2ac 100%)',
           borderRadius: '20px',
-          padding: '40px',
+          padding: '24px',
           marginBottom: '32px',
           color: 'white'
         }}>
-          <h1 style={{ 
-            fontSize: '32px', 
-            fontWeight: '700',
-            marginBottom: '12px'
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px'
           }}>
-            Быстрая доставка продуктов
-          </h1>
-          <p style={{ 
-            fontSize: '18px',
-            opacity: 0.9,
-            marginBottom: '24px'
-          }}>
-            Свежие продукты к вашему столу за 15 минут
-          </p>
-          <button className="btn" style={{
-            background: '#fefcf8',
-            color: '#38b2ac',
-            fontWeight: '600'
-          }}>
-            Заказать сейчас
-          </button>
+            <div>
+              <h1 style={{ 
+                fontSize: '24px', 
+                fontWeight: '700',
+                marginBottom: '8px'
+              }}>
+                Быстрая доставка продуктов
+              </h1>
+              <p style={{ 
+                fontSize: '14px',
+                opacity: 0.9
+              }}>
+                Свежие продукты к вашему столу за 15 минут
+              </p>
+            </div>
+          </div>
+          
+          {/* Latest Products Carousel */}
+          {products.length > 0 && (
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              overflowX: 'auto',
+              paddingBottom: '8px'
+            }}>
+              {products.slice(-4).map(product => (
+                <div 
+                  key={product.id}
+                  style={{
+                    minWidth: '120px',
+                    background: 'rgba(255, 255, 255, 0.15)',
+                    borderRadius: '12px',
+                    padding: '12px',
+                    textAlign: 'center',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => onAddToCart(product)}
+                >
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    background: '#fefcf8',
+                    borderRadius: '8px',
+                    margin: '0 auto 8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px'
+                  }}>
+                    {product.image || '📦'}
+                  </div>
+                  <div style={{
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    marginBottom: '4px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {product.name}
+                  </div>
+                  <div style={{
+                    fontSize: '14px',
+                    fontWeight: '700'
+                  }}>
+                    {product.price} ₽
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Categories */}
