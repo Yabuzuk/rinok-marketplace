@@ -35,13 +35,13 @@ const AppContent: React.FC = () => {
     loadData();
   }, []);
 
-  // Отдельный эффект для перезагрузки при смене пользователя
-  useEffect(() => {
-    if (currentUser && !loading) {
-      console.log('User changed, reloading data for:', currentUser.name);
-      loadData();
-    }
-  }, [currentUser?.id]);
+  // Не перезагружаем данные при смене пользователя
+  // useEffect(() => {
+  //   if (currentUser && !loading) {
+  //     console.log('User changed, reloading data for:', currentUser.name);
+  //     loadData();
+  //   }
+  // }, [currentUser?.id]);
 
   const loadLocalProducts = () => {
     console.log('Loading local products...');
@@ -68,6 +68,15 @@ const AppContent: React.FC = () => {
     
     return allProducts;
   };
+
+  // Принудительно обновляем товары при каждом рендере
+  React.useEffect(() => {
+    const localProducts = loadLocalProducts();
+    if (localProducts.length !== products.length) {
+      console.log('Updating products with local data');
+      setProducts(localProducts);
+    }
+  });
 
   const loadData = async () => {
     try {
