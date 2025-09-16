@@ -120,6 +120,36 @@ const AppContent: React.FC = () => {
     });
   };
 
+  const handleUpdateProduct = (productId: string, updates: Partial<Product>) => {
+    setProducts(prev => {
+      const updatedProducts = prev.map(p => 
+        p.id === productId ? { ...p, ...updates } : p
+      );
+      
+      // Обновляем localStorage для продавца
+      if (currentUser?.role === 'seller') {
+        const sellerProducts = updatedProducts.filter(p => p.sellerId === currentUser.id);
+        localStorage.setItem(`sellerProducts_${currentUser.id}`, JSON.stringify(sellerProducts));
+      }
+      
+      return updatedProducts;
+    });
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    setProducts(prev => {
+      const updatedProducts = prev.filter(p => p.id !== productId);
+      
+      // Обновляем localStorage для продавца
+      if (currentUser?.role === 'seller') {
+        const sellerProducts = updatedProducts.filter(p => p.sellerId === currentUser.id);
+        localStorage.setItem(`sellerProducts_${currentUser.id}`, JSON.stringify(sellerProducts));
+      }
+      
+      return updatedProducts;
+    });
+  };
+
   const handleAddProduct = async (newProduct: Omit<Product, 'id'>) => {
     try {
       const product = await api.createProduct(newProduct);
@@ -263,6 +293,8 @@ const AppContent: React.FC = () => {
                     products={products}
                     orders={orders}
                     onAddProduct={handleAddProduct}
+                    onUpdateProduct={handleUpdateProduct}
+                    onDeleteProduct={handleDeleteProduct}
                     onCreateOrder={handleCreateOrder}
                   />
                 ) : (

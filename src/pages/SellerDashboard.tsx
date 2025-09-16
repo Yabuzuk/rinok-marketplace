@@ -8,6 +8,8 @@ interface SellerDashboardProps {
   products: Product[];
   orders: Order[];
   onAddProduct: (product: Omit<Product, 'id'>) => Promise<void>;
+  onUpdateProduct?: (productId: string, updates: Partial<Product>) => void;
+  onDeleteProduct?: (productId: string) => void;
   onCreateOrder?: (order: Omit<Order, 'id'>) => void;
 }
 
@@ -16,6 +18,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   products, 
   orders, 
   onAddProduct,
+  onUpdateProduct,
+  onDeleteProduct,
   onCreateOrder
 }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'analytics' | 'settings'>('products');
@@ -23,6 +27,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const sellerProducts = products.filter(p => p.sellerId === user.id);
   const sellerOrders = orders.filter(order => 
@@ -80,6 +85,53 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
     } catch (error) {
       console.error('Ошибка при добавлении товара:', error);
       alert('Ошибка при добавлении товара');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
+      onDeleteProduct?.(productId);
+    }
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setImagePreview(product.image);
+  };
+
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    
+    setUploading(true);
+    
+    try {
+      const formData = new FormData(e.target as HTMLFormElement);
+      let imageUrl = formData.get('imageUrl') as string || editingProduct.image;
+      
+      if (selectedImage) {
+        imageUrl = await api.convertImageToBase64(selectedImage);
+      }
+      
+      const updates = {
+        name: formData.get('name') as string,
+        price: Number(formData.get('price')),
+        image: imageUrl,
+        category: formData.get('category') as string,
+        description: formData.get('description') as string,
+        stock: Number(formData.get('stock')),
+        minOrderQuantity: Number(formData.get('minOrderQuantity'))
+      };
+
+      onUpdateProduct?.(editingProduct.id, updates);
+      setEditingProduct(null);
+      setSelectedImage(null);
+      setImagePreview('');
+    } catch (error) {
+      console.error('Ошибка при обновлении товара:', error);
+      alert('Ошибка при обновлении товара');
     } finally {
       setUploading(false);
     }
@@ -384,6 +436,154 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   </div>
                 )}
 
+                {editingProduct && (
+                  <div className="card" style={{ marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                      Редактировать товар
+                    </h3>
+                    <form onSubmit={handleUpdateProduct}>
+                      <div className="grid grid-2" style={{ marginBottom: '16px' }}>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                            Название
+                          </label>
+                          <input name="name" className="input" defaultValue={editingProduct.name} required />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                            Цена (₽)
+                          </label>
+                          <input name="price" type="number" className="input" defaultValue={editingProduct.price} required />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-2" style={{ marginBottom: '16px' }}>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                            Категория
+                          </label>
+                          <select name="category" className="input" defaultValue={editingProduct.category} required>
+                            <option value="fruits">Фрукты</option>
+                            <option value="vegetables">Овощи</option>
+                            <option value="spices">Специи</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                            Количество
+                          </label>
+                          <input name="stock" type="number" className="input" defaultValue={editingProduct.stock} required />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-2" style={{ marginBottom: '16px' }}>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                            Мин. количество для заказа
+                          </label>
+                          <input name="minOrderQuantity" type="number" min="1" className="input" defaultValue={editingProduct.minOrderQuantity} required />
+                        </div>
+                        <div></div>
+                      </div>
+
+                      <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                          Изображение товара
+                        </label>
+                        
+                        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ marginBottom: '12px' }}>
+                              <label style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 16px',
+                                background: '#f9f5f0',
+                                border: '2px dashed #d4c4b0',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                color: '#8b4513'
+                              }}>
+                                <Upload size={16} />
+                                Загрузить новый файл
+                                <input 
+                                  type="file" 
+                                  accept="image/*"
+                                  onChange={handleImageSelect}
+                                  style={{ display: 'none' }}
+                                />
+                              </label>
+                            </div>
+                            
+                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>или</div>
+                            
+                            <input 
+                              name="imageUrl" 
+                              type="url" 
+                              className="input" 
+                              placeholder="https://example.com/image.jpg"
+                            />
+                          </div>
+                          
+                          {imagePreview && (
+                            <div style={{
+                              width: '100px',
+                              height: '100px',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              border: '1px solid #d4c4b0'
+                            }}>
+                              <img 
+                                src={imagePreview} 
+                                alt="Предпросмотр"
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                          Описание
+                        </label>
+                        <textarea 
+                          name="description" 
+                          className="input" 
+                          rows={3}
+                          style={{ resize: 'vertical' }}
+                          defaultValue={editingProduct.description}
+                          required 
+                        />
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <button type="submit" className="btn btn-primary" disabled={uploading}>
+                          {uploading ? 'Обновление...' : 'Обновить товар'}
+                        </button>
+                        <button 
+                          type="button" 
+                          className="btn btn-secondary"
+                          onClick={() => {
+                            setEditingProduct(null);
+                            setSelectedImage(null);
+                            setImagePreview('');
+                          }}
+                        >
+                          Отмена
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
                 <div className="grid grid-3">
                   {sellerProducts.map(product => (
                     <div key={product.id} className="card">
@@ -408,13 +608,20 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         В наличии: {product.stock} шт.
                       </p>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn btn-secondary" style={{ flex: 1, padding: '8px' }}>
+                        <button 
+                          className="btn btn-secondary" 
+                          style={{ flex: 1, padding: '8px' }}
+                          onClick={() => handleEditProduct(product)}
+                          title="Редактировать"
+                        >
                           <Edit size={14} />
                         </button>
-                        <button className="btn btn-secondary" style={{ flex: 1, padding: '8px' }}>
-                          <Eye size={14} />
-                        </button>
-                        <button className="btn btn-secondary" style={{ flex: 1, padding: '8px', color: '#f44336' }}>
+                        <button 
+                          className="btn btn-secondary" 
+                          style={{ flex: 1, padding: '8px', color: '#f44336' }}
+                          onClick={() => handleDeleteProduct(product.id)}
+                          title="Удалить"
+                        >
                           <Trash2 size={14} />
                         </button>
                       </div>
