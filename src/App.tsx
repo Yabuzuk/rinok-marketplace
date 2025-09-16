@@ -47,14 +47,24 @@ const AppContent: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [productsData, ordersData] = await Promise.all([
+      const [productsData, ordersData, usersData] = await Promise.all([
         api.getProducts(),
-        api.getOrders()
+        api.getOrders(),
+        api.getUsers()
       ]);
       
       setProducts(productsData);
       setOrders(ordersData);
-      console.log('Loaded products from server:', productsData.length);
+      
+      // Объединяем пользователей с сервера и моковых данных
+      const allUsers = [...mockUsers];
+      usersData.forEach(serverUser => {
+        if (!allUsers.find(u => u.id === serverUser.id)) {
+          allUsers.push(serverUser);
+        }
+      });
+      
+      console.log('Loaded from server:', productsData.length, 'products,', usersData.length, 'users');
     } catch (error) {
       console.error('Error loading data from server:', error);
       setProducts(mockProducts);
@@ -64,14 +74,24 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleLogin = (userType: 'customer' | 'seller' | 'admin', userData?: any) => {
+  const handleLogin = async (userType: 'customer' | 'seller' | 'admin', userData?: any) => {
     let user;
     if (userData) {
       user = { 
         ...userData, 
         role: userType,
-        type: userType
+        type: userType,
+        id: userData.id || Date.now().toString(),
+        pavilionNumber: userData.pavilionNumber || ''
       };
+      
+      // Сохраняем нового пользователя на сервер
+      try {
+        await api.createUser(user);
+        console.log('User saved to server:', user.id);
+      } catch (error) {
+        console.error('Error saving user:', error);
+      }
     } else {
       user = mockUsers.find(u => u.role === userType);
     }

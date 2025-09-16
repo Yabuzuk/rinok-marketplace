@@ -11,7 +11,29 @@ export const mockUsers: User[] = [
     id: '2',
     email: 'seller@example.com',
     name: 'Магазин "Свежесть"',
-    role: 'seller'
+    role: 'seller',
+    pavilionNumber: '15A'
+  },
+  {
+    id: '1758026577105',
+    email: 'seller2@example.com',
+    name: 'Продавец Овощи',
+    role: 'seller',
+    pavilionNumber: '22B'
+  },
+  {
+    id: '1758026040562',
+    email: 'seller3@example.com',
+    name: 'Продавец Фрукты',
+    role: 'seller',
+    pavilionNumber: '8C'
+  },
+  {
+    id: '1758023998557',
+    email: 'seller4@example.com',
+    name: 'Продавец Молочка',
+    role: 'seller',
+    pavilionNumber: '5D'
   },
   {
     id: '3',
