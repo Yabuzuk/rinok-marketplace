@@ -28,23 +28,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
           marginBottom: '32px',
           color: 'white'
         }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '20px'
-          }}>
-            <div>
-              <h1 style={{ 
-                fontSize: '24px', 
-                fontWeight: '700',
-                marginBottom: '8px'
-              }}>
-                Свежее поступление
-              </h1>
 
-            </div>
-          </div>
           
           {/* Latest Products Carousel */}
           {products.length > 0 && (
@@ -58,7 +42,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                 <div 
                   key={product.id}
                   style={{
-                    minWidth: '140px',
+                    minWidth: '160px',
                     background: 'rgba(255, 255, 255, 0.15)',
                     borderRadius: '12px',
                     padding: '12px',
@@ -68,15 +52,15 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                   onClick={() => onAddToCart(product)}
                 >
                   <div style={{
-                    width: '100px',
-                    height: '100px',
+                    width: '130px',
+                    height: '130px',
                     background: '#fefcf8',
-                    borderRadius: '12px',
+                    borderRadius: '16px',
                     margin: '0 auto 8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '32px',
+                    fontSize: '42px',
                     overflow: 'hidden'
                   }}>
                     {product.image && product.image.startsWith('http') ? (
@@ -87,7 +71,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
-                          borderRadius: '12px'
+                          borderRadius: '16px'
                         }}
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
