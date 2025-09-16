@@ -15,7 +15,21 @@ class TelegramDB {
       console.log('Restoring data from Telegram...');
       const updates = await this.bot.getUpdates({ limit: 100 });
       
-      updates.forEach(update => {
+      // Получаем дополнительные сообщения если нужно
+      let allUpdates = [...updates];
+      if (updates.length === 100) {
+        // Получаем еще партии сообщений
+        for (let i = 0; i < 9; i++) {
+          const moreUpdates = await this.bot.getUpdates({ 
+            limit: 100, 
+            offset: allUpdates[allUpdates.length - 1].update_id + 1 
+          });
+          allUpdates = [...allUpdates, ...moreUpdates];
+          if (moreUpdates.length < 100) break;
+        }
+      }
+      
+      allUpdates.forEach(update => {
         if (update.message?.text?.startsWith('#')) {
           const text = update.message.text;
           const collection = text.split('\n')[0].substring(1);
