@@ -77,7 +77,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
         <span style={{ 
           fontSize: '18px', 
           fontWeight: '700',
-          color: '#1a1a1a'
+          color: '#38b2ac'
         }}>
           {product.price} ₽
         </span>
