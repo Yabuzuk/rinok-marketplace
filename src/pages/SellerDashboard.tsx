@@ -40,6 +40,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
         // Проверяем, есть ли эти товары в общем списке
         sellerProducts.forEach((product: any) => {
           const exists = products.find(p => p.id === product.id);
+          console.log('Checking product:', product.name, 'exists:', !!exists);
+          console.log('Product sellerId:', product.sellerId, 'User ID:', user.id);
           if (!exists) {
             console.log('Product missing, need to restore:', product.name);
           }
@@ -55,7 +57,15 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   console.log('=== SELLER DASHBOARD DEBUG ===');
   console.log('All products:', products.length);
   console.log('User ID:', user.id, 'Type:', typeof user.id);
-  console.log('Products with sellerId:', products.map(p => ({ id: p.id, name: p.name, sellerId: p.sellerId, sellerIdType: typeof p.sellerId })));
+  console.log('User ID as string:', String(user.id));
+  console.log('Products with sellerId:', products.map(p => ({ 
+    id: p.id, 
+    name: p.name, 
+    sellerId: p.sellerId, 
+    sellerIdType: typeof p.sellerId,
+    sellerIdString: String(p.sellerId),
+    match: String(p.sellerId) === String(user.id)
+  })));
   console.log('Seller products:', sellerProducts.length);
   console.log('LocalStorage check:', localStorage.getItem(`sellerProducts_${user.id}`));
   
