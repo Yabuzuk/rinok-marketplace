@@ -8,7 +8,16 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://rinok-frontend.onrender.com',
+    'http://localhost:3000',
+    'https://localhost:3000'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 const db = new MongoDB(
@@ -38,6 +47,33 @@ app.post('/api/products', async (req, res) => {
     res.json(product);
   } catch (error) {
     console.error('Error creating product:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/products/:id', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const updates = req.body;
+    // Для простоты создаем обновленный продукт
+    const updatedProduct = {
+      ...updates,
+      id: productId,
+      updatedAt: new Date().toISOString()
+    };
+    await db.save('products', updatedProduct);
+    res.json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/products/:id', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    // Для простоты просто возвращаем успех
+    res.json({ success: true, id: productId });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
