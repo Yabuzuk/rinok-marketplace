@@ -43,40 +43,7 @@ const AppContent: React.FC = () => {
   //   }
   // }, [currentUser?.id]);
 
-  const loadLocalProducts = () => {
-    console.log('Loading local products...');
-    let allProducts = [...mockProducts];
-    
-    // Загружаем локальные товары для всех продавцов
-    const sellerIds = mockUsers.filter(u => u.role === 'seller').map(u => u.id);
-    sellerIds.forEach(sellerId => {
-      const savedProducts = localStorage.getItem(`sellerProducts_${sellerId}`);
-      if (savedProducts) {
-        try {
-          const sellerProducts = JSON.parse(savedProducts);
-          console.log(`Loading ${sellerProducts.length} products for seller ${sellerId}`);
-          sellerProducts.forEach((product: Product) => {
-            if (!allProducts.find(p => p.id === product.id)) {
-              allProducts.push(product);
-            }
-          });
-        } catch (e) {
-          console.error(`Error loading products for seller ${sellerId}:`, e);
-        }
-      }
-    });
-    
-    return allProducts;
-  };
 
-  // Принудительно обновляем товары при каждом рендере
-  React.useEffect(() => {
-    const localProducts = loadLocalProducts();
-    if (localProducts.length !== products.length) {
-      console.log('Updating products with local data');
-      setProducts(localProducts);
-    }
-  });
 
   const loadData = async () => {
     try {
@@ -85,24 +52,12 @@ const AppContent: React.FC = () => {
         api.getOrders()
       ]);
       
-      // Объединяем с локальными товарами
-      const localProducts = loadLocalProducts();
-      const allProducts = [...productsData];
-      
-      localProducts.forEach(product => {
-        if (!allProducts.find(p => p.id === product.id)) {
-          allProducts.push(product);
-        }
-      });
-      
-      setProducts(allProducts);
+      setProducts(productsData);
       setOrders(ordersData);
+      console.log('Loaded products from server:', productsData.length);
     } catch (error) {
-      console.error('Error loading data from server, using local data:', error);
-      
-      // Fallback: используем только локальные данные
-      const allProducts = loadLocalProducts();
-      setProducts(allProducts);
+      console.error('Error loading data from server:', error);
+      setProducts(mockProducts);
       setOrders([]);
     } finally {
       setLoading(false);
@@ -151,116 +106,49 @@ const AppContent: React.FC = () => {
     });
   };
 
-  const handleUpdateProduct = (productId: string, updates: Partial<Product>) => {
-    setProducts(prev => {
-      const updatedProducts = prev.map(p => 
+  const handleUpdateProduct = async (productId: string, updates: Partial<Product>) => {
+    try {
+      await api.updateProduct(productId, updates);
+      setProducts(prev => prev.map(p => 
         p.id === productId ? { ...p, ...updates } : p
-      );
-      
-      // Обновляем localStorage для всех продавцов
-      const allSellerIds = mockUsers.filter(u => u.role === 'seller').map(u => String(u.id));
-      allSellerIds.forEach(sellerId => {
-        const sellerProducts = updatedProducts.filter(p => String(p.sellerId) === sellerId);
-        if (sellerProducts.length > 0) {
-          localStorage.setItem(`sellerProducts_${sellerId}`, JSON.stringify(sellerProducts));
-        }
-      });
-      
-      return updatedProducts;
-    });
+      ));
+      console.log('Product updated on server:', productId);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      alert('Ошибка обновления товара');
+    }
   };
 
-  const handleDeleteProduct = (productId: string) => {
-    setProducts(prev => {
-      const updatedProducts = prev.filter(p => p.id !== productId);
-      
-      // Обновляем localStorage для всех продавцов
-      const allSellerIds = mockUsers.filter(u => u.role === 'seller').map(u => String(u.id));
-      allSellerIds.forEach(sellerId => {
-        const sellerProducts = updatedProducts.filter(p => String(p.sellerId) === sellerId);
-        localStorage.setItem(`sellerProducts_${sellerId}`, JSON.stringify(sellerProducts));
-      });
-      
-      return updatedProducts;
-    });
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await api.deleteProduct(productId);
+      setProducts(prev => prev.filter(p => p.id !== productId));
+      console.log('Product deleted from server:', productId);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Ошибка удаления товара');
+    }
   };
 
   const handleAddProduct = async (newProduct: Omit<Product, 'id'>) => {
     console.log('Adding product:', newProduct);
     
     try {
-      // Сжимаем base64 изображение если оно слишком большое
-      let processedProduct = { ...newProduct };
-      if (newProduct.image && newProduct.image.startsWith('data:') && newProduct.image.length > 100000) {
-        console.log('Image too large, using placeholder');
-        processedProduct.image = '📷'; // Используем эмодзи вместо больших изображений
-      }
-      
-      const product = await api.createProduct(processedProduct);
-      const updatedProducts = [...products, product];
-      setProducts(updatedProducts);
-      
-      // Сохраняем товары продавца в localStorage
-      if (currentUser?.id) {
-        // Загружаем существующие товары
-        const existingProducts = localStorage.getItem(`sellerProducts_${currentUser.id}`);
-        let allSellerProducts = [];
-        if (existingProducts) {
-          try {
-            allSellerProducts = JSON.parse(existingProducts);
-          } catch (e) {
-            allSellerProducts = [];
-          }
-        }
-        
-        // Добавляем новый товар, если его еще нет
-        const exists = allSellerProducts.find((p: any) => p.id === product.id);
-        if (!exists) {
-          allSellerProducts.push(product);
-        }
-        
-        localStorage.setItem(`sellerProducts_${currentUser.id}`, JSON.stringify(allSellerProducts));
-        console.log('Saved to localStorage:', allSellerProducts.length, 'products');
-      }
-    } catch (error) {
-      console.error('Server error, saving locally:', error);
-      
-      // Fallback: сохраняем локально
-      let processedProduct = { ...newProduct };
-      if (newProduct.image && newProduct.image.startsWith('data:') && newProduct.image.length > 100000) {
-        processedProduct.image = '📷';
-      }
-      
-      const productWithId = {
-        ...processedProduct,
-        id: `local_${Date.now()}`,
-        sellerId: String(currentUser?.id || 'unknown')
+      // Добавляем номер павильона продавца
+      const seller = mockUsers.find(u => u.id === currentUser?.id);
+      const productWithPavilion = {
+        ...newProduct,
+        sellerId: String(currentUser?.id),
+        pavilionNumber: seller?.pavilionNumber || ''
       };
       
-      const updatedProducts = [...products, productWithId];
-      setProducts(updatedProducts);
+      const product = await api.createProduct(productWithPavilion);
+      setProducts(prev => [...prev, product]);
+      console.log('Product saved to server:', product.id);
       
-      if (currentUser?.id) {
-        // Загружаем существующие товары
-        const existingProducts = localStorage.getItem(`sellerProducts_${currentUser.id}`);
-        let allSellerProducts = [];
-        if (existingProducts) {
-          try {
-            allSellerProducts = JSON.parse(existingProducts);
-          } catch (e) {
-            allSellerProducts = [];
-          }
-        }
-        
-        // Добавляем новый товар, если его еще нет
-        const exists = allSellerProducts.find((p: any) => p.id === productWithId.id);
-        if (!exists) {
-          allSellerProducts.push(productWithId);
-        }
-        
-        localStorage.setItem(`sellerProducts_${currentUser.id}`, JSON.stringify(allSellerProducts));
-        console.log('Saved locally:', allSellerProducts.length, 'products');
-      }
+    } catch (error) {
+      console.error('Server error:', error);
+      alert('Ошибка сохранения на сервере. Попробуйте позже.');
     }
   };
 

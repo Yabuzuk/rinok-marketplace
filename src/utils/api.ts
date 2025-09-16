@@ -18,6 +18,22 @@ export const api = {
     return response.json();
   },
 
+  updateProduct: async (productId: string, updates: any) => {
+    const response = await fetch(`${API_BASE}/products/${productId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    return response.json();
+  },
+
+  deleteProduct: async (productId: string) => {
+    const response = await fetch(`${API_BASE}/products/${productId}`, {
+      method: 'DELETE'
+    });
+    return response.json();
+  },
+
   // Orders
   getOrders: async () => {
     const response = await fetch(`${API_BASE}/orders`);
