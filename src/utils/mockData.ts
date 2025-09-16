@@ -12,6 +12,12 @@ export const mockUsers: User[] = [
     email: 'seller@example.com',
     name: 'Магазин "Свежесть"',
     role: 'seller'
+  },
+  {
+    id: '3',
+    email: 'admin@rinok.com',
+    name: 'Администратор',
+    role: 'admin'
   }
 ];
 
@@ -119,8 +125,8 @@ export const mockOrders: Order[] = [
     id: 'order-1',
     customerId: '1',
     items: [
-      { productId: '1', quantity: 2, price: 120 },
-      { productId: '2', quantity: 1, price: 85 }
+      { productId: '1', productName: 'Яблоки красные', quantity: 2, price: 120 },
+      { productId: '2', productName: 'Молоко 3.2%', quantity: 1, price: 85 }
     ],
     total: 325,
     status: 'delivered',
@@ -131,8 +137,8 @@ export const mockOrders: Order[] = [
     id: 'order-2',
     customerId: '1',
     items: [
-      { productId: '3', quantity: 1, price: 45 },
-      { productId: '4', quantity: 1, price: 65 }
+      { productId: '3', productName: 'Хлеб белый', quantity: 1, price: 45 },
+      { productId: '4', productName: 'Морковь', quantity: 1, price: 65 }
     ],
     total: 110,
     status: 'delivering',

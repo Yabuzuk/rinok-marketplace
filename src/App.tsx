@@ -7,8 +7,9 @@ import Cart from './components/Cart';
 import HomePage from './pages/HomePage';
 import CustomerDashboard from './pages/CustomerDashboard';
 import SellerDashboard from './pages/SellerDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import { User, Product, CartItem, Order } from './types';
-import { mockUsers } from './utils/mockData';
+import { mockUsers, mockProducts } from './utils/mockData';
 import { api } from './utils/api';
 import './styles/globals.css';
 
@@ -68,7 +69,7 @@ function App() {
     }
   };
 
-  const handleLogin = (userType: 'customer' | 'seller', userData?: any) => {
+  const handleLogin = (userType: 'customer' | 'seller' | 'admin', userData?: any) => {
     if (userData) {
       setCurrentUser({ ...userData, role: userType });
     } else {
@@ -206,6 +207,24 @@ function App() {
                     orders={orders}
                     onAddProduct={handleAddProduct}
                     onCreateOrder={handleCreateOrder}
+                  />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              } 
+            />
+            
+            <Route 
+              path="/admin-dashboard" 
+              element={
+                currentUser?.role === 'admin' ? (
+                  <AdminDashboard 
+                    orders={orders.map(order => ({
+                      ...order,
+                      customerName: mockUsers.find(u => u.id === order.customerId)?.name || 'Неизвестный'
+                    }))}
+                    products={products}
+                    users={mockUsers}
                   />
                 ) : (
                   <Navigate to="/" replace />

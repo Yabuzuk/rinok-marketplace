@@ -2,7 +2,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'customer' | 'seller';
+  role: 'customer' | 'seller' | 'admin';
   avatar?: string;
 }
 
@@ -31,8 +31,13 @@ export interface Order {
 
 export interface OrderItem {
   productId: string;
+  productName: string;
   quantity: number;
   price: number;
+}
+
+export interface ExtendedOrder extends Order {
+  customerName: string;
 }
 
 export interface CartItem {

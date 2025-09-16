@@ -4,12 +4,12 @@ import { X, User, Mail, Lock, Phone } from 'lucide-react';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (userType: 'customer' | 'seller', userData: any) => void;
+  onLogin: (userType: 'customer' | 'seller' | 'admin', userData: any) => void;
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [userType, setUserType] = useState<'customer' | 'seller'>('customer');
+  const [userType, setUserType] = useState<'customer' | 'seller' | 'admin'>('customer');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -130,6 +130,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
             }}
           >
             Продавец
+          </button>
+          <button
+            onClick={() => setUserType('admin')}
+            style={{
+              flex: 1,
+              padding: '8px 16px',
+              border: 'none',
+              borderRadius: '6px',
+              background: userType === 'admin' ? '#8b4513' : 'transparent',
+              color: userType === 'admin' ? 'white' : '#666',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            Админ
           </button>
         </div>
 
