@@ -58,7 +58,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                 <div 
                   key={product.id}
                   style={{
-                    minWidth: '120px',
+                    minWidth: '140px',
                     background: 'rgba(255, 255, 255, 0.15)',
                     borderRadius: '12px',
                     padding: '12px',
@@ -68,15 +68,15 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                   onClick={() => onAddToCart(product)}
                 >
                   <div style={{
-                    width: '60px',
-                    height: '60px',
+                    width: '100px',
+                    height: '100px',
                     background: '#fefcf8',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     margin: '0 auto 8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '24px',
+                    fontSize: '32px',
                     overflow: 'hidden'
                   }}>
                     {product.image && product.image.startsWith('http') ? (
@@ -87,7 +87,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
-                          borderRadius: '8px'
+                          borderRadius: '12px'
                         }}
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
@@ -101,18 +101,9 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                     )}
                   </div>
                   <div style={{
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    marginBottom: '4px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}>
-                    {product.name}
-                  </div>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: '700'
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    textAlign: 'center'
                   }}>
                     {product.price} ₽
                   </div>
