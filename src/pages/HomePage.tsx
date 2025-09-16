@@ -42,12 +42,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
               }}>
                 Свежее поступление
               </h1>
-              <p style={{ 
-                fontSize: '14px',
-                opacity: 0.9
-              }}>
-                Свежие продукты к вашему столу за 15 минут
-              </p>
+
             </div>
           </div>
           
