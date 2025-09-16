@@ -34,9 +34,15 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) =
   return (
     <div style={{ paddingTop: '24px' }}>
       <div className="container">
-        <div style={{ display: 'flex', gap: '32px' }}>
+        <div style={{ 
+          display: 'flex', 
+          gap: '32px',
+          flexDirection: window.innerWidth <= 768 ? 'column' : 'row'
+        }}>
           {/* Sidebar */}
-          <div style={{ width: '280px' }}>
+          <div style={{ 
+            width: window.innerWidth <= 768 ? '100%' : '280px'
+          }}>
             <div className="card">
               <div style={{ 
                 display: 'flex', 
