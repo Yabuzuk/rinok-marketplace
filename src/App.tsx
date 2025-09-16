@@ -32,8 +32,15 @@ const AppContent: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, [currentUser]);
+    const initializeData = async () => {
+      await loadData();
+      // Если есть сохраненный пользователь, перезагружаем данные
+      if (currentUser) {
+        await loadData();
+      }
+    };
+    initializeData();
+  }, []);
 
   const loadData = async () => {
     try {
@@ -113,8 +120,6 @@ const AppContent: React.FC = () => {
     if (user) {
       setCurrentUser(user);
       localStorage.setItem('currentUser', JSON.stringify(user));
-      // Перезагружаем данные для нового пользователя
-      setTimeout(() => loadData(), 100);
     }
     setShowAuthModal(false);
   };
