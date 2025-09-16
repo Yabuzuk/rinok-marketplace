@@ -13,33 +13,7 @@ import { mockUsers, mockProducts } from './utils/mockData';
 import { api } from './utils/api';
 import './styles/globals.css';
 
-const NavigationButton: React.FC<{ currentUser: User | null }> = ({ currentUser }) => {
-  const navigate = useNavigate();
 
-  if (!currentUser) return null;
-
-  const handleDashboardClick = () => {
-    const path = currentUser.role === 'customer' ? '/customer-dashboard' : '/seller-dashboard';
-    navigate(path);
-  };
-
-  return (
-    <div style={{
-      position: 'fixed',
-      bottom: '20px',
-      left: '20px',
-      zIndex: 1000
-    }}>
-      <button 
-        className="btn btn-primary"
-        onClick={handleDashboardClick}
-        style={{ fontSize: '12px', padding: '8px 12px' }}
-      >
-        Личный кабинет
-      </button>
-    </div>
-  );
-};
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -141,6 +115,15 @@ function App() {
     }
   };
 
+  const handleDashboardClick = () => {
+    if (currentUser) {
+      const path = currentUser.role === 'customer' ? '/customer-dashboard' : 
+                   currentUser.role === 'seller' ? '/seller-dashboard' : 
+                   '/admin-dashboard';
+      window.location.href = path;
+    }
+  };
+
   return (
     <Router>
       <div className="App">
@@ -152,6 +135,7 @@ function App() {
           onCartClick={() => setIsCartOpen(true)}
           onLogin={handleLogin}
           onShowAuthModal={() => setShowAuthModal(true)}
+          onDashboardClick={handleDashboardClick}
         />
         
         <AuthModal 
@@ -244,33 +228,7 @@ function App() {
           onCreateOrder={handleCreateOrder}
         />
 
-        {/* Demo buttons */}
-        {!currentUser && (
-          <div style={{
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            zIndex: 1000,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
-          }}>
-            <button 
-              className="btn btn-secondary"
-              onClick={() => handleLogin('customer')}
-              style={{ fontSize: '12px', padding: '8px 12px' }}
-            >
-              Войти как покупатель
-            </button>
-            <button 
-              className="btn btn-secondary"
-              onClick={() => handleLogin('seller')}
-              style={{ fontSize: '12px', padding: '8px 12px' }}
-            >
-              Войти как продавец
-            </button>
-          </div>
-        )}
+
 
         {/* Logout button */}
         {currentUser && (
@@ -290,7 +248,7 @@ function App() {
           </div>
         )}
 
-        <NavigationButton currentUser={currentUser} />
+
       </div>
     </Router>
   );

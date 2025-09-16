@@ -9,9 +9,10 @@ interface HeaderProps {
   onCartClick: () => void;
   onLogin: (userType: 'customer' | 'seller', userData?: any) => void;
   onShowAuthModal: () => void;
+  onDashboardClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCartClick, onLogin, onShowAuthModal }) => {
+const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCartClick, onLogin, onShowAuthModal, onDashboardClick }) => {
 
   return (
     <header style={{ 
@@ -105,27 +106,51 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
           </button>
 
           <div style={{ position: 'relative' }}>
-            <button 
-              onClick={() => user ? onAuthClick() : onShowAuthModal()}
-              style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '8px',
-                borderRadius: '8px',
-                transition: 'background 0.2s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = '#f0e6d6'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-            >
-              <User size={20} color="#666" />
-              <span style={{ color: '#666', fontSize: '12px', display: window.innerWidth > 768 ? 'block' : 'none' }}>
-                {user ? user.name : 'Войти'}
-              </span>
-            </button>
+            {user ? (
+              <button 
+                onClick={onDashboardClick}
+                style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '8px',
+                  transition: 'background 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#f0e6d6'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+              >
+                <User size={20} color="#666" />
+                <span style={{ color: '#666', fontSize: '12px', display: window.innerWidth > 768 ? 'block' : 'none' }}>
+                  Личный кабинет
+                </span>
+              </button>
+            ) : (
+              <button 
+                onClick={onShowAuthModal}
+                style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '8px',
+                  transition: 'background 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#f0e6d6'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+              >
+                <User size={20} color="#666" />
+                <span style={{ color: '#666', fontSize: '12px', display: window.innerWidth > 768 ? 'block' : 'none' }}>
+                  Войти
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>
