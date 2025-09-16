@@ -1,11 +1,34 @@
 import TelegramBot from 'node-telegram-bot-api';
+import fs from 'fs';
+import path from 'path';
 
 class TelegramDB {
   constructor(token, chatId) {
     this.bot = new TelegramBot(token);
     this.chatId = chatId;
     this.storage = {};
-    this.initialized = false;
+    this.dataFile = path.join(process.cwd(), 'data.json');
+    this.loadFromFile();
+  }
+
+  loadFromFile() {
+    try {
+      if (fs.existsSync(this.dataFile)) {
+        const data = fs.readFileSync(this.dataFile, 'utf8');
+        this.storage = JSON.parse(data);
+        console.log('Loaded from file:', Object.keys(this.storage).map(k => `${k}: ${this.storage[k].length}`));
+      }
+    } catch (error) {
+      console.error('Error loading from file:', error);
+    }
+  }
+
+  saveToFile() {
+    try {
+      fs.writeFileSync(this.dataFile, JSON.stringify(this.storage, null, 2));
+    } catch (error) {
+      console.error('Error saving to file:', error);
+    }
   }
 
   async init() {
@@ -62,12 +85,11 @@ class TelegramDB {
   }
 
   async save(collection, data) {
-    await this.init();
-    
     if (!this.storage[collection]) {
       this.storage[collection] = [];
     }
     this.storage[collection].push(data);
+    this.saveToFile();
     
     try {
       const message = `#${collection}\n${JSON.stringify(data, null, 2)}`;
@@ -80,7 +102,6 @@ class TelegramDB {
   }
 
   async getAll(collection) {
-    await this.init();
     const data = this.storage[collection] || [];
     console.log(`Getting ${collection}: ${data.length} items`);
     return data;

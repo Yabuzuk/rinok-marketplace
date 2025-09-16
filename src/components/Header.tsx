@@ -12,7 +12,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCartClick }) => {
   return (
     <header style={{ 
-      background: '#faf9f7', 
+      background: '#fefcf8', 
       borderBottom: '1px solid #e2e8f0',
       position: 'sticky',
       top: 0,

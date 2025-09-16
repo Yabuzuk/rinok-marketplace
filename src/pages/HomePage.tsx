@@ -43,7 +43,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
             Свежие продукты к вашему столу за 15 минут
           </p>
           <button className="btn" style={{
-            background: 'white',
+            background: '#fefcf8',
             color: '#38b2ac',
             fontWeight: '600'
           }}>
