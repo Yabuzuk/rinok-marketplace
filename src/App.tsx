@@ -193,9 +193,25 @@ const AppContent: React.FC = () => {
       
       // Сохраняем товары продавца в localStorage
       if (currentUser?.id) {
-        const sellerProducts = updatedProducts.filter(p => p.sellerId === currentUser.id);
-        localStorage.setItem(`sellerProducts_${currentUser.id}`, JSON.stringify(sellerProducts));
-        console.log('Saved to localStorage:', sellerProducts.length, 'products');
+        // Загружаем существующие товары
+        const existingProducts = localStorage.getItem(`sellerProducts_${currentUser.id}`);
+        let allSellerProducts = [];
+        if (existingProducts) {
+          try {
+            allSellerProducts = JSON.parse(existingProducts);
+          } catch (e) {
+            allSellerProducts = [];
+          }
+        }
+        
+        // Добавляем новый товар, если его еще нет
+        const exists = allSellerProducts.find(p => p.id === product.id);
+        if (!exists) {
+          allSellerProducts.push(product);
+        }
+        
+        localStorage.setItem(`sellerProducts_${currentUser.id}`, JSON.stringify(allSellerProducts));
+        console.log('Saved to localStorage:', allSellerProducts.length, 'products');
       }
     } catch (error) {
       console.error('Server error, saving locally:', error);
@@ -216,9 +232,25 @@ const AppContent: React.FC = () => {
       setProducts(updatedProducts);
       
       if (currentUser?.id) {
-        const sellerProducts = updatedProducts.filter(p => p.sellerId === currentUser.id);
-        localStorage.setItem(`sellerProducts_${currentUser.id}`, JSON.stringify(sellerProducts));
-        console.log('Saved locally:', sellerProducts.length, 'products');
+        // Загружаем существующие товары
+        const existingProducts = localStorage.getItem(`sellerProducts_${currentUser.id}`);
+        let allSellerProducts = [];
+        if (existingProducts) {
+          try {
+            allSellerProducts = JSON.parse(existingProducts);
+          } catch (e) {
+            allSellerProducts = [];
+          }
+        }
+        
+        // Добавляем новый товар, если его еще нет
+        const exists = allSellerProducts.find(p => p.id === productWithId.id);
+        if (!exists) {
+          allSellerProducts.push(productWithId);
+        }
+        
+        localStorage.setItem(`sellerProducts_${currentUser.id}`, JSON.stringify(allSellerProducts));
+        console.log('Saved locally:', allSellerProducts.length, 'products');
       }
     }
   };

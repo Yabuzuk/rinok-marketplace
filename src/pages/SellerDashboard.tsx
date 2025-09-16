@@ -141,6 +141,18 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       };
 
       await onAddProduct(newProduct);
+      
+      // Обновляем локальное состояние
+      const savedProducts = localStorage.getItem(`sellerProducts_${user.id}`);
+      if (savedProducts) {
+        try {
+          const parsed = JSON.parse(savedProducts);
+          setLocalProducts(parsed);
+        } catch (e) {
+          console.error('Error updating local products:', e);
+        }
+      }
+      
       setShowAddProduct(false);
       setSelectedImage(null);
       setImagePreview('');
