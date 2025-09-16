@@ -49,7 +49,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   console.log('User ID as string:', String(user.id));
   const matchingProducts = products.filter(p => String(p.sellerId) === String(user.id));
   // Показываем уникальные sellerId для отладки
-  const uniqueSellerIds = [...new Set(products.map(p => String(p.sellerId)))];
+  const sellerIds = products.map(p => String(p.sellerId));
+  const uniqueSellerIds = sellerIds.filter((id, index) => sellerIds.indexOf(id) === index);
   console.log('Unique seller IDs in products:', uniqueSellerIds);
   console.log('Current user ID:', String(user.id));
   
