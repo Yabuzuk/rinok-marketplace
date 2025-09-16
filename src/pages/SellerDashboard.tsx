@@ -50,14 +50,29 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
     }
   }, [user.id, products.length]);
 
-  const sellerProducts = products.filter(p => p.sellerId === user.id);
+  const sellerProducts = products.filter(p => String(p.sellerId) === String(user.id));
   
   console.log('=== SELLER DASHBOARD DEBUG ===');
   console.log('All products:', products.length);
-  console.log('User ID:', user.id);
-  console.log('Products with sellerId:', products.map(p => ({ id: p.id, name: p.name, sellerId: p.sellerId })));
+  console.log('User ID:', user.id, 'Type:', typeof user.id);
+  console.log('Products with sellerId:', products.map(p => ({ id: p.id, name: p.name, sellerId: p.sellerId, sellerIdType: typeof p.sellerId })));
   console.log('Seller products:', sellerProducts.length);
   console.log('LocalStorage check:', localStorage.getItem(`sellerProducts_${user.id}`));
+  
+  // Проверяем все ключи localStorage
+  const allKeys = Object.keys(localStorage).filter(key => key.startsWith('sellerProducts_'));
+  console.log('All localStorage keys:', allKeys);
+  allKeys.forEach(key => {
+    const data = localStorage.getItem(key);
+    if (data) {
+      try {
+        const products = JSON.parse(data);
+        console.log(`${key}: ${products.length} products`);
+      } catch (e) {
+        console.log(`${key}: invalid data`);
+      }
+    }
+  });
   console.log('==============================');
   const sellerOrders = orders.filter(order => 
     order.items.some(item => 

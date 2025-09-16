@@ -149,9 +149,9 @@ const AppContent: React.FC = () => {
       );
       
       // Обновляем localStorage для всех продавцов
-      const allSellerIds = mockUsers.filter(u => u.role === 'seller').map(u => u.id);
+      const allSellerIds = mockUsers.filter(u => u.role === 'seller').map(u => String(u.id));
       allSellerIds.forEach(sellerId => {
-        const sellerProducts = updatedProducts.filter(p => p.sellerId === sellerId);
+        const sellerProducts = updatedProducts.filter(p => String(p.sellerId) === sellerId);
         if (sellerProducts.length > 0) {
           localStorage.setItem(`sellerProducts_${sellerId}`, JSON.stringify(sellerProducts));
         }
@@ -166,9 +166,9 @@ const AppContent: React.FC = () => {
       const updatedProducts = prev.filter(p => p.id !== productId);
       
       // Обновляем localStorage для всех продавцов
-      const allSellerIds = mockUsers.filter(u => u.role === 'seller').map(u => u.id);
+      const allSellerIds = mockUsers.filter(u => u.role === 'seller').map(u => String(u.id));
       allSellerIds.forEach(sellerId => {
-        const sellerProducts = updatedProducts.filter(p => p.sellerId === sellerId);
+        const sellerProducts = updatedProducts.filter(p => String(p.sellerId) === sellerId);
         localStorage.setItem(`sellerProducts_${sellerId}`, JSON.stringify(sellerProducts));
       });
       
@@ -208,7 +208,8 @@ const AppContent: React.FC = () => {
       
       const productWithId = {
         ...processedProduct,
-        id: `local_${Date.now()}`
+        id: `local_${Date.now()}`,
+        sellerId: String(currentUser.id) // Приводим к строке
       };
       
       const updatedProducts = [...products, productWithId];
