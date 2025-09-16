@@ -32,15 +32,42 @@ const AppContent: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    const initializeData = async () => {
-      await loadData();
-      // Если есть сохраненный пользователь, перезагружаем данные
-      if (currentUser) {
-        await loadData();
-      }
-    };
-    initializeData();
+    loadData();
   }, []);
+
+  // Отдельный эффект для перезагрузки при смене пользователя
+  useEffect(() => {
+    if (currentUser && !loading) {
+      console.log('User changed, reloading data for:', currentUser.name);
+      loadData();
+    }
+  }, [currentUser?.id]);
+
+  const loadLocalProducts = () => {
+    console.log('Loading local products...');
+    let allProducts = [...mockProducts];
+    
+    // Загружаем локальные товары для всех продавцов
+    const sellerIds = mockUsers.filter(u => u.role === 'seller').map(u => u.id);
+    sellerIds.forEach(sellerId => {
+      const savedProducts = localStorage.getItem(`sellerProducts_${sellerId}`);
+      if (savedProducts) {
+        try {
+          const sellerProducts = JSON.parse(savedProducts);
+          console.log(`Loading ${sellerProducts.length} products for seller ${sellerId}`);
+          sellerProducts.forEach((product: Product) => {
+            if (!allProducts.find(p => p.id === product.id)) {
+              allProducts.push(product);
+            }
+          });
+        } catch (e) {
+          console.error(`Error loading products for seller ${sellerId}:`, e);
+        }
+      }
+    });
+    
+    return allProducts;
+  };
 
   const loadData = async () => {
     try {
@@ -49,57 +76,25 @@ const AppContent: React.FC = () => {
         api.getOrders()
       ]);
       
-      // Объединяем с локальными товарами продавца
-      let allProducts = [...productsData];
+      // Объединяем с локальными товарами
+      const localProducts = loadLocalProducts();
+      const allProducts = [...productsData];
       
-      // Загружаем локальные товары для всех продавцов
-      const sellerIds = mockUsers.filter(u => u.role === 'seller').map(u => u.id);
-      const allSellerIds = sellerIds.filter((id, index) => sellerIds.indexOf(id) === index);
-      allSellerIds.forEach(sellerId => {
-        const savedProducts = localStorage.getItem(`sellerProducts_${sellerId}`);
-        if (savedProducts) {
-          try {
-            const sellerProducts = JSON.parse(savedProducts);
-            console.log(`Loading ${sellerProducts.length} products for seller ${sellerId}`);
-            sellerProducts.forEach((product: Product) => {
-              if (!allProducts.find(p => p.id === product.id)) {
-                allProducts.push(product);
-              }
-            });
-          } catch (e) {
-            console.error(`Error loading products for seller ${sellerId}:`, e);
-          }
+      localProducts.forEach(product => {
+        if (!allProducts.find(p => p.id === product.id)) {
+          allProducts.push(product);
         }
       });
       
       setProducts(allProducts);
       setOrders(ordersData);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Error loading data from server, using local data:', error);
       
-      // Fallback: загружаем локальные данные
-      let allProducts = [...mockProducts];
-      
-      // Загружаем локальные товары для всех продавцов
-      const sellerIds2 = mockUsers.filter(u => u.role === 'seller').map(u => u.id);
-      const allSellerIds2 = sellerIds2.filter((id, index) => sellerIds2.indexOf(id) === index);
-      allSellerIds2.forEach(sellerId => {
-        const savedProducts = localStorage.getItem(`sellerProducts_${sellerId}`);
-        if (savedProducts) {
-          try {
-            const sellerProducts = JSON.parse(savedProducts);
-            sellerProducts.forEach((product: Product) => {
-              if (!allProducts.find(p => p.id === product.id)) {
-                allProducts.push(product);
-              }
-            });
-          } catch (e) {
-            console.error(`Error loading products for seller ${sellerId}:`, e);
-          }
-        }
-      });
-      
+      // Fallback: используем только локальные данные
+      const allProducts = loadLocalProducts();
       setProducts(allProducts);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
