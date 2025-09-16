@@ -33,7 +33,7 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [currentUser]);
 
   const loadData = async () => {
     try {
@@ -41,10 +41,36 @@ const AppContent: React.FC = () => {
         api.getProducts(),
         api.getOrders()
       ]);
-      setProducts(productsData);
+      
+      // Объединяем с локальными товарами продавца
+      let allProducts = [...productsData];
+      if (currentUser?.role === 'seller') {
+        const savedProducts = localStorage.getItem(`sellerProducts_${currentUser.id}`);
+        if (savedProducts) {
+          const sellerProducts = JSON.parse(savedProducts);
+          // Добавляем только те, которых нет на сервере
+          sellerProducts.forEach(product => {
+            if (!allProducts.find(p => p.id === product.id)) {
+              allProducts.push(product);
+            }
+          });
+        }
+      }
+      
+      setProducts(allProducts);
       setOrders(ordersData);
     } catch (error) {
       console.error('Error loading data:', error);
+      
+      // Fallback: загружаем только локальные данные
+      setProducts(mockProducts);
+      if (currentUser?.role === 'seller') {
+        const savedProducts = localStorage.getItem(`sellerProducts_${currentUser.id}`);
+        if (savedProducts) {
+          const sellerProducts = JSON.parse(savedProducts);
+          setProducts(prev => [...prev, ...sellerProducts]);
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -65,6 +91,8 @@ const AppContent: React.FC = () => {
     if (user) {
       setCurrentUser(user);
       localStorage.setItem('currentUser', JSON.stringify(user));
+      // Перезагружаем данные для нового пользователя
+      setTimeout(() => loadData(), 100);
     }
     setShowAuthModal(false);
   };
@@ -95,9 +123,25 @@ const AppContent: React.FC = () => {
   const handleAddProduct = async (newProduct: Omit<Product, 'id'>) => {
     try {
       const product = await api.createProduct(newProduct);
-      setProducts(prev => [...prev, product]);
+      const updatedProducts = [...products, product];
+      setProducts(updatedProducts);
+      
+      // Сохраняем товары продавца в localStorage
+      const sellerProducts = updatedProducts.filter(p => p.sellerId === currentUser?.id);
+      localStorage.setItem(`sellerProducts_${currentUser?.id}`, JSON.stringify(sellerProducts));
     } catch (error) {
       console.error('Error adding product:', error);
+      
+      // Fallback: сохраняем локально если сервер недоступен
+      const productWithId = {
+        ...newProduct,
+        id: Date.now().toString()
+      };
+      const updatedProducts = [...products, productWithId];
+      setProducts(updatedProducts);
+      
+      const sellerProducts = updatedProducts.filter(p => p.sellerId === currentUser?.id);
+      localStorage.setItem(`sellerProducts_${currentUser?.id}`, JSON.stringify(sellerProducts));
     }
   };
 
