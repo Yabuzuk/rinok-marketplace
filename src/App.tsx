@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
+import EmojiBackground from './components/EmojiBackground';
 import Cart from './components/Cart';
 import HomePage from './pages/HomePage';
 import CustomerDashboard from './pages/CustomerDashboard';
@@ -142,6 +143,7 @@ function App() {
   return (
     <Router>
       <div className="App">
+        <EmojiBackground />
         <Header 
           user={currentUser}
           cartItemsCount={cartItemsCount}
