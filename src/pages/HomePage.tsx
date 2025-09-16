@@ -121,10 +121,10 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
-                <div style={{ fontSize: '16px', marginBottom: '3px' }}>
+                <div style={{ fontSize: '3vw', marginBottom: '0.5vw' }}>
                   {category.icon}
                 </div>
-                <span style={{ fontSize: '8px', fontWeight: '500' }}>
+                <span style={{ fontSize: '1.5vw', fontWeight: '500' }}>
                   {category.name}
                 </span>
               </div>
