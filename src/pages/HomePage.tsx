@@ -111,7 +111,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart }) => {
                     fontSize: '42px',
                     overflow: 'hidden'
                   }}>
-                    {product.image && product.image.startsWith('http') ? (
+                    {product.image && (product.image.startsWith('http') || product.image.startsWith('data:')) ? (
                       <img 
                         src={product.image} 
                         alt={product.name}
