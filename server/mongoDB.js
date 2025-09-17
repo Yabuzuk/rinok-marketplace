@@ -7,6 +7,12 @@ const productSchema = new mongoose.Schema({
   category: String,
   image: String,
   description: String,
+  sellerId: String,
+  pavilionNumber: String,
+  stock: Number,
+  rating: Number,
+  reviews: Number,
+  minOrderQuantity: Number,
   createdAt: { type: Date, default: Date.now }
 });
 
