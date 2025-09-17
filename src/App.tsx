@@ -37,23 +37,6 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    // Добавляем тестовые данные для проверки процесса
-    const testOrder = {
-      id: 'test_order_1',
-      customerId: '1',
-      items: [{
-        productId: 'test_product',
-        productName: 'Яблоки',
-        quantity: 2,
-        price: 150
-      }],
-      total: 300,
-      status: 'pending' as const,
-      createdAt: new Date(),
-      deliveryAddress: 'ул. Примерная, 123'
-    };
-    
-    setOrders([testOrder]);
   }, []);
 
   // Не перезагружаем данные при смене пользователя
@@ -238,7 +221,7 @@ const AppContent: React.FC = () => {
     ));
     
     // Обновляем статус доставки при подтверждении заказа
-    if (status === 'confirmed') {
+    if (status === 'preparing') {
       setDeliveries(prev => prev.map(delivery => 
         delivery.orderId === orderId ? { ...delivery, status: 'pending' } : delivery
       ));
@@ -271,11 +254,11 @@ const AppContent: React.FC = () => {
       const order = await api.createOrder(orderData);
       setOrders(prev => [...prev, order]);
       
-      // Создаем доставку для заказа
+      // Создаем доставку для заказа (неактивную)
       const delivery = {
         id: `delivery_${order.id}`,
         orderId: order.id,
-        status: 'pending' as const,
+        status: 'assigned' as const, // Неактивная до подтверждения
         pickupAddress: 'Центральный рынок, павильон продавца',
         deliveryAddress: order.deliveryAddress,
         estimatedTime: '30-45 мин',
