@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Truck, Clock, CheckCircle, DollarSign, User, Settings } from 'lucide-react';
-import DeliveryCard from '../components/DeliveryCard';
+
 import { Order, User as UserType } from '../types';
 
 interface CourierDashboardProps {
@@ -161,13 +161,16 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
             }}>
               Доступные заказы
             </h2>
-            {availableDeliveries.length > 0 ? (
-              availableDeliveries.map(delivery => (
-                <DeliveryCard
-                  key={delivery.id}
-                  delivery={delivery}
-                  onAccept={onAcceptDelivery}
-                />
+            {availableOrders.length > 0 ? (
+              availableOrders.map(order => (
+                <div key={order.id} className="card">
+                  <h3>Заказ #{order.id.slice(-6)}</h3>
+                  <p>Адрес: {order.deliveryAddress}</p>
+                  <p>Сумма: {order.total} ₽</p>
+                  <button className="btn btn-primary" onClick={() => onAcceptOrder?.(order.id)}>
+                    Принять заказ
+                  </button>
+                </div>
               ))
             ) : (
               <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
@@ -190,13 +193,16 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
             }}>
               Мои доставки
             </h2>
-            {activeDeliveries.length > 0 ? (
-              activeDeliveries.map(delivery => (
-                <DeliveryCard
-                  key={delivery.id}
-                  delivery={delivery}
-                  onUpdateStatus={onUpdateDeliveryStatus}
-                />
+            {activeOrders.length > 0 ? (
+              activeOrders.map(order => (
+                <div key={order.id} className="card">
+                  <h3>Заказ #{order.id.slice(-6)}</h3>
+                  <p>Адрес: {order.deliveryAddress}</p>
+                  <p>Сумма: {order.total} ₽</p>
+                  <button className="btn btn-primary" onClick={() => onUpdateOrderStatus?.(order.id, 'delivered')}>
+                    Завершить доставку
+                  </button>
+                </div>
               ))
             ) : (
               <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
@@ -219,13 +225,14 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
             }}>
               История доставок
             </h2>
-            {completedDeliveries.length > 0 ? (
-              completedDeliveries.map(delivery => (
-                <DeliveryCard
-                  key={delivery.id}
-                  delivery={delivery}
-                  showActions={false}
-                />
+            {completedOrders.length > 0 ? (
+              completedOrders.map(order => (
+                <div key={order.id} className="card">
+                  <h3>Заказ #{order.id.slice(-6)}</h3>
+                  <p>Адрес: {order.deliveryAddress}</p>
+                  <p>Сумма: {order.total} ₽</p>
+                  <p style={{ color: '#4caf50' }}>✓ Доставлен</p>
+                </div>
               ))
             ) : (
               <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
