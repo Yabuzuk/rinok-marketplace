@@ -98,6 +98,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
         stock: Number(formData.get('stock')),
         minOrderQuantity: Number(formData.get('minOrderQuantity')),
         sellerId: user.id,
+        pavilionNumber: user.pavilionNumber || '',
         rating: 0,
         reviews: 0
       };
