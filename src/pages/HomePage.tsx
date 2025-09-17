@@ -101,7 +101,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
   return (
     <div style={{
       minHeight: '100vh',
-      background: `url('/images/Campo%20de%20grama%20de%20futebol%20verde%20_%20Vetor%20Premium.jfif?v=${Date.now()}')`,
+      background: `url('/images/trava_krupnym_planom_zelenaia_118542_2560x1440.jpg')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
