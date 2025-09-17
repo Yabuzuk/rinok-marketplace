@@ -106,6 +106,17 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
+app.put('/api/orders/:id', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const updates = req.body;
+    await db.update('orders', orderId, updates);
+    res.json({ success: true, id: orderId });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Users API
 app.get('/api/users', async (req, res) => {
   try {

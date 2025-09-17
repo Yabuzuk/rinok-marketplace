@@ -55,9 +55,17 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   })));
   console.log('Seller products:', sellerProducts.length);
   console.log('==============================');
-  const sellerOrders = orders.filter(order => 
-    String(order.pavilionNumber) === String(user.pavilionNumber)
-  );
+  const sellerOrders = orders.filter(order => {
+    // Если pavilionNumber есть в заказе, используем его
+    if (order.pavilionNumber) {
+      return String(order.pavilionNumber) === String(user.pavilionNumber);
+    }
+    // Иначе определяем по товарам в заказе
+    return order.items.some(item => {
+      const product = products.find(p => p.id === item.productId);
+      return product && String(product.pavilionNumber) === String(user.pavilionNumber);
+    });
+  });
   
   console.log('=== SELLER ORDERS DEBUG ===');
   console.log('All orders:', orders.length);
