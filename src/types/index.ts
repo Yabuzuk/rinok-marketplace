@@ -15,6 +15,7 @@ export interface Product {
   image: string;
   category: string;
   sellerId: string;
+  pavilionNumber: string;
   description: string;
   stock: number;
   rating: number;
