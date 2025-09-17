@@ -279,9 +279,22 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                 </h2>
 
                 <div className="card">
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
-                    Основной адрес
-                  </h3>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px'
+                  }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: '600' }}>
+                      Основной адрес
+                    </h3>
+                    <button 
+                      className="btn btn-secondary"
+                      onClick={() => setShowAddressModal(true)}
+                    >
+                      Управление
+                    </button>
+                  </div>
                   <div>
                     {(user.addresses || ['г. Москва, ул. Примерная, д. 123, кв. 45']).map((address, index) => (
                       <p key={index} style={{ color: '#666', marginBottom: '8px' }}>
@@ -291,20 +304,13 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                  <button 
-                    className="btn btn-primary"
-                    onClick={() => setShowAddAddress(true)}
-                  >
-                    Добавить новый адрес
-                  </button>
-                  <button 
-                    className="btn btn-secondary"
-                    onClick={() => setShowAddressModal(true)}
-                  >
-                    Управление адресами
-                  </button>
-                </div>
+                <button 
+                  className="btn btn-primary" 
+                  style={{ marginTop: '16px' }}
+                  onClick={() => setShowAddAddress(true)}
+                >
+                  Добавить новый адрес
+                </button>
                 
                 {showAddAddress && (
                   <div className="card" style={{ marginTop: '16px' }}>
