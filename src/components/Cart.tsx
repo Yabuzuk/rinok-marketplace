@@ -341,11 +341,11 @@ const Cart: React.FC<CartProps> = ({
           padding: '24px',
           borderTop: '1px solid #f0f0f0'
         }}>
-          {user?.addresses && user.addresses.length > 0 && (
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                Адрес доставки:
-              </label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              Адрес доставки:
+            </label>
+            {user?.addresses && user.addresses.length > 0 ? (
               <select 
                 value={selectedAddress}
                 onChange={(e) => setSelectedAddress(e.target.value)}
@@ -363,8 +363,22 @@ const Cart: React.FC<CartProps> = ({
                   </option>
                 ))}
               </select>
-            </div>
-          )}
+            ) : (
+              <input
+                type="text"
+                value={selectedAddress}
+                onChange={(e) => setSelectedAddress(e.target.value)}
+                placeholder="Введите адрес доставки в Новосибирске"
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '8px',
+                  fontSize: '14px'
+                }}
+              />
+            )}
+          </div>
           
           <div style={{ marginBottom: '16px' }}>
             <div style={{
