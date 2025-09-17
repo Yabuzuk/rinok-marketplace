@@ -52,6 +52,7 @@ const userSchema = new mongoose.Schema({
   inn: String,
   pavilionNumber: String,
   blocked: { type: Boolean, default: false },
+  addresses: [String],
   createdAt: { type: Date, default: Date.now }
 });
 

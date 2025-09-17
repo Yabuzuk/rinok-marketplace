@@ -394,10 +394,16 @@ const AppContent: React.FC = () => {
                   <CustomerDashboard 
                     user={currentUser}
                     orders={orders}
-                    onUpdateProfile={(updates) => {
-                      const updatedUser = { ...currentUser, ...updates };
-                      setCurrentUser(updatedUser);
-                      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                    onUpdateProfile={async (updates) => {
+                      try {
+                        await api.updateUser(currentUser.id, updates);
+                        const updatedUser = { ...currentUser, ...updates };
+                        setCurrentUser(updatedUser);
+                        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                      } catch (error) {
+                        console.error('Error updating user profile:', error);
+                        alert('Ошибка сохранения адреса');
+                      }
                     }}
                   />
                 ) : (
