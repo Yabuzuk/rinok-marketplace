@@ -65,10 +65,17 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
             position: 'absolute',
             top: '16px',
             right: '16px',
-            background: 'none',
+            background: 'rgba(255, 255, 255, 0.9)',
             border: 'none',
+            borderRadius: '50%',
             cursor: 'pointer',
-            padding: '8px'
+            padding: '8px',
+            width: '36px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10
           }}
         >
           <X size={20} />
