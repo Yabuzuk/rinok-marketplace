@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
             style={{ 
               fontSize: '24px', 
               fontWeight: '700',
-              background: 'linear-gradient(135deg, #8b4513 0%, #6b3410 100%)',
+              background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               cursor: 'pointer',

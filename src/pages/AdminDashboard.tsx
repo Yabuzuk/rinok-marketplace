@@ -87,7 +87,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
             fontSize: '32px', 
             fontWeight: '700',
             marginBottom: '8px',
-            color: '#3c2415'
+            color: '#2e7d32'
           }}>
             Панель администратора
           </h1>
@@ -99,32 +99,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
         {/* Статистика */}
         <div className="grid grid-4" style={{ marginBottom: '32px' }}>
           <div className="card" style={{ textAlign: 'center' }}>
-            <Package size={32} color="#8b4513" style={{ margin: '0 auto 12px' }} />
-            <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#8b4513', marginBottom: '4px' }}>
+            <Package size={32} color="#4caf50" style={{ margin: '0 auto 12px' }} />
+            <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
               {orders.length}
             </h3>
             <p style={{ color: '#666', fontSize: '14px' }}>Всего заказов</p>
           </div>
           
           <div className="card" style={{ textAlign: 'center' }}>
-            <BarChart3 size={32} color="#8b4513" style={{ margin: '0 auto 12px' }} />
-            <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#8b4513', marginBottom: '4px' }}>
+            <BarChart3 size={32} color="#4caf50" style={{ margin: '0 auto 12px' }} />
+            <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
               {totalRevenue.toLocaleString()} ₽
             </h3>
             <p style={{ color: '#666', fontSize: '14px' }}>Общая выручка</p>
           </div>
           
           <div className="card" style={{ textAlign: 'center' }}>
-            <Clock size={32} color="#8b4513" style={{ margin: '0 auto 12px' }} />
-            <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#8b4513', marginBottom: '4px' }}>
+            <Clock size={32} color="#4caf50" style={{ margin: '0 auto 12px' }} />
+            <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
               {todayOrders}
             </h3>
             <p style={{ color: '#666', fontSize: '14px' }}>Заказов сегодня</p>
           </div>
           
           <div className="card" style={{ textAlign: 'center' }}>
-            <Users size={32} color="#8b4513" style={{ margin: '0 auto 12px' }} />
-            <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#8b4513', marginBottom: '4px' }}>
+            <Users size={32} color="#4caf50" style={{ margin: '0 auto 12px' }} />
+            <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
               {products.length}
             </h3>
             <p style={{ color: '#666', fontSize: '14px' }}>Товаров в каталоге</p>
@@ -238,7 +238,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                   }}>
                     {getStatusText(order.status)}
                   </div>
-                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#8b4513' }}>
+                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#4caf50' }}>
                     {order.total} ₽
                   </div>
                 </div>
@@ -408,7 +408,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                     <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
                       {product.name}
                     </h3>
-                    <p style={{ fontSize: '18px', fontWeight: '700', color: '#8b4513', marginBottom: '8px' }}>
+                    <p style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50', marginBottom: '8px' }}>
                       {product.price} ₽
                     </p>
                     <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
@@ -457,7 +457,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                     width: '60px',
                     height: '60px',
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
+                    background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -543,7 +543,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                   width: '80px',
                   height: '80px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
+                  background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

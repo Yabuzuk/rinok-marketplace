@@ -183,7 +183,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                     fontSize: '16px',
                     fontWeight: '700',
                     textAlign: 'center',
-                    color: '#ff6b35'
+                    color: '#4caf50'
                   }}>
                     {product.price} ₽
                   </div>
@@ -243,8 +243,8 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                     padding: '8px 4px',
                     cursor: 'pointer',
                     transition: 'transform 0.2s ease',
-                    background: selectedPavilion === 'all' ? '#8b4513' : '#f9f5f0',
-                    color: selectedPavilion === 'all' ? 'white' : '#3c2415'
+                    background: selectedPavilion === 'all' ? '#4caf50' : '#f1f8e9',
+                    color: selectedPavilion === 'all' ? 'white' : '#2e7d32'
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -272,8 +272,8 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                         padding: '8px 4px',
                         cursor: 'pointer',
                         transition: 'transform 0.2s ease',
-                        background: selectedPavilion === pavilion ? '#8b4513' : '#f9f5f0',
-                        color: selectedPavilion === pavilion ? 'white' : '#3c2415'
+                        background: selectedPavilion === pavilion ? '#4caf50' : '#f1f8e9',
+                        color: selectedPavilion === pavilion ? 'white' : '#2e7d32'
                       }}
                       onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                       onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -330,8 +330,8 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                     padding: '8px 4px',
                     cursor: 'pointer',
                     transition: 'transform 0.2s ease',
-                    background: selectedCategory === category.id && !showPavilionFilter ? '#8b4513' : '#f9f5f0',
-                    color: selectedCategory === category.id && !showPavilionFilter ? 'white' : '#3c2415'
+                    background: selectedCategory === category.id && !showPavilionFilter ? '#4caf50' : '#f1f8e9',
+                    color: selectedCategory === category.id && !showPavilionFilter ? 'white' : '#2e7d32'
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}

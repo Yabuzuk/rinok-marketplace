@@ -77,7 +77,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
             e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          <Plus size={24} color="#8b4513" strokeWidth={3} />
+          <Plus size={24} color="#4caf50" strokeWidth={3} />
         </button>
         
         {product.pavilionNumber && (
@@ -120,7 +120,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
         <span style={{ 
           fontSize: '18px', 
           fontWeight: '700',
-          color: '#38b2ac'
+          color: '#4caf50'
         }}>
           {product.price} ₽
         </span>
