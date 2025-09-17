@@ -1,14 +1,16 @@
-const API_BASE = 'https://rinok-server.onrender.com/api';
+const API_BASE = process.env.NODE_ENV === 'production' 
+  ? 'https://rinok-server.onrender.com' 
+  : 'http://localhost:3001/api';
 
 export const api = {
   // Products
   getProducts: async () => {
-    const response = await fetch(`${API_BASE}/products`);
+    const response = await fetch(`${API_BASE}/api/products`);
     return response.json();
   },
 
   createProduct: async (product: any) => {
-    const response = await fetch(`${API_BASE}/products`, {
+    const response = await fetch(`${API_BASE}/api/products`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product)
@@ -17,7 +19,7 @@ export const api = {
   },
 
   updateProduct: async (productId: string, updates: any) => {
-    const response = await fetch(`${API_BASE}/products/${productId}`, {
+    const response = await fetch(`${API_BASE}/api/products/${productId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
@@ -26,7 +28,7 @@ export const api = {
   },
 
   deleteProduct: async (productId: string) => {
-    const response = await fetch(`${API_BASE}/products/${productId}`, {
+    const response = await fetch(`${API_BASE}/api/products/${productId}`, {
       method: 'DELETE'
     });
     return response.json();
@@ -34,12 +36,12 @@ export const api = {
 
   // Orders
   getOrders: async () => {
-    const response = await fetch(`${API_BASE}/orders`);
+    const response = await fetch(`${API_BASE}/api/orders`);
     return response.json();
   },
 
   createOrder: async (order: any) => {
-    const response = await fetch(`${API_BASE}/orders`, {
+    const response = await fetch(`${API_BASE}/api/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(order)
@@ -49,12 +51,12 @@ export const api = {
 
   // Users
   getUsers: async () => {
-    const response = await fetch(`${API_BASE}/users`);
+    const response = await fetch(`${API_BASE}/api/users`);
     return response.json();
   },
 
   createUser: async (user: any) => {
-    const response = await fetch(`${API_BASE}/users`, {
+    const response = await fetch(`${API_BASE}/api/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user)
