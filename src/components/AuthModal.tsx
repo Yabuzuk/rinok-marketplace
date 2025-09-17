@@ -105,10 +105,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
         style={{
           background: '#f9f5f0',
           borderRadius: '16px',
-          padding: '24px',
+          padding: '16px',
           width: '100%',
-          maxWidth: '380px',
-          maxHeight: '90vh',
+          maxWidth: '320px',
+          maxHeight: '85vh',
           overflowY: 'auto',
           position: 'relative'
         }}
@@ -238,11 +238,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
           </div>
 
           {mode === 'register' && (
-            <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: '12px' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '8px',
-                fontSize: '14px',
+                marginBottom: '4px',
+                fontSize: '12px',
                 fontWeight: '500'
               }}>
                 <Phone size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
@@ -326,7 +326,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
           </div>
 
           {mode === 'register' && (
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: '12px' }}>
               <label style={{
                 display: 'block',
                 marginBottom: '8px',
@@ -350,7 +350,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
           <button
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%', marginBottom: '16px' }}
+            style={{ width: '100%', marginBottom: '12px' }}
           >
             {mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
           </button>
