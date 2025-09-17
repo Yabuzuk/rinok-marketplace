@@ -192,15 +192,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
 
         {/* Categories */}
         <div style={{ marginBottom: '32px' }}>
-          <h2 style={{ 
-            fontSize: '24px', 
-            fontWeight: '600',
-            marginBottom: '20px',
-            color: 'white',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-          }}>
-            {showPavilionFilter ? 'Павильоны' : 'Категории'}
-          </h2>
+
           
           {showPavilionFilter && (
             <div style={{ marginBottom: '16px' }}>
@@ -353,15 +345,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
 
         {/* Products */}
         <div>
-          <h2 style={{ 
-            fontSize: '24px', 
-            fontWeight: '600',
-            marginBottom: '20px',
-            color: 'white',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-          }}>
-            Популярные товары
-          </h2>
+
           <div className="grid grid-4">
             {filteredProducts.map(product => (
               <ProductCard 
