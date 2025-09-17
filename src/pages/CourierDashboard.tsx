@@ -22,6 +22,12 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
   const [isEditing, setIsEditing] = useState(false);
 
   const availableDeliveries = deliveries.filter(d => d.status === 'pending');
+  
+  console.log('=== COURIER DELIVERIES DEBUG ===');
+  console.log('All deliveries:', deliveries.length);
+  console.log('Available deliveries:', availableDeliveries.length);
+  console.log('Deliveries:', deliveries.map(d => ({ id: d.id, status: d.status, orderId: d.orderId })));
+  console.log('================================');
   const activeDeliveries = deliveries.filter(d => 
     d.courierId === courier.id && ['assigned', 'picked_up', 'in_transit'].includes(d.status)
   );
@@ -330,11 +336,11 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
                 <div>
                   <strong>Статус:</strong> 
                   <span style={{ 
-                    color: courier.isActive ? '#4caf50' : '#f44336',
+                    color: (courier.isActive !== false) ? '#4caf50' : '#f44336',
                     fontWeight: '600',
                     marginLeft: '8px'
                   }}>
-                    {courier.isActive ? 'Активен' : 'Неактивен'}
+                    {(courier.isActive !== false) ? 'Активен' : 'Неактивен'}
                   </span>
                 </div>
               </div>

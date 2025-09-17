@@ -150,7 +150,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) =
                 </h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {orders.filter(order => order.customerId === user.id).map(order => (
+                  {orders.filter(order => String(order.customerId) === String(user.id)).map(order => (
                     <div key={order.id} className="card">
                       <div style={{ 
                         display: 'flex', 
