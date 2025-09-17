@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import ProductModal from '../components/ProductModal';
 import { Product } from '../types';
@@ -21,6 +22,7 @@ const categories = [
 ];
 
 const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }) => {
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -278,7 +280,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(`/pavilion/${pavilion}`, '_blank');
+                        navigate(`/pavilion/${pavilion}`);
                       }}
                       style={{
                         position: 'absolute',
