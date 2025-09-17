@@ -49,6 +49,15 @@ export const api = {
     return response.json();
   },
 
+  updateOrder: async (orderId: string, updates: any) => {
+    const response = await fetch(`${API_BASE}/api/orders/${orderId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    return response.json();
+  },
+
   // Users
   getUsers: async () => {
     const response = await fetch(`${API_BASE}/api/users`);
@@ -79,6 +88,30 @@ export const api = {
 
   updateUser: async (userId: string, updates: any) => {
     const response = await fetch(`${API_BASE}/api/users/${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    return response.json();
+  },
+
+  // Deliveries
+  getDeliveries: async () => {
+    const response = await fetch(`${API_BASE}/api/deliveries`);
+    return response.json();
+  },
+
+  createDelivery: async (delivery: any) => {
+    const response = await fetch(`${API_BASE}/api/deliveries`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(delivery)
+    });
+    return response.json();
+  },
+
+  updateDelivery: async (deliveryId: string, updates: any) => {
+    const response = await fetch(`${API_BASE}/api/deliveries/${deliveryId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)

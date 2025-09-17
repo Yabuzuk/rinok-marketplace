@@ -51,24 +51,25 @@ const AppContent: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [productsData, ordersData, usersData] = await Promise.all([
+      const [productsData, ordersData, usersData, deliveriesData] = await Promise.all([
         api.getProducts(),
         api.getOrders(),
-        api.getUsers()
+        api.getUsers(),
+        api.getDeliveries()
       ]);
       
       setProducts(productsData || []);
       setOrders(ordersData || []);
       setUsers(usersData || []);
+      setDeliveries(deliveriesData || []);
       
-      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders');
-      console.log('Users data:', usersData);
+      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders,', deliveriesData?.length || 0, 'deliveries');
     } catch (error) {
       console.error('Error loading data from server:', error);
-      // Только пустые массивы, никаких моковых данных
       setProducts([]);
       setOrders([]);
       setUsers([]);
+      setDeliveries([]);
     } finally {
       setLoading(false);
     }
@@ -215,16 +216,25 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleUpdateOrderStatus = (orderId: string, status: Order['status']) => {
-    setOrders(prev => prev.map(order => 
-      order.id === orderId ? { ...order, status } : order
-    ));
-    
-    // Обновляем статус доставки при подтверждении заказа
-    if (status === 'preparing') {
-      setDeliveries(prev => prev.map(delivery => 
-        delivery.orderId === orderId ? { ...delivery, status: 'pending' } : delivery
+  const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
+    try {
+      await api.updateOrder(orderId, { status });
+      setOrders(prev => prev.map(order => 
+        order.id === orderId ? { ...order, status } : order
       ));
+      
+      // Обновляем статус доставки в БД
+      if (status === 'preparing') {
+        const delivery = deliveries.find(d => d.orderId === orderId);
+        if (delivery) {
+          await api.updateDelivery(delivery.id, { status: 'pending' });
+          setDeliveries(prev => prev.map(d => 
+            d.orderId === orderId ? { ...d, status: 'pending' } : d
+          ));
+        }
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
     }
   };
 
@@ -254,11 +264,10 @@ const AppContent: React.FC = () => {
       const order = await api.createOrder(orderData);
       setOrders(prev => [...prev, order]);
       
-      // Создаем доставку для заказа (неактивную)
-      const delivery = {
-        id: `delivery_${order.id}`,
+      // Создаем доставку в базе данных
+      const deliveryData = {
         orderId: order.id,
-        status: 'assigned' as const, // Неактивная до подтверждения
+        status: 'assigned', // Неактивная до подтверждения
         pickupAddress: 'Центральный рынок, павильон продавца',
         deliveryAddress: order.deliveryAddress,
         estimatedTime: '30-45 мин',
@@ -266,6 +275,7 @@ const AppContent: React.FC = () => {
         customerPhone: currentUser?.phone || '+7 (999) 000-00-00'
       };
       
+      const delivery = await api.createDelivery(deliveryData);
       setDeliveries(prev => [...prev, delivery]);
       
       setCart([]);
@@ -412,15 +422,25 @@ const AppContent: React.FC = () => {
                   <CourierDashboard 
                     deliveries={deliveries}
                     courier={currentUser}
-                    onAcceptDelivery={(deliveryId) => {
-                      setDeliveries(prev => prev.map(d => 
-                        d.id === deliveryId ? { ...d, courierId: currentUser.id, status: 'assigned' } : d
-                      ));
+                    onAcceptDelivery={async (deliveryId) => {
+                      try {
+                        await api.updateDelivery(deliveryId, { courierId: currentUser.id, status: 'assigned' });
+                        setDeliveries(prev => prev.map(d => 
+                          d.id === deliveryId ? { ...d, courierId: currentUser.id, status: 'assigned' } : d
+                        ));
+                      } catch (error) {
+                        console.error('Error accepting delivery:', error);
+                      }
                     }}
-                    onUpdateDeliveryStatus={(deliveryId, status) => {
-                      setDeliveries(prev => prev.map(d => 
-                        d.id === deliveryId ? { ...d, status } : d
-                      ));
+                    onUpdateDeliveryStatus={async (deliveryId, status) => {
+                      try {
+                        await api.updateDelivery(deliveryId, { status });
+                        setDeliveries(prev => prev.map(d => 
+                          d.id === deliveryId ? { ...d, status } : d
+                        ));
+                      } catch (error) {
+                        console.error('Error updating delivery status:', error);
+                      }
                     }}
                     onUpdateProfile={(updates) => {
                       const updatedUser = { ...currentUser, ...updates };
