@@ -32,39 +32,80 @@ const Cart: React.FC<CartProps> = ({
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   
-  // Расчет стоимости доставки
-  const calculateDeliveryFee = (address: string): number => {
-    if (!address || !address.toLowerCase().includes('новосибирск')) {
-      return 0; // Доставка только по Новосибирской области
+  // Расчет стоимости доставки через Яндекс.Карты API
+  const [deliveryDistance, setDeliveryDistance] = React.useState<number | null>(null);
+  const [isCalculatingDelivery, setIsCalculatingDelivery] = React.useState(false);
+  
+  const calculateDeliveryDistance = async (toAddress: string): Promise<number> => {
+    if (!toAddress || !toAddress.toLowerCase().includes('новосибирск')) {
+      return 0;
     }
     
-    // Примерное расстояние в зависимости от района (в км)
+    const fromAddress = 'Промышленная улица, 11, пос. Крупской, Новосибирский район, Новосибирская область';
+    
+    try {
+      // Используем Яндекс.Карты API для расчета маршрута
+      const response = await fetch(
+        `https://api.routing.yandex.net/v2/route?` +
+        `waypoints=${encodeURIComponent(fromAddress)}|${encodeURIComponent(toAddress)}` +
+        `&mode=driving&format=json`,
+        {
+          headers: {
+            'Authorization': 'Bearer YOUR_YANDEX_API_KEY' // Нужен ключ API
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const distanceMeters = data.route?.[0]?.distance;
+        return distanceMeters ? Math.round(distanceMeters / 1000) : 20; // км
+      }
+    } catch (error) {
+      console.error('Ошибка расчета расстояния:', error);
+    }
+    
+    // Fallback: примерное расстояние по районам
     const distanceMap: Record<string, number> = {
-      'центральный': 15,
-      'железнодорожный': 20,
-      'заельцовский': 25,
-      'калининский': 30,
-      'кировский': 18,
-      'ленинский': 22,
-      'октябрьский': 16,
-      'первомайский': 28,
-      'советский': 20,
-      'дзержинский': 24
+      'центральный': 15, 'железнодорожный': 20, 'заельцовский': 25,
+      'калининский': 30, 'кировский': 18, 'ленинский': 22,
+      'октябрьский': 16, 'первомайский': 28, 'советский': 20, 'дзержинский': 24
     };
     
-    // Ищем район в адресе
-    const addressLower = address.toLowerCase();
+    const addressLower = toAddress.toLowerCase();
     for (const [district, distance] of Object.entries(distanceMap)) {
       if (addressLower.includes(district)) {
-        return distance * 40; // 40 руб за км
+        return distance;
       }
     }
     
-    // По умолчанию 20 км если район не определен
-    return 20 * 40;
+    return 20; // По умолчанию
   };
   
-  const deliveryFee = calculateDeliveryFee(selectedAddress);
+  // Пересчитываем расстояние при изменении адреса
+  React.useEffect(() => {
+    if (selectedAddress && isOpen) {
+      setIsCalculatingDelivery(true);
+      calculateDeliveryDistance(selectedAddress)
+        .then(distance => {
+          setDeliveryDistance(distance);
+          setIsCalculatingDelivery(false);
+        })
+        .catch(() => {
+          setDeliveryDistance(20); // Fallback
+          setIsCalculatingDelivery(false);
+        });
+    }
+  }, [selectedAddress, isOpen]);
+  
+  const calculateDeliveryFee = (): number => {
+    if (!selectedAddress || !selectedAddress.toLowerCase().includes('новосибирск')) {
+      return 0;
+    }
+    return (deliveryDistance || 20) * 40; // 40 руб за км
+  };
+  
+  const deliveryFee = calculateDeliveryFee();
   const totalWithDelivery = total + deliveryFee;
 
   const handleCheckout = async () => {
@@ -103,7 +144,7 @@ const Cart: React.FC<CartProps> = ({
     const orderPromises = Object.entries(itemsByPavilion).map(async ([pavilionNumber, pavilionItems]) => {
       const pavilionTotal = pavilionItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
       
-      const pavilionDeliveryFee = calculateDeliveryFee(selectedAddress || '');
+      const pavilionDeliveryFee = calculateDeliveryFee();
       
       const order = {
         customerId: user.id,
@@ -309,15 +350,19 @@ const Cart: React.FC<CartProps> = ({
               <span style={{ fontSize: '16px' }}>{total} ₽</span>
             </div>
             
-            {deliveryFee > 0 && (
+            {(deliveryFee > 0 || isCalculatingDelivery) && (
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: '8px'
               }}>
-                <span style={{ fontSize: '16px' }}>Доставка:</span>
-                <span style={{ fontSize: '16px' }}>{deliveryFee} ₽</span>
+                <span style={{ fontSize: '16px' }}>
+                  Доставка {deliveryDistance && `(${deliveryDistance} км)`}:
+                </span>
+                <span style={{ fontSize: '16px' }}>
+                  {isCalculatingDelivery ? 'Рассчитываем...' : `${deliveryFee} ₽`}
+                </span>
               </div>
             )}
             
