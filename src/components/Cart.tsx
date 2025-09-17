@@ -39,22 +39,39 @@ const Cart: React.FC<CartProps> = ({
       return;
     }
 
-    const order = {
-      customerId: user.id,
-      items: items.map(item => ({
-        productId: item.product.id,
-        productName: item.product.name,
-        quantity: item.quantity,
-        price: item.product.price
-      })),
-      total,
-      status: 'pending' as const,
-      createdAt: new Date(),
-      deliveryAddress: 'г. Москва, ул. Примерная, д. 123, кв. 45'
-    };
+    // Группируем товары по павильонам
+    const itemsByPavilion = items.reduce((acc, item) => {
+      const pavilion = item.product.pavilionNumber;
+      if (!acc[pavilion]) {
+        acc[pavilion] = [];
+      }
+      acc[pavilion].push(item);
+      return acc;
+    }, {} as Record<string, typeof items>);
 
-    onCreateOrder(order);
-    alert('Заказ успешно создан!');
+    // Создаем отдельный заказ для каждого павильона
+    Object.entries(itemsByPavilion).forEach(([pavilionNumber, pavilionItems]) => {
+      const pavilionTotal = pavilionItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+      
+      const order = {
+        customerId: user.id,
+        items: pavilionItems.map(item => ({
+          productId: item.product.id,
+          productName: item.product.name,
+          quantity: item.quantity,
+          price: item.product.price
+        })),
+        total: pavilionTotal,
+        status: 'pending' as const,
+        createdAt: new Date(),
+        deliveryAddress: 'г. Москва, ул. Примерная, д. 123, кв. 45',
+        pavilionNumber
+      };
+
+      onCreateOrder(order);
+    });
+
+    alert('Заказы успешно созданы!');
     onClose();
   };
 

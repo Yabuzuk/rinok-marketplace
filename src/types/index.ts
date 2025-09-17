@@ -36,6 +36,7 @@ export interface Order {
   status: 'pending' | 'confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
   createdAt: Date;
   deliveryAddress: string;
+  pavilionNumber?: string;
   courierId?: string;
   deliveryFee?: number;
   estimatedDeliveryTime?: string;
