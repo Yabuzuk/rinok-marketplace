@@ -99,15 +99,23 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
     return () => clearInterval(interval);
   }, [products]);
   return (
-    <div style={{ paddingTop: '24px' }}>
+    <div style={{
+      minHeight: '100vh',
+      background: `url('/images/Campo de grama de futebol verde _ Vetor Premium.jfif')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      paddingTop: '24px'
+    }}>
       <div className="container">
         {/* Hero Section with Latest Products */}
         <div style={{
-          background: 'linear-gradient(135deg, #8b4513 0%, #6b3410 100%)',
+          background: 'rgba(255, 255, 255, 0.95)',
           borderRadius: '20px',
           padding: '24px',
           marginBottom: '32px',
-          color: 'white'
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          border: '2px solid rgba(76, 175, 80, 0.2)'
         }}>
 
           
@@ -129,11 +137,12 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                   key={`${product.id}-${index}`}
                   style={{
                     minWidth: '160px',
-                    background: 'rgba(255, 255, 255, 0.15)',
+                    background: 'rgba(255, 255, 255, 0.9)',
                     borderRadius: '12px',
                     padding: '12px',
                     textAlign: 'center',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    border: '1px solid rgba(76, 175, 80, 0.3)'
                   }}
                   onClick={() => onAddToCart(product)}
                 >
@@ -173,7 +182,8 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                   <div style={{
                     fontSize: '16px',
                     fontWeight: '700',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    color: '#2e7d32'
                   }}>
                     {product.price} ₽
                   </div>
