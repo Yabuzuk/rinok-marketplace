@@ -101,8 +101,11 @@ const Cart: React.FC<CartProps> = ({
                   <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>
                     {item.product.name}
                   </h4>
-                  <p style={{ fontSize: '16px', fontWeight: '700', color: '#ff6b35' }}>
+                  <p style={{ fontSize: '16px', fontWeight: '700', color: '#ff6b35', marginBottom: '4px' }}>
                     {item.product.price} ₽
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#666' }}>
+                    Мин. заказ: {item.product.minOrderQuantity} кг
                   </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
