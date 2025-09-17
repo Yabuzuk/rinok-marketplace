@@ -150,7 +150,16 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) =
                 </h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {orders.filter(order => String(order.customerId) === String(user.id)).map(order => (
+                  {(() => {
+                    const customerOrders = orders.filter(order => String(order.customerId) === String(user.id));
+                    console.log('=== CUSTOMER ORDERS DEBUG ===');
+                    console.log('All orders:', orders.length);
+                    console.log('User ID:', user.id, 'type:', typeof user.id);
+                    console.log('Customer orders:', customerOrders.length);
+                    console.log('Orders by customer ID:', orders.map(o => ({ id: o.id, customerId: o.customerId, type: typeof o.customerId })));
+                    console.log('==============================');
+                    return customerOrders;
+                  })().map(order => (
                     <div key={order.id} className="card">
                       <div style={{ 
                         display: 'flex', 

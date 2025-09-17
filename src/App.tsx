@@ -228,9 +228,6 @@ const AppContent: React.FC = () => {
   const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
     try {
       await api.updateOrder(orderId, { status });
-      setOrders(prev => prev.map(order => 
-        order.id === orderId ? { ...order, status } : order
-      ));
       
       // Создаем доставку в БД когда заказ готов к доставке
       if (status === 'preparing') {
@@ -248,14 +245,16 @@ const AppContent: React.FC = () => {
           };
           
           try {
-            const delivery = await api.createDelivery(deliveryData);
-            setDeliveries(prev => [...prev, delivery]);
-            console.log('Delivery created in DB:', delivery);
+            await api.createDelivery(deliveryData);
+            console.log('Delivery created in DB for order:', orderId);
           } catch (error) {
             console.error('Error creating delivery:', error);
           }
         }
       }
+      
+      // Перезагружаем все данные
+      loadData();
     } catch (error) {
       console.error('Error updating order status:', error);
     }
@@ -287,10 +286,8 @@ const AppContent: React.FC = () => {
       const order = await api.createOrder(orderData);
       setOrders(prev => [...prev, order]);
       
-      // Перезагружаем все данные чтобы все пользователи увидели новые заказы
-      setTimeout(() => {
-        loadData();
-      }, 1000);
+      // Перезагружаем все данные немедленно
+      loadData();
       
       setCart([]);
       localStorage.removeItem('cart');
