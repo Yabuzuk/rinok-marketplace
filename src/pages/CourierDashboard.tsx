@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Truck, Clock, CheckCircle, DollarSign, User, Settings } from 'lucide-react';
 import DeliveryCard from '../components/DeliveryCard';
-import { Delivery, User as UserType } from '../types';
+import { Order, User as UserType } from '../types';
 
 interface CourierDashboardProps {
   orders: Order[];
