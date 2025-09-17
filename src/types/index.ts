@@ -11,6 +11,7 @@ export interface User {
   vehicle?: 'car' | 'bike' | 'foot';
   rating?: number;
   isActive?: boolean;
+  addresses?: string[];
 }
 
 export interface Product {

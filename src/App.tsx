@@ -394,6 +394,11 @@ const AppContent: React.FC = () => {
                   <CustomerDashboard 
                     user={currentUser}
                     orders={orders}
+                    onUpdateProfile={(updates) => {
+                      const updatedUser = { ...currentUser, ...updates };
+                      setCurrentUser(updatedUser);
+                      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                    }}
                   />
                 ) : (
                   <Navigate to="/" replace />

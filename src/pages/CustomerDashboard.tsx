@@ -5,9 +5,10 @@ import { Order, User as UserType } from '../types';
 interface CustomerDashboardProps {
   user: UserType;
   orders: Order[];
+  onUpdateProfile?: (updates: Partial<UserType>) => void;
 }
 
-const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) => {
+const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses'>('orders');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showAddAddress, setShowAddAddress] = useState(false);
@@ -251,9 +252,13 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) =
                       Изменить
                     </button>
                   </div>
-                  <p style={{ color: '#666' }}>
-                    г. Москва, ул. Примерная, д. 123, кв. 45
-                  </p>
+                  <div>
+                    {(user.addresses || ['г. Москва, ул. Примерная, д. 123, кв. 45']).map((address, index) => (
+                      <p key={index} style={{ color: '#666', marginBottom: '8px' }}>
+                        {address}
+                      </p>
+                    ))}
+                  </div>
                 </div>
 
                 <button 
@@ -271,14 +276,24 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) =
                     </h3>
                     <form onSubmit={(e) => {
                       e.preventDefault();
-                      alert('Адрес добавлен!');
-                      setShowAddAddress(false);
+                      const formData = new FormData(e.target as HTMLFormElement);
+                      const newAddress = formData.get('address') as string;
+                      
+                      if (newAddress.trim()) {
+                        const currentAddresses = user.addresses || ['г. Москва, ул. Примерная, д. 123, кв. 45'];
+                        const updatedAddresses = [...currentAddresses, newAddress.trim()];
+                        
+                        onUpdateProfile?.({ addresses: updatedAddresses });
+                        alert('Адрес добавлен!');
+                        setShowAddAddress(false);
+                      }
                     }}>
                       <div style={{ marginBottom: '16px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
                           Адрес
                         </label>
                         <input 
+                          name="address"
                           className="input"
                           placeholder="г. Москва, ул. Примерная, д. 123, кв. 45"
                           required
