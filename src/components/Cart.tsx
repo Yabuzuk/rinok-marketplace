@@ -20,6 +20,8 @@ const Cart: React.FC<CartProps> = ({
   onCreateOrder 
 }) => {
   const [selectedAddress, setSelectedAddress] = React.useState<string>('');
+  const [deliveryDistance, setDeliveryDistance] = React.useState<number | null>(null);
+  const [isCalculatingDelivery, setIsCalculatingDelivery] = React.useState(false);
   
   // Устанавливаем первый адрес по умолчанию
   React.useEffect(() => {
@@ -27,76 +29,6 @@ const Cart: React.FC<CartProps> = ({
       setSelectedAddress(user.addresses[0]);
     }
   }, [user?.addresses, selectedAddress]);
-  
-  if (!isOpen) return null;
-
-  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  
-  // Расчет стоимости доставки через Яндекс.Карты API
-  const [deliveryDistance, setDeliveryDistance] = React.useState<number | null>(null);
-  const [isCalculatingDelivery, setIsCalculatingDelivery] = React.useState(false);
-  
-  const calculateDeliveryDistance = async (toAddress: string): Promise<number> => {
-    if (!toAddress || !toAddress.toLowerCase().includes('новосибирск')) {
-      return 0;
-    }
-    
-    const fromAddress = 'Промышленная улица, 11, пос. Крупской, Новосибирский район, Новосибирская область';
-    
-    try {
-      // Используем API Геосаджеста для получения координат
-      const geocodeResponse = await fetch(
-        `https://suggest-maps.yandex.ru/v1/suggest?` +
-        `apikey=41a4deeb-0548-4d8e-b897-3c4a6bc08032&` +
-        `text=${encodeURIComponent(toAddress)}&` +
-        `results=1`
-      );
-      
-      if (geocodeResponse.ok) {
-        const geocodeData = await geocodeResponse.json();
-        const coords = geocodeData.results?.[0]?.position;
-        
-        if (coords) {
-          // Координаты пос. Крупской: 54.989347, 82.897325
-          const fromLat = 54.989347;
-          const fromLon = 82.897325;
-          const toLat = coords[1];
-          const toLon = coords[0];
-          
-          // Расчет расстояния по формуле гаверсинуса (по прямой)
-          const R = 6371; // Радиус Земли в км
-          const dLat = (toLat - fromLat) * Math.PI / 180;
-          const dLon = (toLon - fromLon) * Math.PI / 180;
-          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                   Math.cos(fromLat * Math.PI / 180) * Math.cos(toLat * Math.PI / 180) *
-                   Math.sin(dLon/2) * Math.sin(dLon/2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-          const distance = R * c;
-          
-          // Увеличиваем на 30% для учета дорог
-          return Math.round(distance * 1.3);
-        }
-      }
-    } catch (error) {
-      console.error('Ошибка расчета расстояния:', error);
-    }
-    
-    // Fallback: примерное расстояние по районам
-    const distanceMap: Record<string, number> = {
-      'центральный': 15, 'железнодорожный': 20, 'заельцовский': 25,
-      'калининский': 30, 'кировский': 18, 'ленинский': 22,
-      'октябрьский': 16, 'первомайский': 28, 'советский': 20, 'дзержинский': 24
-    };
-    
-    const addressLower = toAddress.toLowerCase();
-    for (const [district, distance] of Object.entries(distanceMap)) {
-      if (addressLower.includes(district)) {
-        return distance;
-      }
-    }
-    
-    return 20; // По умолчанию
-  };
   
   // Пересчитываем расстояние при изменении адреса
   React.useEffect(() => {
@@ -113,6 +45,65 @@ const Cart: React.FC<CartProps> = ({
         });
     }
   }, [selectedAddress, isOpen]);
+  
+  if (!isOpen) return null;
+
+  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  
+  const calculateDeliveryDistance = React.useCallback(async (toAddress: string): Promise<number> => {
+    if (!toAddress || !toAddress.toLowerCase().includes('новосибирск')) {
+      return 0;
+    }
+    
+    try {
+      const geocodeResponse = await fetch(
+        `https://suggest-maps.yandex.ru/v1/suggest?` +
+        `apikey=41a4deeb-0548-4d8e-b897-3c4a6bc08032&` +
+        `text=${encodeURIComponent(toAddress)}&` +
+        `results=1`
+      );
+      
+      if (geocodeResponse.ok) {
+        const geocodeData = await geocodeResponse.json();
+        const coords = geocodeData.results?.[0]?.position;
+        
+        if (coords) {
+          const fromLat = 54.989347;
+          const fromLon = 82.897325;
+          const toLat = coords[1];
+          const toLon = coords[0];
+          
+          const R = 6371;
+          const dLat = (toLat - fromLat) * Math.PI / 180;
+          const dLon = (toLon - fromLon) * Math.PI / 180;
+          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                   Math.cos(fromLat * Math.PI / 180) * Math.cos(toLat * Math.PI / 180) *
+                   Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          const distance = R * c;
+          
+          return Math.round(distance * 1.3);
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка расчета расстояния:', error);
+    }
+    
+    const distanceMap: Record<string, number> = {
+      'центральный': 15, 'железнодорожный': 20, 'заельцовский': 25,
+      'калининский': 30, 'кировский': 18, 'ленинский': 22,
+      'октябрьский': 16, 'первомайский': 28, 'советский': 20, 'дзержинский': 24
+    };
+    
+    const addressLower = toAddress.toLowerCase();
+    for (const [district, distance] of Object.entries(distanceMap)) {
+      if (addressLower.includes(district)) {
+        return distance;
+      }
+    }
+    
+    return 20;
+  }, []);
   
   const calculateDeliveryFee = (): number => {
     if (!selectedAddress || !selectedAddress.toLowerCase().includes('новосибирск')) {
