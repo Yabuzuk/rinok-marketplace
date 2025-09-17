@@ -9,6 +9,7 @@ interface CustomerDashboardProps {
 
 const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses'>('orders');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -212,7 +213,10 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) =
                         <span style={{ fontSize: '18px', fontWeight: '600' }}>
                           {order.total} ₽
                         </span>
-                        <button className="btn btn-secondary">
+                        <button 
+                          className="btn btn-secondary"
+                          onClick={() => setSelectedOrder(order)}
+                        >
                           Подробнее
                         </button>
                       </div>
@@ -326,6 +330,78 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) =
           </div>
         </div>
       </div>
+      
+      {/* Модальное окно с подробностями заказа */}
+      {selectedOrder && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div className="card" style={{ maxWidth: '500px', width: '90%', maxHeight: '80vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '600' }}>
+                Заказ #{selectedOrder.id.slice(-6)}
+              </h3>
+              <button 
+                onClick={() => setSelectedOrder(null)}
+                style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <strong>Статус:</strong> {getStatusText(selectedOrder.status)}
+            </div>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <strong>Дата заказа:</strong> {new Date(selectedOrder.createdAt).toLocaleDateString('ru-RU')}
+            </div>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <strong>Адрес доставки:</strong> {selectedOrder.deliveryAddress}
+            </div>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <strong>Товары:</strong>
+              <div style={{ marginTop: '8px' }}>
+                {selectedOrder.items.map((item, index) => (
+                  <div key={index} style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    padding: '8px 0',
+                    borderBottom: index < selectedOrder.items.length - 1 ? '1px solid #eee' : 'none'
+                  }}>
+                    <span>{item.productName} x {item.quantity}</span>
+                    <span>{item.price * item.quantity} ₽</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              paddingTop: '16px',
+              borderTop: '2px solid #eee',
+              fontSize: '18px',
+              fontWeight: '600'
+            }}>
+              <span>Итого:</span>
+              <span>{selectedOrder.total} ₽</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
