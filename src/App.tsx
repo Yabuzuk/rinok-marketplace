@@ -454,6 +454,7 @@ const AppContent: React.FC = () => {
                       setCurrentUser(updatedUser);
                       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
                     }}
+                    onLogout={() => setCurrentUser(null)}
                   />
                 ) : (
                   <Navigate to="/" replace />

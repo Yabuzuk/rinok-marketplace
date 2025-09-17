@@ -9,6 +9,7 @@ interface CourierDashboardProps {
   onAcceptOrder?: (orderId: string) => void;
   onUpdateOrderStatus?: (orderId: string, status: Order['status']) => void;
   onUpdateProfile?: (updates: Partial<UserType>) => void;
+  onLogout?: () => void;
 }
 
 const CourierDashboard: React.FC<CourierDashboardProps> = ({
@@ -16,7 +17,8 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
   courier,
   onAcceptOrder,
   onUpdateOrderStatus,
-  onUpdateProfile
+  onUpdateProfile,
+  onLogout
 }) => {
   const [activeTab, setActiveTab] = useState<'available' | 'active' | 'completed' | 'profile'>('available');
   const [isEditing, setIsEditing] = useState(false);
@@ -145,6 +147,13 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
               className={activeTab === 'profile' ? 'btn btn-primary' : 'btn btn-secondary'}
             >
               Профиль
+            </button>
+            <button
+              onClick={() => onLogout?.()}
+              className="btn btn-danger"
+              style={{ backgroundColor: '#f44336', color: 'white' }}
+            >
+              Выйти
             </button>
           </div>
         </div>
