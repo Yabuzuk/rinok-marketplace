@@ -175,7 +175,24 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
                 <div key={order.id} className="card">
                   <h3>Заказ #{order.id.slice(-6)}</h3>
                   <p>Адрес: {order.deliveryAddress}</p>
-                  <p>Сумма: {order.total} ₽</p>
+                  <div style={{ marginBottom: '12px' }}>
+                    <strong>Товары:</strong>
+                    <div style={{ marginTop: '8px' }}>
+                      {order.items.map((item, index) => (
+                        <div key={index} style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          padding: '4px 0',
+                          fontSize: '14px',
+                          borderBottom: index < order.items.length - 1 ? '1px solid #f0f0f0' : 'none'
+                        }}>
+                          <span>{item.productName} x {item.quantity}</span>
+                          <span>{item.price * item.quantity} ₽</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <p style={{ fontSize: '16px', fontWeight: '600' }}>Сумма: {order.total} ₽</p>
                   <button className="btn btn-primary" onClick={() => onAcceptOrder?.(order.id)}>
                     Принять заказ
                   </button>
