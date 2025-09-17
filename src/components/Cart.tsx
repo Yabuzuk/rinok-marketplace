@@ -211,13 +211,15 @@ const Cart: React.FC<CartProps> = ({
       position: 'fixed',
       top: 0,
       right: 0,
-      width: '400px',
+      width: window.innerWidth <= 768 ? '100vw' : '400px',
       height: '100vh',
+      maxHeight: '100vh',
       background: 'white',
       boxShadow: '-4px 0 20px rgba(0,0,0,0.1)',
       zIndex: 1000,
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      overflow: 'hidden'
     }}>
       <div style={{
         padding: '24px',
