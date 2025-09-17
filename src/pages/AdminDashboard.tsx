@@ -445,8 +445,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
         {/* Управление пользователями */}
         {activeTab === 'users' && (
           <div>
-            {console.log('All users:', users)}
-            {console.log('Sellers:', users.filter(user => user.role === 'seller'))}
             <div className="grid grid-3">
               {users.filter(user => user.role === 'seller').map(user => (
                 <div 
