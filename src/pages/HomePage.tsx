@@ -56,10 +56,9 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
       if (selectedPavilion === 'all') {
         return products;
       }
-      return products.filter(product => {
-        const seller = users.find(u => u.id === product.sellerId);
-        return seller?.pavilionNumber === selectedPavilion;
-      });
+      return products.filter(product => 
+        product.pavilionNumber === selectedPavilion
+      );
     }
     
     return selectedCategory === 'all' 
@@ -67,10 +66,10 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
       : products.filter(product => product.category === selectedCategory);
   })();
 
-  // Получаем уникальные номера павильонов
-  const pavilionNumbers = users
-    .filter(u => u.role === 'seller' && u.pavilionNumber)
-    .map(u => u.pavilionNumber);
+  // Получаем уникальные номера павильонов из товаров
+  const pavilionNumbers = products
+    .filter(p => p.pavilionNumber)
+    .map(p => p.pavilionNumber);
   const pavilions = pavilionNumbers
     .filter((num, index) => pavilionNumbers.indexOf(num) === index)
     .sort();

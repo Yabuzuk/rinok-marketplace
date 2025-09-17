@@ -115,22 +115,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
           {product.name}
         </h2>
 
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginBottom: '16px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Star size={16} fill="#ffc107" color="#ffc107" />
-            <span style={{ fontSize: '14px', fontWeight: '600' }}>
-              {product.rating}
-            </span>
-          </div>
-          <span style={{ fontSize: '14px', color: '#666' }}>
-            ({product.reviews} отзывов)
-          </span>
-        </div>
+
 
         <div style={{
           fontSize: '28px',
