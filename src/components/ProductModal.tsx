@@ -36,29 +36,35 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '16px'
-    }}>
-      <div style={{
-        background: '#f9f5f0',
-        borderRadius: '16px',
-        padding: '24px',
-        width: '100%',
-        maxWidth: '500px',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        position: 'relative'
-      }}>
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: '16px'
+      }}
+      onClick={onClose}
+    >
+      <div 
+        style={{
+          background: '#f9f5f0',
+          borderRadius: '16px',
+          padding: '24px',
+          width: '100%',
+          maxWidth: '500px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          position: 'relative'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
           style={{
