@@ -91,10 +91,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
 
         <div style={{
           width: '100%',
-          height: '300px',
+          height: '200px',
           borderRadius: '12px',
           overflow: 'hidden',
-          marginBottom: '20px',
+          marginBottom: '16px',
           background: '#f0e6d6'
         }}>
           <img 
@@ -109,9 +109,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
         </div>
 
         <h2 style={{
-          fontSize: '24px',
+          fontSize: '20px',
           fontWeight: '700',
-          marginBottom: '8px',
+          marginBottom: '6px',
           color: '#2e7d32'
         }}>
           {product.name}
@@ -120,19 +120,19 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
 
 
         <div style={{
-          fontSize: '28px',
+          fontSize: '24px',
           fontWeight: '700',
           color: '#4caf50',
-          marginBottom: '16px'
+          marginBottom: '12px'
         }}>
           {product.price} ₽
         </div>
 
         <p style={{
-          fontSize: '16px',
-          lineHeight: '1.5',
+          fontSize: '14px',
+          lineHeight: '1.4',
           color: '#2e7d32',
-          marginBottom: '20px'
+          marginBottom: '16px'
         }}>
           {product.description}
         </p>
@@ -140,9 +140,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr',
-          gap: '16px',
-          marginBottom: '20px',
-          padding: '16px',
+          gap: '12px',
+          marginBottom: '16px',
+          padding: '12px',
           background: 'rgba(76, 175, 80, 0.1)',
           borderRadius: '8px'
         }}>
@@ -175,8 +175,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '16px',
-          marginBottom: '20px'
+          gap: '12px',
+          marginBottom: '16px'
         }}>
           <span style={{ fontSize: '16px', fontWeight: '600' }}>
             Количество:
@@ -258,8 +258,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
             onClick={handleAddToCart}
             style={{ 
               flex: 1,
-              fontSize: '16px',
-              padding: '12px'
+              fontSize: '14px',
+              padding: '10px'
             }}
           >
             Добавить в корзину • {(product.price * quantity).toLocaleString()} ₽
@@ -273,7 +273,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
               }}
               className="btn btn-secondary"
               style={{
-                padding: '12px',
+                padding: '10px',
                 background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
                 color: 'white',
                 border: 'none',
