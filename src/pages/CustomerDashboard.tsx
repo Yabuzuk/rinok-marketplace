@@ -279,19 +279,9 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                 </h2>
 
                 <div className="card">
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '16px'
-                  }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: '600' }}>
-                      Основной адрес
-                    </h3>
-                    <button className="btn btn-secondary">
-                      Изменить
-                    </button>
-                  </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                    Основной адрес
+                  </h3>
                   <div>
                     {(user.addresses || ['г. Москва, ул. Примерная, д. 123, кв. 45']).map((address, index) => (
                       <p key={index} style={{ color: '#666', marginBottom: '8px' }}>
