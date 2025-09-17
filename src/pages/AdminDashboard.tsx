@@ -12,11 +12,12 @@ interface AdminDashboardProps {
   users: UserType[];
   onUpdateProduct?: (productId: string, updates: Partial<Product>) => void;
   onDeleteProduct?: (productId: string) => void;
+  onDeleteUser?: (userId: string) => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users, onUpdateProduct, onDeleteProduct }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users, onUpdateProduct, onDeleteProduct, onDeleteUser }) => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'delivered'>('all');
-  const [activeTab, setActiveTab] = useState<'orders' | 'products'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'users'>('orders');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const getStatusColor = (status: OrderWithCustomer['status']) => {
@@ -143,6 +144,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
             >
               Товары
             </button>
+            <button
+              onClick={() => setActiveTab('users')}
+              className={activeTab === 'users' ? 'btn btn-primary' : 'btn btn-secondary'}
+            >
+              Пользователи
+            </button>
           </div>
 
           {activeTab === 'orders' && (
@@ -154,6 +161,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
           {activeTab === 'products' && (
             <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '16px' }}>
               Управление товарами
+            </h2>
+          )}
+          
+          {activeTab === 'users' && (
+            <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '16px' }}>
+              Управление пользователями
             </h2>
           )}
           {activeTab === 'orders' && (
@@ -423,6 +436,59 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Управление пользователями */}
+        {activeTab === 'users' && (
+          <div>
+            <div className="grid grid-3">
+              {users.filter(user => user.role === 'seller').map(user => (
+                <div key={user.id} className="card">
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '24px',
+                    fontWeight: '600',
+                    margin: '0 auto 12px'
+                  }}>
+                    {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px', textAlign: 'center' }}>
+                    {user.name || 'Неизвестный'}
+                  </h3>
+                  <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>
+                    {user.email}
+                  </p>
+                  <p style={{ fontSize: '14px', color: '#666', marginBottom: '12px', textAlign: 'center' }}>
+                    Павильон: {user.pavilionNumber || 'Не указан'}
+                  </p>
+                  <button 
+                    className="btn btn-secondary" 
+                    style={{ 
+                      width: '100%', 
+                      padding: '8px',
+                      color: '#f44336',
+                      borderColor: '#f44336'
+                    }}
+                    onClick={() => {
+                      if (window.confirm(`Вы уверены, что хотите удалить пользователя ${user.name}?`)) {
+                        onDeleteUser?.(user.id);
+                      }
+                    }}
+                    title="Удалить пользователя"
+                  >
+                    Удалить
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         )}

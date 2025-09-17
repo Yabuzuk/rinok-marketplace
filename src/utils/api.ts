@@ -70,6 +70,13 @@ export const api = {
     return response.json();
   },
 
+  deleteUser: async (userId: string) => {
+    const response = await fetch(`${API_BASE}/api/users/${userId}`, {
+      method: 'DELETE'
+    });
+    return response.json();
+  },
+
   // Upload image to Telegram and get URL
   uploadImageToTelegram: async (file: File): Promise<string> => {
     try {

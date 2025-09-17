@@ -144,6 +144,20 @@ app.post('/api/users', async (req, res) => {
   }
 });
 
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const success = await db.delete('users', userId);
+    if (success) {
+      res.json({ success: true, id: userId });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Clear all data endpoint (for development)
 app.delete('/api/clear-all', async (req, res) => {
   try {
