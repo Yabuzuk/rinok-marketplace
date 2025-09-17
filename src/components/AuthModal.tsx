@@ -83,27 +83,36 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        background: '#f9f5f0',
-        borderRadius: '16px',
-        padding: '32px',
-        width: '100%',
-        maxWidth: '400px',
-        margin: '16px',
-        position: 'relative'
-      }}>
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: '16px',
+        overflowY: 'auto'
+      }}
+      onClick={onClose}
+    >
+      <div 
+        style={{
+          background: '#f9f5f0',
+          borderRadius: '16px',
+          padding: '24px',
+          width: '100%',
+          maxWidth: '380px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          position: 'relative'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
           style={{
@@ -120,9 +129,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
         </button>
 
         <h2 style={{
-          fontSize: '24px',
+          fontSize: '20px',
           fontWeight: '700',
-          marginBottom: '24px',
+          marginBottom: '16px',
           textAlign: 'center'
         }}>
           {mode === 'login' ? 'Вход' : 'Регистрация'}
@@ -130,8 +139,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
 
         <div style={{
           display: 'flex',
-          gap: '8px',
-          marginBottom: '24px',
+          gap: '4px',
+          marginBottom: '16px',
           background: '#f5f5f5',
           borderRadius: '8px',
           padding: '4px'
@@ -185,14 +194,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
 
         <form onSubmit={handleSubmit}>
           {mode === 'register' && (
-            <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: '12px' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '8px',
-                fontSize: '14px',
+                marginBottom: '6px',
+                fontSize: '13px',
                 fontWeight: '500'
               }}>
-                <User size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                <User size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
                 Имя
               </label>
               <input
