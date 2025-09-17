@@ -44,22 +44,38 @@ const Cart: React.FC<CartProps> = ({
     const fromAddress = 'Промышленная улица, 11, пос. Крупской, Новосибирский район, Новосибирская область';
     
     try {
-      // Используем Яндекс.Карты API для расчета маршрута
-      const response = await fetch(
-        `https://api.routing.yandex.net/v2/route?` +
-        `waypoints=${encodeURIComponent(fromAddress)}|${encodeURIComponent(toAddress)}` +
-        `&mode=driving&format=json`,
-        {
-          headers: {
-            'Authorization': 'Bearer YOUR_YANDEX_API_KEY' // Нужен ключ API
-          }
-        }
+      // Используем API Геосаджеста для получения координат
+      const geocodeResponse = await fetch(
+        `https://suggest-maps.yandex.ru/v1/suggest?` +
+        `apikey=YOUR_GEOSUGGEST_API_KEY&` +
+        `text=${encodeURIComponent(toAddress)}&` +
+        `results=1`
       );
       
-      if (response.ok) {
-        const data = await response.json();
-        const distanceMeters = data.route?.[0]?.distance;
-        return distanceMeters ? Math.round(distanceMeters / 1000) : 20; // км
+      if (geocodeResponse.ok) {
+        const geocodeData = await geocodeResponse.json();
+        const coords = geocodeData.results?.[0]?.position;
+        
+        if (coords) {
+          // Координаты пос. Крупской: 54.989347, 82.897325
+          const fromLat = 54.989347;
+          const fromLon = 82.897325;
+          const toLat = coords[1];
+          const toLon = coords[0];
+          
+          // Расчет расстояния по формуле гаверсинуса (по прямой)
+          const R = 6371; // Радиус Земли в км
+          const dLat = (toLat - fromLat) * Math.PI / 180;
+          const dLon = (toLon - fromLon) * Math.PI / 180;
+          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                   Math.cos(fromLat * Math.PI / 180) * Math.cos(toLat * Math.PI / 180) *
+                   Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          const distance = R * c;
+          
+          // Увеличиваем на 30% для учета дорог
+          return Math.round(distance * 1.3);
+        }
       }
     } catch (error) {
       console.error('Ошибка расчета расстояния:', error);
