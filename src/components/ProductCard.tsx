@@ -79,41 +79,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
         >
           <Plus size={24} color="#4caf50" strokeWidth={3} />
         </button>
-        
-        {product.pavilionNumber && (
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/pavilion/${product.pavilionNumber}`);
-            }}
-            style={{
-              position: 'absolute',
-              top: '8px',
-              right: '8px',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              border: 'none',
-              background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
-              color: 'white',
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-            title={`Перейти в павильон ${product.pavilionNumber}`}
-          >
-            🏪
-          </button>
-        )}
+
       </div>
 
       <div style={{ marginBottom: '8px' }}>

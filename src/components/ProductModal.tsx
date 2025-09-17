@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Plus, Minus, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 
 interface ProductModalProps {
@@ -10,6 +11,7 @@ interface ProductModalProps {
 }
 
 const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, onAddToCart }) => {
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
 
   if (!isOpen || !product) return null;
@@ -110,7 +112,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
           fontSize: '24px',
           fontWeight: '700',
           marginBottom: '8px',
-          color: '#3c2415'
+          color: '#2e7d32'
         }}>
           {product.name}
         </h2>
@@ -120,7 +122,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
         <div style={{
           fontSize: '28px',
           fontWeight: '700',
-          color: '#8b4513',
+          color: '#4caf50',
           marginBottom: '16px'
         }}>
           {product.price} ₽
@@ -129,7 +131,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
         <p style={{
           fontSize: '16px',
           lineHeight: '1.5',
-          color: '#3c2415',
+          color: '#2e7d32',
           marginBottom: '20px'
         }}>
           {product.description}
@@ -137,11 +139,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateColumns: '1fr 1fr 1fr',
           gap: '16px',
           marginBottom: '20px',
           padding: '16px',
-          background: 'rgba(139, 69, 19, 0.1)',
+          background: 'rgba(76, 175, 80, 0.1)',
           borderRadius: '8px'
         }}>
           <div>
@@ -158,6 +160,14 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
             </div>
             <div style={{ fontSize: '16px', fontWeight: '600' }}>
               {product.minOrderQuantity} кг
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+              Павильон
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: '600' }}>
+              {product.pavilionNumber || 'Не указан'}
             </div>
           </div>
         </div>
@@ -242,17 +252,39 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
           </div>
         )}
 
-        <button 
-          className="btn btn-primary"
-          onClick={handleAddToCart}
-          style={{ 
-            width: '100%',
-            fontSize: '16px',
-            padding: '12px'
-          }}
-        >
-          Добавить в корзину • {(product.price * quantity).toLocaleString()} ₽
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            className="btn btn-primary"
+            onClick={handleAddToCart}
+            style={{ 
+              flex: 1,
+              fontSize: '16px',
+              padding: '12px'
+            }}
+          >
+            Добавить в корзину • {(product.price * quantity).toLocaleString()} ₽
+          </button>
+          
+          {product.pavilionNumber && (
+            <button 
+              onClick={() => {
+                navigate(`/pavilion/${product.pavilionNumber}`);
+                onClose();
+              }}
+              className="btn btn-secondary"
+              style={{
+                padding: '12px',
+                background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                color: 'white',
+                border: 'none',
+                fontSize: '20px'
+              }}
+              title={`Перейти в павильон ${product.pavilionNumber}`}
+            >
+              🏪
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
