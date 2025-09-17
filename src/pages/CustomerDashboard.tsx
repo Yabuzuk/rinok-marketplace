@@ -492,12 +492,13 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                     <button 
                       className="btn btn-primary" 
                       style={{ alignSelf: 'flex-start' }}
-                      onClick={(e) => {
+      onClick={(e) => {
                         e.preventDefault();
                         const form = e.currentTarget.closest('div');
-                        const nameInput = form?.querySelector('input[defaultValue="' + user.name + '"]') as HTMLInputElement;
-                        const emailInput = form?.querySelector('input[defaultValue="' + user.email + '"]') as HTMLInputElement;
-                        const phoneInput = form?.querySelector('input[placeholder="+7 (999) 123-45-67"]') as HTMLInputElement;
+                        const inputs = form?.querySelectorAll('input');
+                        const nameInput = inputs?.[0] as HTMLInputElement;
+                        const emailInput = inputs?.[1] as HTMLInputElement;
+                        const phoneInput = inputs?.[2] as HTMLInputElement;
                         
                         const updates = {
                           name: nameInput?.value || user.name,
