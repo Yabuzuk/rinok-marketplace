@@ -70,15 +70,31 @@ const AppContent: React.FC = () => {
   const handleLogin = async (userType: 'customer' | 'seller' | 'admin', userData?: any) => {
     let user;
     if (userData) {
-      // Проверяем, существует ли пользователь с таким email
-      try {
-        const existingUser = await api.findUserByEmail(userData.email);
-        if (existingUser) {
-          // Используем существующего пользователя
-          user = existingUser;
-          console.log('Found existing user:', user.id);
-        } else {
-          // Создаем нового пользователя
+      if (userData.isLogin) {
+        // Логика входа - только проверка существующего пользователя
+        try {
+          const existingUser = await api.findUserByEmail(userData.email);
+          if (existingUser) {
+            user = existingUser;
+            console.log('Login successful:', user.id);
+          } else {
+            alert('Пользователь не найден. Пожалуйста, зарегистрируйтесь.');
+            return;
+          }
+        } catch (error) {
+          console.error('Login error:', error);
+          alert('Ошибка входа. Попробуйте позже.');
+          return;
+        }
+      } else {
+        // Логика регистрации - создаем нового пользователя
+        try {
+          const existingUser = await api.findUserByEmail(userData.email);
+          if (existingUser) {
+            alert('Пользователь с таким email уже существует.');
+            return;
+          }
+          
           user = { 
             ...userData, 
             role: userType,
@@ -88,18 +104,12 @@ const AppContent: React.FC = () => {
           };
           
           await api.createUser(user);
-          console.log('Created new user:', user.id);
+          console.log('Registration successful:', user.id);
+        } catch (error) {
+          console.error('Registration error:', error);
+          alert('Ошибка регистрации. Попробуйте позже.');
+          return;
         }
-      } catch (error) {
-        console.error('Error handling user login:', error);
-        // Fallback - создаем пользователя локально
-        user = { 
-          ...userData, 
-          role: userType,
-          type: userType,
-          id: userData.id || Date.now().toString(),
-          pavilionNumber: userData.pavilionNumber || ''
-        };
       }
     } else {
       // Для тестов создаем тестового пользователя

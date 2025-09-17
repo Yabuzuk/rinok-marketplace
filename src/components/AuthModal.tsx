@@ -51,17 +51,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     }
 
     if (mode === 'login') {
-      // Для входа используем email как ID
-      const userData = {
-        id: formData.email.replace('@', '_').replace('.', '_'),
-        name: formData.name || 'Пользователь',
-        email: formData.email,
-        phone: formData.phone,
-        role: userType,
-        type: userType
-      };
-      
-      onLogin(userType, userData);
+      // При входе только проверяем существующего пользователя
+      onLogin(userType, { email: formData.email, password: formData.password, isLogin: true });
       onClose();
       return;
     }
