@@ -65,6 +65,7 @@ const AppContent: React.FC = () => {
       try {
         const deliveriesData = await api.getDeliveries();
         setDeliveries(deliveriesData || []);
+        console.log('Loaded deliveries:', deliveriesData?.length || 0);
       } catch (error) {
         console.log('Deliveries API not available yet, using empty array');
         setDeliveries([]);
@@ -245,8 +246,11 @@ const AppContent: React.FC = () => {
           };
           
           try {
-            await api.createDelivery(deliveryData);
-            console.log('Delivery created in DB for order:', orderId);
+            const createdDelivery = await api.createDelivery(deliveryData);
+            console.log('Delivery created in DB:', createdDelivery);
+            // Перезагружаем доставки сразу
+            const deliveriesData = await api.getDeliveries();
+            setDeliveries(deliveriesData || []);
           } catch (error) {
             console.error('Error creating delivery:', error);
           }
@@ -434,15 +438,23 @@ const AppContent: React.FC = () => {
                   <CourierDashboard 
                     deliveries={deliveries}
                     courier={currentUser}
-                    onAcceptDelivery={(deliveryId) => {
-                      setDeliveries(prev => prev.map(d => 
-                        d.id === deliveryId ? { ...d, courierId: currentUser.id, status: 'assigned' } : d
-                      ));
+                    onAcceptDelivery={async (deliveryId) => {
+                      try {
+                        await api.updateDelivery(deliveryId, { courierId: currentUser.id, status: 'assigned' });
+                        const deliveriesData = await api.getDeliveries();
+                        setDeliveries(deliveriesData || []);
+                      } catch (error) {
+                        console.error('Error accepting delivery:', error);
+                      }
                     }}
-                    onUpdateDeliveryStatus={(deliveryId, status) => {
-                      setDeliveries(prev => prev.map(d => 
-                        d.id === deliveryId ? { ...d, status } : d
-                      ));
+                    onUpdateDeliveryStatus={async (deliveryId, status) => {
+                      try {
+                        await api.updateDelivery(deliveryId, { status });
+                        const deliveriesData = await api.getDeliveries();
+                        setDeliveries(deliveriesData || []);
+                      } catch (error) {
+                        console.error('Error updating delivery status:', error);
+                      }
                     }}
                     onUpdateProfile={(updates) => {
                       const updatedUser = { ...currentUser, ...updates };
