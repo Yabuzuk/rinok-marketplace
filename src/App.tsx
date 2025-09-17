@@ -83,6 +83,10 @@ const AppContent: React.FC = () => {
         try {
           const existingUser = await api.findUserByEmail(userData.email);
           if (existingUser) {
+            if (existingUser.blocked) {
+              alert('Ваш аккаунт заблокирован администратором');
+              return;
+            }
             user = existingUser;
             console.log('Login successful:', user.id);
           } else {
@@ -194,6 +198,17 @@ const AppContent: React.FC = () => {
     } catch (error) {
       console.error('Error deleting user:', error);
       alert('Ошибка удаления пользователя');
+    }
+  };
+
+  const handleUpdateUser = async (userId: string, updates: Partial<User>) => {
+    try {
+      await api.updateUser(userId, updates);
+      loadData();
+      console.log('User updated:', userId, updates);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('Ошибка обновления пользователя');
     }
   };
 
@@ -361,6 +376,7 @@ const AppContent: React.FC = () => {
                     onUpdateProduct={handleUpdateProduct}
                     onDeleteProduct={handleDeleteProduct}
                     onDeleteUser={handleDeleteUser}
+                    onUpdateUser={handleUpdateUser}
                   />
                 ) : (
                   <Navigate to="/" replace />
