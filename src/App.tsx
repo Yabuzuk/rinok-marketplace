@@ -53,17 +53,14 @@ const AppContent: React.FC = () => {
         api.getUsers()
       ]);
       
-      setProducts(productsData);
-      setOrders(ordersData);
+      setProducts(productsData || []);
+      setOrders(ordersData || []);
       
-      // Используем только данные с сервера
-      // Моковые данные больше не нужны
-      
-      console.log('Loaded from server:', productsData.length, 'products,', usersData.length, 'users');
+      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users');
     } catch (error) {
       console.error('Error loading data from server:', error);
-      // Fallback на моковые данные при ошибке CORS
-      setProducts(mockProducts);
+      // Только пустые массивы, никаких моковых данных
+      setProducts([]);
       setOrders([]);
     } finally {
       setLoading(false);
