@@ -8,8 +8,9 @@ import HomePage from './pages/HomePage';
 import CustomerDashboard from './pages/CustomerDashboard';
 import SellerDashboard from './pages/SellerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import CourierDashboard from './pages/CourierDashboard';
 import PavilionPage from './pages/PavilionPage';
-import { User, Product, CartItem, Order } from './types';
+import { User, Product, CartItem, Order, Delivery } from './types';
 
 import { api } from './utils/api';
 import './styles/globals.css';
@@ -29,12 +30,49 @@ const AppContent: React.FC = () => {
   });
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     loadData();
+    // Добавляем демо-доставки
+    setDeliveries([
+      {
+        id: '1',
+        orderId: 'order_001',
+        status: 'pending',
+        pickupAddress: 'Павильон 15А, Центральный рынок',
+        deliveryAddress: 'ул. Ленина, 25, кв. 10',
+        estimatedTime: '30-45 мин',
+        deliveryFee: 150,
+        customerPhone: '+7 (999) 123-45-67',
+        notes: 'Домофон не работает, звонить по телефону'
+      },
+      {
+        id: '2',
+        orderId: 'order_002',
+        status: 'pending',
+        pickupAddress: 'Павильон 8Б, Центральный рынок',
+        deliveryAddress: 'пр. Мира, 15, офис 205',
+        estimatedTime: '20-30 мин',
+        deliveryFee: 120,
+        customerPhone: '+7 (999) 987-65-43'
+      },
+      {
+        id: '3',
+        orderId: 'order_003',
+        courierId: '4',
+        status: 'delivered',
+        pickupAddress: 'Павильон 3В, Центральный рынок',
+        deliveryAddress: 'ул. Садовая, 8, кв. 15',
+        estimatedTime: '25-35 мин',
+        actualTime: new Date().toISOString(),
+        deliveryFee: 180,
+        customerPhone: '+7 (999) 555-12-34'
+      }
+    ]);
   }, []);
 
   // Не перезагружаем данные при смене пользователя
@@ -277,6 +315,7 @@ const AppContent: React.FC = () => {
     if (currentUser) {
       const path = currentUser.role === 'customer' ? '/customer-dashboard' : 
                    currentUser.role === 'seller' ? '/seller-dashboard' : 
+                   currentUser.role === 'courier' ? '/courier-dashboard' :
                    '/admin-dashboard';
       navigate(path);
     }
@@ -375,6 +414,35 @@ const AppContent: React.FC = () => {
             />
             
             <Route 
+              path="/courier-dashboard" 
+              element={
+                currentUser?.role === 'courier' ? (
+                  <CourierDashboard 
+                    deliveries={deliveries}
+                    courier={currentUser}
+                    onAcceptDelivery={(deliveryId) => {
+                      setDeliveries(prev => prev.map(d => 
+                        d.id === deliveryId ? { ...d, courierId: currentUser.id, status: 'assigned' } : d
+                      ));
+                    }}
+                    onUpdateDeliveryStatus={(deliveryId, status) => {
+                      setDeliveries(prev => prev.map(d => 
+                        d.id === deliveryId ? { ...d, status } : d
+                      ));
+                    }}
+                    onUpdateProfile={(updates) => {
+                      const updatedUser = { ...currentUser, ...updates };
+                      setCurrentUser(updatedUser);
+                      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                    }}
+                  />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              } 
+            />
+            
+            <Route 
               path="/admin-dashboard" 
               element={
                 currentUser?.role === 'admin' ? (
@@ -410,14 +478,50 @@ const AppContent: React.FC = () => {
 
 
 
-        {/* Logout button */}
-        {currentUser && (
-          <div style={{
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            zIndex: 1000
-          }}>
+        {/* Demo and Logout buttons */}
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          zIndex: 1000
+        }}>
+          {!currentUser && (
+            <>
+              <button 
+                className="btn btn-primary"
+                onClick={() => handleLogin('customer', { id: '1', name: 'Покупатель', email: 'customer@example.com', role: 'customer' })}
+                style={{ fontSize: '12px', padding: '8px 12px' }}
+              >
+                🛍️ Войти как покупатель
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={() => handleLogin('seller', { id: '2', name: 'Продавец', email: 'seller@example.com', role: 'seller', pavilionNumber: '15' })}
+                style={{ fontSize: '12px', padding: '8px 12px' }}
+              >
+                🏢 Войти как продавец
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={() => handleLogin('courier', { id: '4', name: 'Курьер', email: 'courier@example.com', role: 'courier', phone: '+7 (999) 123-45-67', vehicle: 'car', rating: 4.8, isActive: true })}
+                style={{ fontSize: '12px', padding: '8px 12px' }}
+              >
+                🚚 Войти как курьер
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={() => handleLogin('admin', { id: '3', name: 'Администратор', email: 'admin@example.com', role: 'admin' })}
+                style={{ fontSize: '12px', padding: '8px 12px' }}
+              >
+                ⚙️ Войти как админ
+              </button>
+            </>
+          )}
+          
+          {currentUser && (
             <button 
               className="btn btn-secondary"
               onClick={handleLogout}
@@ -425,8 +529,8 @@ const AppContent: React.FC = () => {
             >
               Выйти
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
 
     </div>

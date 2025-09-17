@@ -2,12 +2,15 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'customer' | 'seller' | 'admin';
+  role: 'customer' | 'seller' | 'admin' | 'courier';
   avatar?: string;
   inn?: string;
   pavilionNumber?: string;
   blocked?: boolean;
   phone?: string;
+  vehicle?: 'car' | 'bike' | 'foot';
+  rating?: number;
+  isActive?: boolean;
 }
 
 export interface Product {
@@ -33,6 +36,10 @@ export interface Order {
   status: 'pending' | 'confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
   createdAt: Date;
   deliveryAddress: string;
+  courierId?: string;
+  deliveryFee?: number;
+  estimatedDeliveryTime?: string;
+  actualDeliveryTime?: string;
 }
 
 export interface OrderItem {
@@ -49,4 +56,18 @@ export interface ExtendedOrder extends Order {
 export interface CartItem {
   product: Product;
   quantity: number;
+}
+
+export interface Delivery {
+  id: string;
+  orderId: string;
+  courierId?: string;
+  status: 'pending' | 'assigned' | 'picked_up' | 'in_transit' | 'delivered';
+  pickupAddress: string;
+  deliveryAddress: string;
+  estimatedTime: string;
+  actualTime?: string;
+  deliveryFee: number;
+  customerPhone: string;
+  notes?: string;
 }
