@@ -47,10 +47,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
             Rinok
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#666' }}>
-            <MapPin size={16} />
-            <span style={{ fontSize: '14px' }}>Москва</span>
-          </div>
+
         </div>
 
         <div style={{ 
