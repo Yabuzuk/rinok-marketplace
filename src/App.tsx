@@ -233,7 +233,7 @@ const AppContent: React.FC = () => {
     if (currentUser) {
       handleLogout();
     } else {
-      handleLogin('customer');
+      setShowAuthModal(true);
     }
   };
 
