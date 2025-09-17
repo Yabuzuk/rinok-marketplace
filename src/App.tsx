@@ -51,19 +51,17 @@ const AppContent: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [productsData, ordersData, usersData, deliveriesData] = await Promise.all([
+      const [productsData, ordersData, usersData] = await Promise.all([
         api.getProducts(),
         api.getOrders(),
-        api.getUsers(),
-        api.getDeliveries()
+        api.getUsers()
       ]);
       
       setProducts(productsData || []);
       setOrders(ordersData || []);
       setUsers(usersData || []);
-      setDeliveries(deliveriesData || []);
       
-      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders,', deliveriesData?.length || 0, 'deliveries');
+      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders');
       console.log('Products data:', productsData);
     } catch (error) {
       console.error('Error loading data from server:', error);
@@ -224,16 +222,7 @@ const AppContent: React.FC = () => {
         order.id === orderId ? { ...order, status } : order
       ));
       
-      // Обновляем статус доставки в БД
-      if (status === 'preparing') {
-        const delivery = deliveries.find(d => d.orderId === orderId);
-        if (delivery) {
-          await api.updateDelivery(delivery.id, { status: 'pending' });
-          setDeliveries(prev => prev.map(d => 
-            d.orderId === orderId ? { ...d, status: 'pending' } : d
-          ));
-        }
-      }
+      // Доставки будут создаваться на бэкенде
     } catch (error) {
       console.error('Error updating order status:', error);
     }
@@ -264,20 +253,6 @@ const AppContent: React.FC = () => {
     try {
       const order = await api.createOrder(orderData);
       setOrders(prev => [...prev, order]);
-      
-      // Создаем доставку в базе данных
-      const deliveryData = {
-        orderId: order.id,
-        status: 'assigned', // Неактивная до подтверждения
-        pickupAddress: 'Центральный рынок, павильон продавца',
-        deliveryAddress: order.deliveryAddress,
-        estimatedTime: '30-45 мин',
-        deliveryFee: 150,
-        customerPhone: currentUser?.phone || '+7 (999) 000-00-00'
-      };
-      
-      const delivery = await api.createDelivery(deliveryData);
-      setDeliveries(prev => [...prev, delivery]);
       
       setCart([]);
       localStorage.removeItem('cart');
@@ -423,25 +398,15 @@ const AppContent: React.FC = () => {
                   <CourierDashboard 
                     deliveries={deliveries}
                     courier={currentUser}
-                    onAcceptDelivery={async (deliveryId) => {
-                      try {
-                        await api.updateDelivery(deliveryId, { courierId: currentUser.id, status: 'assigned' });
-                        setDeliveries(prev => prev.map(d => 
-                          d.id === deliveryId ? { ...d, courierId: currentUser.id, status: 'assigned' } : d
-                        ));
-                      } catch (error) {
-                        console.error('Error accepting delivery:', error);
-                      }
+                    onAcceptDelivery={(deliveryId) => {
+                      setDeliveries(prev => prev.map(d => 
+                        d.id === deliveryId ? { ...d, courierId: currentUser.id, status: 'assigned' } : d
+                      ));
                     }}
-                    onUpdateDeliveryStatus={async (deliveryId, status) => {
-                      try {
-                        await api.updateDelivery(deliveryId, { status });
-                        setDeliveries(prev => prev.map(d => 
-                          d.id === deliveryId ? { ...d, status } : d
-                        ));
-                      } catch (error) {
-                        console.error('Error updating delivery status:', error);
-                      }
+                    onUpdateDeliveryStatus={(deliveryId, status) => {
+                      setDeliveries(prev => prev.map(d => 
+                        d.id === deliveryId ? { ...d, status } : d
+                      ));
                     }}
                     onUpdateProfile={(updates) => {
                       const updatedUser = { ...currentUser, ...updates };
