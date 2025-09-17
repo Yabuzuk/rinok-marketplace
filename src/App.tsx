@@ -248,7 +248,6 @@ const AppContent: React.FC = () => {
           try {
             const createdDelivery = await api.createDelivery(deliveryData);
             console.log('Delivery created in DB:', createdDelivery);
-            // Перезагружаем доставки сразу
             const deliveriesData = await api.getDeliveries();
             setDeliveries(deliveriesData || []);
           } catch (error) {
