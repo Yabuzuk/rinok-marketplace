@@ -22,7 +22,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (mode === 'register' && formData.password !== formData.confirmPassword) {
@@ -38,7 +38,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       }
       
       const adminData = {
-        id: '3',
+        id: 'admin',
         name: 'Администратор',
         email: 'admin@rinok.com',
         phone: '+7 (999) 000-00-00',
@@ -50,8 +50,25 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       return;
     }
 
+    if (mode === 'login') {
+      // Для входа используем email как ID
+      const userData = {
+        id: formData.email.replace('@', '_').replace('.', '_'),
+        name: formData.name || 'Пользователь',
+        email: formData.email,
+        phone: formData.phone,
+        role: userType,
+        type: userType
+      };
+      
+      onLogin(userType, userData);
+      onClose();
+      return;
+    }
+
+    // Для регистрации создаем нового пользователя
     const userData = {
-      id: Date.now().toString(),
+      id: formData.email.replace('@', '_').replace('.', '_'),
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
