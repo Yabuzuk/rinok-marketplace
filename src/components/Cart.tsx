@@ -29,6 +29,16 @@ const Cart: React.FC<CartProps> = ({
       return;
     }
 
+    // Проверяем минимальное количество для каждого товара
+    const invalidItems = items.filter(item => item.quantity < item.product.minOrderQuantity);
+    if (invalidItems.length > 0) {
+      const itemNames = invalidItems.map(item => 
+        `${item.product.name} (мин. ${item.product.minOrderQuantity} кг)`
+      ).join(', ');
+      alert(`Недостаточное количество для: ${itemNames}`);
+      return;
+    }
+
     const order = {
       customerId: user.id,
       items: items.map(item => ({
@@ -84,13 +94,16 @@ const Cart: React.FC<CartProps> = ({
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {items.map(item => (
+            {items.map(item => {
+              const isInsufficientQuantity = item.quantity < item.product.minOrderQuantity;
+              return (
               <div key={item.product.id} style={{
                 display: 'flex',
                 gap: '12px',
                 padding: '16px',
-                border: '1px solid #f0f0f0',
-                borderRadius: '12px'
+                border: `1px solid ${isInsufficientQuantity ? '#f44336' : '#f0f0f0'}`,
+                borderRadius: '12px',
+                background: isInsufficientQuantity ? 'rgba(244, 67, 54, 0.05)' : 'white'
               }}>
                 <img 
                   src={item.product.image}
@@ -104,8 +117,13 @@ const Cart: React.FC<CartProps> = ({
                   <p style={{ fontSize: '16px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
                     {item.product.price} ₽
                   </p>
-                  <p style={{ fontSize: '12px', color: '#666' }}>
+                  <p style={{ 
+                    fontSize: '12px', 
+                    color: isInsufficientQuantity ? '#f44336' : '#666',
+                    fontWeight: isInsufficientQuantity ? '600' : 'normal'
+                  }}>
                     Мин. заказ: {item.product.minOrderQuantity} кг
+                    {isInsufficientQuantity && ' ⚠️'}
                   </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -162,7 +180,8 @@ const Cart: React.FC<CartProps> = ({
                   </button>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>
