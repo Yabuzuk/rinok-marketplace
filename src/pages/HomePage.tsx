@@ -183,7 +183,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                     fontSize: '16px',
                     fontWeight: '700',
                     textAlign: 'center',
-                    color: '#2e7d32'
+                    color: '#ff6b35'
                   }}>
                     {product.price} ₽
                   </div>
