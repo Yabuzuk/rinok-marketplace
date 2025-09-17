@@ -10,6 +10,7 @@ interface CustomerDashboardProps {
 const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses'>('orders');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showAddAddress, setShowAddAddress] = useState(false);
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -255,9 +256,49 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders }) =
                   </p>
                 </div>
 
-                <button className="btn btn-primary" style={{ marginTop: '16px' }}>
+                <button 
+                  className="btn btn-primary" 
+                  style={{ marginTop: '16px' }}
+                  onClick={() => setShowAddAddress(true)}
+                >
                   Добавить новый адрес
                 </button>
+                
+                {showAddAddress && (
+                  <div className="card" style={{ marginTop: '16px' }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                      Новый адрес
+                    </h3>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      alert('Адрес добавлен!');
+                      setShowAddAddress(false);
+                    }}>
+                      <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                          Адрес
+                        </label>
+                        <input 
+                          className="input"
+                          placeholder="г. Москва, ул. Примерная, д. 123, кв. 45"
+                          required
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <button type="submit" className="btn btn-primary">
+                          Сохранить
+                        </button>
+                        <button 
+                          type="button" 
+                          className="btn btn-secondary"
+                          onClick={() => setShowAddAddress(false)}
+                        >
+                          Отмена
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
               </div>
             )}
 
