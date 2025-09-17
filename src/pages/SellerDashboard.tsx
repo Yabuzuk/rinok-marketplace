@@ -120,6 +120,11 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   };
 
   const handleDeleteProduct = (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (product && product.pavilionNumber !== user.pavilionNumber) {
+      alert('Вы можете удалять только товары своего павильона');
+      return;
+    }
     if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
       onDeleteProduct?.(productId);
     }
