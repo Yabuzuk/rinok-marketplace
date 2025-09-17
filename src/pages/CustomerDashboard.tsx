@@ -26,8 +26,9 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
       const response = await fetch(
         `https://suggest-maps.yandex.ru/v1/suggest?` +
         `apikey=41a4deeb-0548-4d8e-b897-3c4a6bc08032&` +
-        `text=${encodeURIComponent(query + ' Новосибирск')}&` +
-        `results=5`
+        `text=${encodeURIComponent('Новосибирск ' + query)}&` +
+        `results=5&` +
+        `type=house`
       );
       
       if (response.ok) {
