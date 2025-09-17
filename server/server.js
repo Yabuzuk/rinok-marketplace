@@ -140,6 +140,18 @@ app.post('/api/users', async (req, res) => {
   }
 });
 
+// Clear all data endpoint (for development)
+app.delete('/api/clear-all', async (req, res) => {
+  try {
+    await db.clearAll('products');
+    await db.clearAll('orders');
+    await db.clearAll('users');
+    res.json({ message: 'All data cleared successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
   console.log('Telegram DB integration active');

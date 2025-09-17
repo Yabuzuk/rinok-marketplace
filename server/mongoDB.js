@@ -159,6 +159,32 @@ class MongoDB {
       return false;
     }
   }
+
+  async clearAll(collection) {
+    try {
+      let Model;
+      switch (collection) {
+        case 'products':
+          Model = Product;
+          break;
+        case 'orders':
+          Model = Order;
+          break;
+        case 'users':
+          Model = User;
+          break;
+        default:
+          throw new Error(`Unknown collection: ${collection}`);
+      }
+
+      await Model.deleteMany({});
+      console.log(`Cleared all ${collection}`);
+      return true;
+    } catch (error) {
+      console.error(`Error clearing ${collection}:`, error);
+      return false;
+    }
+  }
 }
 
 export default MongoDB;
