@@ -62,7 +62,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   console.log('=== SELLER ORDERS DEBUG ===');
   console.log('All orders:', orders.length);
   console.log('User pavilion:', user.pavilionNumber);
-  console.log('Orders with pavilions:', orders.map(o => ({ id: o.id, pavilion: o.pavilionNumber })));
+  console.log('User pavilion type:', typeof user.pavilionNumber);
+  console.log('Orders with pavilions:', orders.map(o => ({ id: o.id, pavilion: o.pavilionNumber, type: typeof o.pavilionNumber })));
   console.log('Filtered seller orders:', sellerOrders.length);
   console.log('============================');
 
