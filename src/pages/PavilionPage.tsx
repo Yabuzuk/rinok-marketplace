@@ -23,7 +23,7 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
   return (
     <div style={{
       minHeight: '100vh',
-      background: `url('/images/47ef3b0b5637ff9c91cd96cf07dd1552.jpg')`,
+      background: `url('/images/Campo de grama de futebol verde _ Vetor Premium.jfif')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
