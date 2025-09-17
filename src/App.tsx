@@ -70,20 +70,36 @@ const AppContent: React.FC = () => {
   const handleLogin = async (userType: 'customer' | 'seller' | 'admin', userData?: any) => {
     let user;
     if (userData) {
-      user = { 
-        ...userData, 
-        role: userType,
-        type: userType,
-        id: userData.id || Date.now().toString(),
-        pavilionNumber: userData.pavilionNumber || ''
-      };
-      
-      // Сохраняем нового пользователя на сервер
+      // Проверяем, существует ли пользователь с таким email
       try {
-        await api.createUser(user);
-        console.log('User saved to server:', user.id);
+        const existingUser = await api.findUserByEmail(userData.email);
+        if (existingUser) {
+          // Используем существующего пользователя
+          user = existingUser;
+          console.log('Found existing user:', user.id);
+        } else {
+          // Создаем нового пользователя
+          user = { 
+            ...userData, 
+            role: userType,
+            type: userType,
+            id: userData.id || Date.now().toString(),
+            pavilionNumber: userData.pavilionNumber || ''
+          };
+          
+          await api.createUser(user);
+          console.log('Created new user:', user.id);
+        }
       } catch (error) {
-        console.error('Error saving user:', error);
+        console.error('Error handling user login:', error);
+        // Fallback - создаем пользователя локально
+        user = { 
+          ...userData, 
+          role: userType,
+          type: userType,
+          id: userData.id || Date.now().toString(),
+          pavilionNumber: userData.pavilionNumber || ''
+        };
       }
     } else {
       // Для тестов создаем тестового пользователя

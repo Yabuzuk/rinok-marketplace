@@ -112,6 +112,20 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
+app.get('/api/users/email/:email', async (req, res) => {
+  try {
+    const users = await db.getAll('users');
+    const user = users.find(u => u.email === req.params.email);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/users', async (req, res) => {
   try {
     const user = {

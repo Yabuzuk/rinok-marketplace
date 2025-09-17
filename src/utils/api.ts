@@ -64,6 +64,12 @@ export const api = {
     return response.json();
   },
 
+  findUserByEmail: async (email: string) => {
+    const response = await fetch(`${API_BASE}/api/users/email/${email}`);
+    if (response.status === 404) return null;
+    return response.json();
+  },
+
   // Upload image to Telegram and get URL
   uploadImageToTelegram: async (file: File): Promise<string> => {
     try {
