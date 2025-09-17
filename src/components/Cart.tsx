@@ -31,10 +31,51 @@ const Cart: React.FC<CartProps> = ({
   if (!isOpen) return null;
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  
+  // Расчет стоимости доставки
+  const calculateDeliveryFee = (address: string): number => {
+    if (!address || !address.toLowerCase().includes('новосибирск')) {
+      return 0; // Доставка только по Новосибирской области
+    }
+    
+    // Примерное расстояние в зависимости от района (в км)
+    const distanceMap: Record<string, number> = {
+      'центральный': 15,
+      'железнодорожный': 20,
+      'заельцовский': 25,
+      'калининский': 30,
+      'кировский': 18,
+      'ленинский': 22,
+      'октябрьский': 16,
+      'первомайский': 28,
+      'советский': 20,
+      'дзержинский': 24
+    };
+    
+    // Ищем район в адресе
+    const addressLower = address.toLowerCase();
+    for (const [district, distance] of Object.entries(distanceMap)) {
+      if (addressLower.includes(district)) {
+        return distance * 40; // 40 руб за км
+      }
+    }
+    
+    // По умолчанию 20 км если район не определен
+    return 20 * 40;
+  };
+  
+  const deliveryFee = calculateDeliveryFee(selectedAddress);
+  const totalWithDelivery = total + deliveryFee;
 
   const handleCheckout = async () => {
     if (!user || user.role !== 'customer') {
       alert('Войдите как покупатель для оформления заказа');
+      return;
+    }
+    
+    // Проверяем возможность доставки
+    if (deliveryFee === 0 && selectedAddress && !selectedAddress.toLowerCase().includes('новосибирск')) {
+      alert('Доставка осуществляется только по Новосибирской области');
       return;
     }
 
@@ -62,15 +103,25 @@ const Cart: React.FC<CartProps> = ({
     const orderPromises = Object.entries(itemsByPavilion).map(async ([pavilionNumber, pavilionItems]) => {
       const pavilionTotal = pavilionItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
       
+      const pavilionDeliveryFee = calculateDeliveryFee(selectedAddress || '');
+      
       const order = {
         customerId: user.id,
-        items: pavilionItems.map(item => ({
-          productId: item.product.id,
-          productName: item.product.name,
-          quantity: item.quantity,
-          price: item.product.price
-        })),
-        total: pavilionTotal,
+        items: [
+          ...pavilionItems.map(item => ({
+            productId: item.product.id,
+            productName: item.product.name,
+            quantity: item.quantity,
+            price: item.product.price
+          })),
+          ...(pavilionDeliveryFee > 0 ? [{
+            productId: 'delivery',
+            productName: 'Доставка',
+            quantity: 1,
+            price: pavilionDeliveryFee
+          }] : [])
+        ],
+        total: pavilionTotal + pavilionDeliveryFee,
         status: 'pending' as const,
         createdAt: new Date(),
         deliveryAddress: selectedAddress || 'г. Москва, ул. Примерная, д. 123, кв. 45',
@@ -247,16 +298,53 @@ const Cart: React.FC<CartProps> = ({
             </div>
           )}
           
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px'
-          }}>
-            <span style={{ fontSize: '18px', fontWeight: '600' }}>Итого:</span>
-            <span style={{ fontSize: '20px', fontWeight: '700', color: '#4caf50' }}>
-              {total} ₽
-            </span>
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '8px'
+            }}>
+              <span style={{ fontSize: '16px' }}>Товары:</span>
+              <span style={{ fontSize: '16px' }}>{total} ₽</span>
+            </div>
+            
+            {deliveryFee > 0 && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '8px'
+              }}>
+                <span style={{ fontSize: '16px' }}>Доставка:</span>
+                <span style={{ fontSize: '16px' }}>{deliveryFee} ₽</span>
+              </div>
+            )}
+            
+            {deliveryFee === 0 && selectedAddress && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '8px',
+                color: '#f44336'
+              }}>
+                <span style={{ fontSize: '14px' }}>Доставка только по Новосибирской области</span>
+              </div>
+            )}
+            
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingTop: '8px',
+              borderTop: '1px solid #e0e0e0'
+            }}>
+              <span style={{ fontSize: '18px', fontWeight: '600' }}>Итого:</span>
+              <span style={{ fontSize: '20px', fontWeight: '700', color: '#4caf50' }}>
+                {totalWithDelivery} ₽
+              </span>
+            </div>
           </div>
           <button 
             className="btn btn-primary"
