@@ -19,9 +19,18 @@ const Cart: React.FC<CartProps> = ({
   onUpdateQuantity,
   onCreateOrder 
 }) => {
+  const [selectedAddress, setSelectedAddress] = React.useState<string>('');
+  
   if (!isOpen) return null;
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  
+  // Устанавливаем первый адрес по умолчанию
+  React.useEffect(() => {
+    if (user?.addresses && user.addresses.length > 0 && !selectedAddress) {
+      setSelectedAddress(user.addresses[0]);
+    }
+  }, [user?.addresses, selectedAddress]);
 
   const handleCheckout = async () => {
     if (!user || user.role !== 'customer') {
@@ -64,7 +73,7 @@ const Cart: React.FC<CartProps> = ({
         total: pavilionTotal,
         status: 'pending' as const,
         createdAt: new Date(),
-        deliveryAddress: 'г. Москва, ул. Примерная, д. 123, кв. 45',
+        deliveryAddress: selectedAddress || 'г. Москва, ул. Примерная, д. 123, кв. 45',
         pavilionNumber
       };
       
@@ -212,6 +221,32 @@ const Cart: React.FC<CartProps> = ({
           padding: '24px',
           borderTop: '1px solid #f0f0f0'
         }}>
+          {/* Выбор адреса доставки */}
+          {user?.addresses && user.addresses.length > 0 && (
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                Адрес доставки:
+              </label>
+              <select 
+                value={selectedAddress}
+                onChange={(e) => setSelectedAddress(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '8px',
+                  fontSize: '14px'
+                }}
+              >
+                {user.addresses.map((address, index) => (
+                  <option key={index} value={address}>
+                    {address}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
