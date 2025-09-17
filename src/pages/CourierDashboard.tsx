@@ -4,42 +4,42 @@ import DeliveryCard from '../components/DeliveryCard';
 import { Delivery, User as UserType } from '../types';
 
 interface CourierDashboardProps {
-  deliveries: Delivery[];
+  orders: Order[];
   courier: UserType;
-  onAcceptDelivery?: (deliveryId: string) => void;
-  onUpdateDeliveryStatus?: (deliveryId: string, status: Delivery['status']) => void;
+  onAcceptOrder?: (orderId: string) => void;
+  onUpdateOrderStatus?: (orderId: string, status: Order['status']) => void;
   onUpdateProfile?: (updates: Partial<UserType>) => void;
 }
 
 const CourierDashboard: React.FC<CourierDashboardProps> = ({
-  deliveries,
+  orders,
   courier,
-  onAcceptDelivery,
-  onUpdateDeliveryStatus,
+  onAcceptOrder,
+  onUpdateOrderStatus,
   onUpdateProfile
 }) => {
   const [activeTab, setActiveTab] = useState<'available' | 'active' | 'completed' | 'profile'>('available');
   const [isEditing, setIsEditing] = useState(false);
 
-  const availableDeliveries = deliveries.filter(d => d.status === 'pending');
+  const availableOrders = orders.filter(o => o.status === 'preparing');
   
-  console.log('=== COURIER DELIVERIES DEBUG ===');
-  console.log('All deliveries:', deliveries.length);
-  console.log('Available deliveries:', availableDeliveries.length);
-  console.log('Deliveries:', deliveries.map(d => ({ id: d.id, status: d.status, orderId: d.orderId })));
-  console.log('================================');
-  const activeDeliveries = deliveries.filter(d => 
-    d.courierId === courier.id && ['assigned', 'picked_up', 'in_transit'].includes(d.status)
+  console.log('=== COURIER ORDERS DEBUG ===');
+  console.log('All orders:', orders.length);
+  console.log('Available orders:', availableOrders.length);
+  console.log('Orders:', orders.map(o => ({ id: o.id, status: o.status })));
+  console.log('==============================');
+  const activeOrders = orders.filter(o => 
+    o.courierId === courier.id && o.status === 'delivering'
   );
-  const completedDeliveries = deliveries.filter(d => 
-    d.courierId === courier.id && d.status === 'delivered'
+  const completedOrders = orders.filter(o => 
+    o.courierId === courier.id && o.status === 'delivered'
   );
 
-  const todayEarnings = completedDeliveries
-    .filter(d => new Date(d.actualTime || '').toDateString() === new Date().toDateString())
-    .reduce((sum, d) => sum + d.deliveryFee, 0);
+  const todayEarnings = completedOrders
+    .filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString())
+    .reduce((sum, o) => sum + 150, 0); // 150₽ за доставку
 
-  const totalEarnings = completedDeliveries.reduce((sum, d) => sum + d.deliveryFee, 0);
+  const totalEarnings = completedOrders.length * 150;
 
   const handleProfileUpdate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +89,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
           <div className="card" style={{ textAlign: 'center' }}>
             <Truck size={32} color="#4caf50" style={{ margin: '0 auto 12px' }} />
             <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
-              {activeDeliveries.length}
+              {activeOrders.length}
             </h3>
             <p style={{ color: '#666', fontSize: '14px' }}>Активные доставки</p>
           </div>
@@ -97,7 +97,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
           <div className="card" style={{ textAlign: 'center' }}>
             <CheckCircle size={32} color="#4caf50" style={{ margin: '0 auto 12px' }} />
             <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
-              {completedDeliveries.length}
+              {completedOrders.length}
             </h3>
             <p style={{ color: '#666', fontSize: '14px' }}>Выполнено доставок</p>
           </div>
@@ -126,19 +126,19 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
               onClick={() => setActiveTab('available')}
               className={activeTab === 'available' ? 'btn btn-primary' : 'btn btn-secondary'}
             >
-              Доступные ({availableDeliveries.length})
+              Доступные ({availableOrders.length})
             </button>
             <button
               onClick={() => setActiveTab('active')}
               className={activeTab === 'active' ? 'btn btn-primary' : 'btn btn-secondary'}
             >
-              Мои доставки ({activeDeliveries.length})
+              Мои доставки ({activeOrders.length})
             </button>
             <button
               onClick={() => setActiveTab('completed')}
               className={activeTab === 'completed' ? 'btn btn-primary' : 'btn btn-secondary'}
             >
-              Выполненные ({completedDeliveries.length})
+              Выполненные ({completedOrders.length})
             </button>
             <button
               onClick={() => setActiveTab('profile')}

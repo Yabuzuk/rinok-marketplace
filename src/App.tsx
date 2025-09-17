@@ -230,31 +230,7 @@ const AppContent: React.FC = () => {
     try {
       await api.updateOrder(orderId, { status });
       
-      // Создаем доставку в БД когда заказ готов к доставке
-      if (status === 'preparing') {
-        const order = orders.find(o => o.id === orderId);
-        if (order) {
-          const deliveryData = {
-            id: `delivery_${orderId}`,
-            orderId: orderId,
-            status: 'pending',
-            pickupAddress: `Центральный рынок, павильон ${order.pavilionNumber}`,
-            deliveryAddress: order.deliveryAddress,
-            estimatedTime: '30-45 мин',
-            deliveryFee: 150,
-            customerPhone: currentUser?.phone || '+7 (999) 000-00-00'
-          };
-          
-          try {
-            const createdDelivery = await api.createDelivery(deliveryData);
-            console.log('Delivery created in DB:', createdDelivery);
-            const deliveriesData = await api.getDeliveries();
-            setDeliveries(deliveriesData || []);
-          } catch (error) {
-            console.error('Error creating delivery:', error);
-          }
-        }
-      }
+      // Просто обновляем статус заказа - никаких отдельных доставок
       
       // Перезагружаем все данные
       loadData();
@@ -435,26 +411,17 @@ const AppContent: React.FC = () => {
               element={
                 currentUser?.role === 'courier' ? (
                   <CourierDashboard 
-                    deliveries={deliveries}
+                    orders={orders}
                     courier={currentUser}
-                    onAcceptDelivery={async (deliveryId) => {
+                    onAcceptOrder={async (orderId) => {
                       try {
-                        await api.updateDelivery(deliveryId, { courierId: currentUser.id, status: 'assigned' });
-                        const deliveriesData = await api.getDeliveries();
-                        setDeliveries(deliveriesData || []);
+                        await api.updateOrder(orderId, { courierId: currentUser.id, status: 'delivering' });
+                        loadData();
                       } catch (error) {
-                        console.error('Error accepting delivery:', error);
+                        console.error('Error accepting order:', error);
                       }
                     }}
-                    onUpdateDeliveryStatus={async (deliveryId, status) => {
-                      try {
-                        await api.updateDelivery(deliveryId, { status });
-                        const deliveriesData = await api.getDeliveries();
-                        setDeliveries(deliveriesData || []);
-                      } catch (error) {
-                        console.error('Error updating delivery status:', error);
-                      }
-                    }}
+                    onUpdateOrderStatus={handleUpdateOrderStatus}
                     onUpdateProfile={(updates) => {
                       const updatedUser = { ...currentUser, ...updates };
                       setCurrentUser(updatedUser);

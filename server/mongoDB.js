@@ -24,6 +24,7 @@ const orderSchema = new mongoose.Schema({
   status: String,
   deliveryAddress: String,
   pavilionNumber: String,
+  courierId: String,
   createdAt: { type: Date, default: Date.now }
 });
 

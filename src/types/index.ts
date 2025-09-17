@@ -38,9 +38,6 @@ export interface Order {
   deliveryAddress: string;
   pavilionNumber?: string;
   courierId?: string;
-  deliveryFee?: number;
-  estimatedDeliveryTime?: string;
-  actualDeliveryTime?: string;
 }
 
 export interface OrderItem {
