@@ -222,7 +222,23 @@ const AppContent: React.FC = () => {
         order.id === orderId ? { ...order, status } : order
       ));
       
-      // Доставки будут создаваться на бэкенде
+      // Создаем доставку когда заказ готов к доставке
+      if (status === 'preparing') {
+        const order = orders.find(o => o.id === orderId);
+        if (order) {
+          const delivery = {
+            id: `delivery_${orderId}`,
+            orderId: orderId,
+            status: 'pending' as const,
+            pickupAddress: `Центральный рынок, павильон ${order.pavilionNumber}`,
+            deliveryAddress: order.deliveryAddress,
+            estimatedTime: '30-45 мин',
+            deliveryFee: 150,
+            customerPhone: currentUser?.phone || '+7 (999) 000-00-00'
+          };
+          setDeliveries(prev => [...prev, delivery]);
+        }
+      }
     } catch (error) {
       console.error('Error updating order status:', error);
     }
