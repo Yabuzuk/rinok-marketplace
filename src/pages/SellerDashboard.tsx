@@ -40,39 +40,18 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
     });
   }, []);
 
-  // Фильтруем товары по sellerId
-  const sellerProducts = products.filter(p => String(p.sellerId) === String(user.id));
+  // Фильтруем товары по номеру павильона
+  const sellerProducts = products.filter(p => p.pavilionNumber === user.pavilionNumber);
   
   console.log('=== SELLER DASHBOARD DEBUG ===');
   console.log('All products:', products.length);
-  console.log('User ID:', user.id, 'Type:', typeof user.id);
-  console.log('User ID as string:', String(user.id));
-  const matchingProducts = products.filter(p => String(p.sellerId) === String(user.id));
-  // Показываем уникальные sellerId для отладки
-  const sellerIds = products.map(p => String(p.sellerId));
-  const uniqueSellerIds = sellerIds.filter((id, index) => sellerIds.indexOf(id) === index);
-  console.log('Unique seller IDs in products:', uniqueSellerIds);
-  console.log('Current user ID:', String(user.id));
-  console.log('IDs match?', uniqueSellerIds.includes(String(user.id)));
-  
-  // Показываем первые 5 товаров для примера
-  console.log('First 5 products:', products.slice(0, 5).map(p => ({
-    name: p.name,
-    sellerId: p.sellerId,
-    sellerIdString: String(p.sellerId)
-  })));
-  
-  console.log('Products with sellerId:', products.map(p => ({ 
-    id: p.id, 
+  console.log('User pavilion:', user.pavilionNumber);
+  console.log('Products by pavilion:', products.map(p => ({ 
     name: p.name, 
-    sellerId: p.sellerId, 
-    sellerIdType: typeof p.sellerId,
-    sellerIdString: String(p.sellerId),
-    match: String(p.sellerId) === String(user.id)
+    pavilionNumber: p.pavilionNumber,
+    match: p.pavilionNumber === user.pavilionNumber
   })));
-  console.log('Matching products from global:', matchingProducts.length);
   console.log('Seller products:', sellerProducts.length);
-
   console.log('==============================');
   const sellerOrders = orders.filter(order => 
     order.items.some(item => 
