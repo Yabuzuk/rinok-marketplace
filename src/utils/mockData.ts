@@ -43,7 +43,7 @@ export const mockUsers: User[] = [
   }
 ];
 
-export const mockProducts: Product[] = [
+export const mockProducts = [
   {
     id: '1',
     name: 'Яблоки красные',
