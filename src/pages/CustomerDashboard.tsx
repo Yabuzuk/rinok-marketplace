@@ -15,6 +15,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
   const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [addressInput, setAddressInput] = useState('');
+  const [showAddressModal, setShowAddressModal] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingAddress, setEditingAddress] = useState('');
   const [editingSuggestions, setEditingSuggestions] = useState<string[]>([]);
@@ -293,130 +294,27 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                   </div>
                   <div>
                     {(user.addresses || ['г. Москва, ул. Примерная, д. 123, кв. 45']).map((address, index) => (
-                      <div key={index} style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: '8px',
-                        padding: '8px',
-                        border: '1px solid #f0f0f0',
-                        borderRadius: '8px'
-                      }}>
-                        {editingIndex === index ? (
-                          <div style={{ flex: 1, marginRight: '8px', position: 'relative' }}>
-                            <input
-                              type="text"
-                              value={editingAddress}
-                              onChange={(e) => {
-                                setEditingAddress(e.target.value);
-                                getAddressSuggestions(e.target.value).then((suggestions) => {
-                                  setEditingSuggestions(suggestions);
-                                  setShowEditingSuggestions(true);
-                                });
-                              }}
-                              onBlur={() => setTimeout(() => setShowEditingSuggestions(false), 200)}
-                              placeholder="Начните вводить адрес в Новосибирске..."
-                              style={{
-                                width: '100%',
-                                padding: '4px 8px',
-                                border: '1px solid #e0e0e0',
-                                borderRadius: '4px'
-                              }}
-                            />
-                            {showEditingSuggestions && editingSuggestions.length > 0 && (
-                              <div style={{
-                                position: 'absolute',
-                                top: '100%',
-                                left: 0,
-                                right: 0,
-                                background: 'white',
-                                border: '1px solid #e0e0e0',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                zIndex: 1000,
-                                maxHeight: '150px',
-                                overflowY: 'auto'
-                              }}>
-                                {editingSuggestions.map((suggestion, suggestionIndex) => (
-                                  <div
-                                    key={suggestionIndex}
-                                    style={{
-                                      padding: '8px',
-                                      cursor: 'pointer',
-                                      fontSize: '12px',
-                                      borderBottom: suggestionIndex < editingSuggestions.length - 1 ? '1px solid #f0f0f0' : 'none'
-                                    }}
-                                    onMouseDown={() => {
-                                      setEditingAddress(suggestion);
-                                      setShowEditingSuggestions(false);
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
-                                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-                                  >
-                                    {suggestion}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <span style={{ color: '#666', flex: 1 }}>{address}</span>
-                        )}
-                        
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          {editingIndex === index ? (
-                            <>
-                              <button 
-                                className="btn btn-primary"
-                                style={{ fontSize: '12px', padding: '4px 8px' }}
-                                onClick={() => {
-                                  if (editingAddress.trim()) {
-                                    const updatedAddresses = [...(user.addresses || [])];
-                                    updatedAddresses[index] = editingAddress.trim();
-                                    onUpdateProfile?.({ addresses: updatedAddresses });
-                                    setEditingIndex(null);
-                                    setEditingAddress('');
-                                  }
-                                }}
-                              >
-                                Сохранить
-                              </button>
-                              <button 
-                                className="btn btn-secondary"
-                                style={{ fontSize: '12px', padding: '4px 8px' }}
-                                onClick={() => {
-                                  setEditingIndex(null);
-                                  setEditingAddress('');
-                                }}
-                              >
-                                Отмена
-                              </button>
-                            </>
-                          ) : (
-                            <button 
-                              className="btn btn-secondary"
-                              style={{ fontSize: '12px', padding: '4px 8px' }}
-                              onClick={() => {
-                                setEditingIndex(index);
-                                setEditingAddress(address);
-                              }}
-                            >
-                              Изменить
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                      <p key={index} style={{ color: '#666', marginBottom: '8px' }}>
+                        {address}
+                      </p>
                     ))}
                   </div>
                 </div>
 
-                <button 
-                  className="btn btn-primary" 
-                  style={{ marginTop: '16px' }}
-                  onClick={() => setShowAddAddress(true)}
-                >
-                  Добавить новый адрес
-                </button>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => setShowAddAddress(true)}
+                  >
+                    Добавить новый адрес
+                  </button>
+                  <button 
+                    className="btn btn-secondary"
+                    onClick={() => setShowAddressModal(true)}
+                  >
+                    Управление адресами
+                  </button>
+                </div>
                 
                 {showAddAddress && (
                   <div className="card" style={{ marginTop: '16px' }}>
@@ -647,6 +545,160 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
             }}>
               <span>Итого:</span>
               <span>{selectedOrder.total} ₽</span>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Модальное окно управления адресами */}
+      {showAddressModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div className="card" style={{ maxWidth: '600px', width: '90%', maxHeight: '80vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '600' }}>
+                Управление адресами
+              </h3>
+              <button 
+                onClick={() => {
+                  setShowAddressModal(false);
+                  setEditingIndex(null);
+                  setEditingAddress('');
+                }}
+                style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {(user.addresses || []).map((address, index) => (
+                <div key={index} style={{
+                  padding: '16px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '8px',
+                  background: '#f9f9f9'
+                }}>
+                  {editingIndex === index ? (
+                    <div>
+                      <div style={{ position: 'relative', marginBottom: '12px' }}>
+                        <input
+                          type="text"
+                          value={editingAddress}
+                          onChange={(e) => {
+                            setEditingAddress(e.target.value);
+                            getAddressSuggestions(e.target.value).then((suggestions) => {
+                              setEditingSuggestions(suggestions);
+                              setShowEditingSuggestions(true);
+                            });
+                          }}
+                          onBlur={() => setTimeout(() => setShowEditingSuggestions(false), 200)}
+                          placeholder="Начните вводить адрес в Новосибирске..."
+                          className="input"
+                        />
+                        {showEditingSuggestions && editingSuggestions.length > 0 && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            right: 0,
+                            background: 'white',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            zIndex: 1001,
+                            maxHeight: '200px',
+                            overflowY: 'auto'
+                          }}>
+                            {editingSuggestions.map((suggestion, suggestionIndex) => (
+                              <div
+                                key={suggestionIndex}
+                                style={{
+                                  padding: '12px',
+                                  cursor: 'pointer',
+                                  borderBottom: suggestionIndex < editingSuggestions.length - 1 ? '1px solid #f0f0f0' : 'none'
+                                }}
+                                onMouseDown={() => {
+                                  setEditingAddress(suggestion);
+                                  setShowEditingSuggestions(false);
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                              >
+                                {suggestion}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          className="btn btn-primary"
+                          onClick={() => {
+                            if (editingAddress.trim()) {
+                              const updatedAddresses = [...(user.addresses || [])];
+                              updatedAddresses[index] = editingAddress.trim();
+                              onUpdateProfile?.({ addresses: updatedAddresses });
+                              setEditingIndex(null);
+                              setEditingAddress('');
+                              setShowEditingSuggestions(false);
+                            }
+                          }}
+                        >
+                          Сохранить
+                        </button>
+                        <button 
+                          className="btn btn-secondary"
+                          onClick={() => {
+                            setEditingIndex(null);
+                            setEditingAddress('');
+                            setShowEditingSuggestions(false);
+                          }}
+                        >
+                          Отмена
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ marginBottom: '12px', fontSize: '16px' }}>
+                        {address}
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          className="btn btn-secondary"
+                          onClick={() => {
+                            setEditingIndex(index);
+                            setEditingAddress(address);
+                          }}
+                        >
+                          Изменить
+                        </button>
+                        <button 
+                          className="btn btn-danger"
+                          onClick={() => {
+                            const updatedAddresses = (user.addresses || []).filter((_, i) => i !== index);
+                            onUpdateProfile?.({ addresses: updatedAddresses });
+                          }}
+                          style={{ backgroundColor: '#f44336', color: 'white' }}
+                        >
+                          Удалить
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
