@@ -51,23 +51,26 @@ const AppContent: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [productsData, ordersData, usersData] = await Promise.all([
+      const [productsData, ordersData, usersData, deliveriesData] = await Promise.all([
         api.getProducts(),
         api.getOrders(),
-        api.getUsers()
+        api.getUsers(),
+        api.getDeliveries()
       ]);
       
       setProducts(productsData || []);
       setOrders(ordersData || []);
       setUsers(usersData || []);
+      setDeliveries(deliveriesData || []);
       
-      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders');
+      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders,', deliveriesData?.length || 0, 'deliveries');
       console.log('Products data:', productsData);
     } catch (error) {
       console.error('Error loading data from server:', error);
       setProducts([]);
       setOrders([]);
       setUsers([]);
+      setDeliveries([]);
       setDeliveries([]);
     } finally {
       setLoading(false);
@@ -222,21 +225,28 @@ const AppContent: React.FC = () => {
         order.id === orderId ? { ...order, status } : order
       ));
       
-      // Создаем доставку когда заказ готов к доставке
+      // Создаем доставку в БД когда заказ готов к доставке
       if (status === 'preparing') {
         const order = orders.find(o => o.id === orderId);
         if (order) {
-          const delivery = {
+          const deliveryData = {
             id: `delivery_${orderId}`,
             orderId: orderId,
-            status: 'pending' as const,
+            status: 'pending',
             pickupAddress: `Центральный рынок, павильон ${order.pavilionNumber}`,
             deliveryAddress: order.deliveryAddress,
             estimatedTime: '30-45 мин',
             deliveryFee: 150,
             customerPhone: currentUser?.phone || '+7 (999) 000-00-00'
           };
-          setDeliveries(prev => [...prev, delivery]);
+          
+          try {
+            const delivery = await api.createDelivery(deliveryData);
+            setDeliveries(prev => [...prev, delivery]);
+            console.log('Delivery created in DB:', delivery);
+          } catch (error) {
+            console.error('Error creating delivery:', error);
+          }
         }
       }
     } catch (error) {

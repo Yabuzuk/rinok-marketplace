@@ -180,12 +180,48 @@ app.put('/api/users/:id', async (req, res) => {
   }
 });
 
+// Deliveries API
+app.get('/api/deliveries', async (req, res) => {
+  try {
+    const deliveries = await db.getAll('deliveries');
+    res.json(deliveries);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/deliveries', async (req, res) => {
+  try {
+    const delivery = {
+      ...req.body,
+      id: req.body.id || Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+    await db.save('deliveries', delivery);
+    res.json(delivery);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/deliveries/:id', async (req, res) => {
+  try {
+    const deliveryId = req.params.id;
+    const updates = req.body;
+    await db.update('deliveries', deliveryId, updates);
+    res.json({ success: true, id: deliveryId });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Clear all data endpoint (for development)
 app.delete('/api/clear-all', async (req, res) => {
   try {
     await db.clearAll('products');
     await db.clearAll('orders');
     await db.clearAll('users');
+    await db.clearAll('deliveries');
     res.json({ message: 'All data cleared successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
