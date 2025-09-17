@@ -23,20 +23,10 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
   return (
     <div style={{
       minHeight: '100vh',
-      background: `
-        linear-gradient(180deg, 
-          #87CEEB 0%, 
-          #98FB98 20%, 
-          #90EE90 40%, 
-          #32CD32 60%, 
-          #228B22 80%, 
-          #006400 100%
-        ),
-        url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23006400' fill-opacity='0.4'%3E%3Cpath d='M10 90c0-15 3-25 3-25s2 10 2 25h-5zm8 0c0-12 2-20 2-20s2 8 2 20h-4zm8 0c0-18 4-30 4-30s3 12 3 30h-7zm10 0c0-10 2-15 2-15s1 5 1 15h-3zm8 0c0-20 5-35 5-35s4 15 4 35h-9zm12 0c0-8 1-12 1-12s1 4 1 12h-2zm8 0c0-16 3-28 3-28s3 12 3 28h-6zm10 0c0-14 2-22 2-22s2 8 2 22h-4zm8 0c0-25 6-40 6-40s5 15 5 40h-11z'/%3E%3C/g%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23228B22' fill-opacity='0.3'%3E%3Cpath d='M5 50c0-8 2-15 2-15s1 7 1 15h-3zm6 0c0-6 1-10 1-10s1 4 1 10h-2zm8 0c0-12 3-20 3-20s2 8 2 20h-5zm10 0c0-5 1-8 1-8s1 3 1 8h-2zm8 0c0-10 2-18 2-18s2 8 2 18h-4zm12 0c0-4 1-6 1-6s0 2 0 6h-1zm8 0c0-9 2-15 2-15s2 6 2 15h-4z'/%3E%3C/g%3E%3C/svg%3E")
-      `,
-      backgroundSize: '100px 100px, 60px 60px',
-      backgroundPosition: '0 0, 30px 30px',
+      background: `url('/images/47ef3b0b5637ff9c91cd96cf07dd1552.jpg')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
       paddingTop: '100px',
       paddingBottom: '40px'
     }}>
