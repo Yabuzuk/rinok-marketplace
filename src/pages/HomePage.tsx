@@ -247,33 +247,59 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                   </span>
                 </div>
                 {pavilions.map(pavilion => (
-                  <div 
-                    key={pavilion}
-                    className="card"
-                    onClick={() => handlePavilionClick(pavilion)}
-                    style={{
-                      textAlign: 'center',
-                      padding: '8px 4px',
-                      cursor: 'pointer',
-                      transition: 'transform 0.2s ease',
-                      background: selectedPavilion === pavilion ? '#8b4513' : '#f9f5f0',
-                      color: selectedPavilion === pavilion ? 'white' : '#3c2415'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                  >
-                    <div style={{ 
-                      fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
-                      marginBottom: window.innerWidth <= 768 ? '4px' : '6px' 
-                    }}>
-                      🏢
+                  <div key={pavilion} style={{ position: 'relative' }}>
+                    <div 
+                      className="card"
+                      onClick={() => handlePavilionClick(pavilion)}
+                      style={{
+                        textAlign: 'center',
+                        padding: '8px 4px',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s ease',
+                        background: selectedPavilion === pavilion ? '#8b4513' : '#f9f5f0',
+                        color: selectedPavilion === pavilion ? 'white' : '#3c2415'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                      <div style={{ 
+                        fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
+                        marginBottom: window.innerWidth <= 768 ? '4px' : '6px' 
+                      }}>
+                        🏢
+                      </div>
+                      <span style={{ 
+                        fontSize: window.innerWidth <= 768 ? '10px' : '12px', 
+                        fontWeight: '500' 
+                      }}>
+                        {pavilion}
+                      </span>
                     </div>
-                    <span style={{ 
-                      fontSize: window.innerWidth <= 768 ? '10px' : '12px', 
-                      fontWeight: '500' 
-                    }}>
-                      {pavilion}
-                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(`/pavilion/${pavilion}`, '_blank');
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '4px',
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        border: 'none',
+                        background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                        color: 'white',
+                        fontSize: '10px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      title="Открыть лавку"
+                    >
+                      🏪
+                    </button>
                   </div>
                 ))}
               </>

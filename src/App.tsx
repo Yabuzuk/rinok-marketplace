@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import CustomerDashboard from './pages/CustomerDashboard';
 import SellerDashboard from './pages/SellerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import PavilionPage from './pages/PavilionPage';
 import { User, Product, CartItem, Order } from './types';
 
 import { api } from './utils/api';
@@ -325,6 +326,17 @@ const AppContent: React.FC = () => {
                   products={products}
                   onAddToCart={handleAddToCart}
                   users={[]}
+                />
+              } 
+            />
+            
+            <Route 
+              path="/pavilion/:pavilionNumber" 
+              element={
+                <PavilionPage 
+                  products={products}
+                  users={users}
+                  onAddToCart={handleAddToCart}
                 />
               } 
             />
