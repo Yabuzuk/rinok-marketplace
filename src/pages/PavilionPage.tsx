@@ -23,7 +23,7 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
   return (
     <div style={{
       minHeight: '100vh',
-      background: `url('/images/trava_krupnym_planom_zelenaia_118542_2560x1440.jpg')`,
+      background: `url('/images/green-grass-summer-gazon-fon-trava-zelenaia.jpg')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
