@@ -170,11 +170,36 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                     alignItems: 'center',
                     gap: '12px',
                     cursor: 'pointer',
+                    marginBottom: '8px',
                     fontSize: '14px'
                   }}
                 >
                   <Settings size={18} />
                   Настройки
+                </button>
+
+                <button
+                  onClick={() => window.location.reload()}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: 'none',
+                    background: 'transparent',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: '#f44336'
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16,17 21,12 16,7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  Выйти
                 </button>
               </nav>
             </div>
