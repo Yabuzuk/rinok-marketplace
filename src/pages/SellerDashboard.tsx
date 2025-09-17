@@ -56,7 +56,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   console.log('Seller products:', sellerProducts.length);
   console.log('==============================');
   const sellerOrders = orders.filter(order => 
-    order.pavilionNumber === user.pavilionNumber
+    String(order.pavilionNumber) === String(user.pavilionNumber)
   );
   
   console.log('=== SELLER ORDERS DEBUG ===');

@@ -67,6 +67,8 @@ const Cart: React.FC<CartProps> = ({
         deliveryAddress: 'г. Москва, ул. Примерная, д. 123, кв. 45',
         pavilionNumber
       };
+      
+      console.log('Creating order for pavilion:', pavilionNumber, 'type:', typeof pavilionNumber);
 
       return await onCreateOrder(order);
     });
