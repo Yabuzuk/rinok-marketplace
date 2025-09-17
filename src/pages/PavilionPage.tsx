@@ -24,8 +24,8 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
     <div style={{
       minHeight: '100vh',
       background: `
-        linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%),
-        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234caf50' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
+        linear-gradient(180deg, #87ceeb 0%, #98fb98 30%, #90ee90 60%, #228b22 100%),
+        url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23228b22' fill-opacity='0.3'%3E%3Cpath d='M20 5c0 8-5 15-5 15s5-7 5-15zm-2 0c0 6-3 10-3 10s3-4 3-10zm4 0c0 6-3 10-3 10s3-4 3-10zm-8 10c2-5 8-5 8-5s-6 0-8 5zm12 0c-2-5-8-5-8-5s6 0 8 5zm-6 5c0 5-2 8-2 8s2-3 2-8zm-1 0c0 4-1 6-1 6s1-2 1-6zm2 0c0 4-1 6-1 6s1-2 1-6z'/%3E%3C/g%3E%3C/svg%3E")
       `,
       paddingTop: '100px',
       paddingBottom: '40px'
@@ -108,12 +108,15 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
                 {/* Эффект травы под карточкой */}
                 <div style={{
                   position: 'absolute',
-                  bottom: '-8px',
+                  bottom: '-12px',
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  width: '120%',
-                  height: '16px',
-                  background: 'linear-gradient(90deg, transparent 0%, rgba(76, 175, 80, 0.3) 20%, rgba(139, 195, 74, 0.4) 50%, rgba(76, 175, 80, 0.3) 80%, transparent 100%)',
+                  width: '130%',
+                  height: '24px',
+                  background: `
+                    radial-gradient(ellipse at center, rgba(34, 139, 34, 0.6) 0%, rgba(34, 139, 34, 0.3) 50%, transparent 70%),
+                    url("data:image/svg+xml,%3Csvg width='20' height='8' viewBox='0 0 20 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23228b22' fill-opacity='0.4'%3E%3Cpath d='M2 8c0-2 1-4 1-4s1 2 1 4zm4 0c0-2 1-4 1-4s1 2 1 4zm4 0c0-2 1-4 1-4s1 2 1 4zm4 0c0-2 1-4 1-4s1 2 1 4z'/%3E%3C/g%3E%3C/svg%3E")
+                  `,
                   borderRadius: '50%',
                   zIndex: -1
                 }} />
