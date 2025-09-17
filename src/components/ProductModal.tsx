@@ -203,14 +203,27 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
             >
               <Minus size={16} />
             </button>
-            <span style={{ 
-              minWidth: '40px', 
-              textAlign: 'center', 
-              fontSize: '18px',
-              fontWeight: '600' 
-            }}>
-              {quantity}
-            </span>
+            <input
+              type="number"
+              min="1"
+              max={product.stock}
+              value={quantity}
+              onChange={(e) => {
+                const newQuantity = parseInt(e.target.value) || 1;
+                if (newQuantity >= 1 && newQuantity <= product.stock) {
+                  setQuantity(newQuantity);
+                }
+              }}
+              style={{
+                width: '60px',
+                textAlign: 'center',
+                fontSize: '16px',
+                fontWeight: '600',
+                border: '1px solid #d4c4b0',
+                borderRadius: '6px',
+                padding: '4px'
+              }}
+            />
             <button 
               onClick={increaseQuantity}
               style={{

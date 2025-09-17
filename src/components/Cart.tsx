@@ -125,9 +125,25 @@ const Cart: React.FC<CartProps> = ({
                   >
                     <Minus size={16} />
                   </button>
-                  <span style={{ minWidth: '24px', textAlign: 'center', fontWeight: '600' }}>
-                    {item.quantity}
-                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={item.quantity}
+                    onChange={(e) => {
+                      const newQuantity = parseInt(e.target.value) || 1;
+                      if (newQuantity >= 1) {
+                        onUpdateQuantity(item.product.id, newQuantity);
+                      }
+                    }}
+                    style={{
+                      width: '50px',
+                      textAlign: 'center',
+                      fontWeight: '600',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '6px',
+                      padding: '4px'
+                    }}
+                  />
                   <button 
                     onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1)}
                     style={{
