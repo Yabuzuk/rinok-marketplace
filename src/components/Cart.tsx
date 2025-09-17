@@ -147,6 +147,11 @@ const Cart: React.FC<CartProps> = ({
       return;
     }
     
+    if (!selectedAddress || selectedAddress.trim() === '') {
+      alert('Выберите адрес доставки');
+      return;
+    }
+    
     if (deliveryDistance === 0 && selectedAddress) {
       alert('Доставка осуществляется только по Новосибирской области');
       return;
