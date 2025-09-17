@@ -111,12 +111,12 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
       <div className="container">
         {/* Hero Section with Latest Products */}
         <div style={{
-          background: 'rgba(255, 255, 255, 0.95)',
+          background: '#f1f8e9',
           borderRadius: '20px',
           padding: '24px',
           marginBottom: '32px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          border: '2px solid rgba(76, 175, 80, 0.2)'
+          boxShadow: '0 2px 8px rgba(46, 125, 50, 0.1)',
+          border: '1px solid #c8e6c9'
         }}>
 
           
