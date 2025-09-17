@@ -489,7 +489,26 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                       />
                     </div>
 
-                    <button className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
+                    <button 
+                      className="btn btn-primary" 
+                      style={{ alignSelf: 'flex-start' }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const form = e.currentTarget.closest('div');
+                        const nameInput = form?.querySelector('input[defaultValue="' + user.name + '"]') as HTMLInputElement;
+                        const emailInput = form?.querySelector('input[defaultValue="' + user.email + '"]') as HTMLInputElement;
+                        const phoneInput = form?.querySelector('input[placeholder="+7 (999) 123-45-67"]') as HTMLInputElement;
+                        
+                        const updates = {
+                          name: nameInput?.value || user.name,
+                          email: emailInput?.value || user.email,
+                          phone: phoneInput?.value || ''
+                        };
+                        
+                        onUpdateProfile?.(updates);
+                        alert('Профиль обновлен!');
+                      }}
+                    >
                       Сохранить изменения
                     </button>
                   </div>
