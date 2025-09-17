@@ -6,9 +6,10 @@ interface CustomerDashboardProps {
   user: UserType;
   orders: Order[];
   onUpdateProfile?: (updates: Partial<UserType>) => void;
+  onLogout?: () => void;
 }
 
-const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile }) => {
+const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile, onLogout }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses'>('orders');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showAddAddress, setShowAddAddress] = useState(false);
@@ -179,7 +180,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                 </button>
 
                 <button
-                  onClick={() => window.location.reload()}
+                  onClick={() => onLogout?.()}
                   style={{
                     width: '100%',
                     padding: '12px 16px',

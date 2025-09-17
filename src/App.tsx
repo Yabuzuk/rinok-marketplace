@@ -405,6 +405,7 @@ const AppContent: React.FC = () => {
                         alert('Ошибка сохранения адреса');
                       }
                     }}
+                    onLogout={() => setCurrentUser(null)}
                   />
                 ) : (
                   <Navigate to="/" replace />
