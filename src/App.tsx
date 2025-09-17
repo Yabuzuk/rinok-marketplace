@@ -58,12 +58,14 @@ const AppContent: React.FC = () => {
       setOrders(ordersData || []);
       setUsers(usersData || []);
       
-      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users');
+      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders');
+      console.log('Users data:', usersData);
     } catch (error) {
       console.error('Error loading data from server:', error);
       // Только пустые массивы, никаких моковых данных
       setProducts([]);
       setOrders([]);
+      setUsers([]);
     } finally {
       setLoading(false);
     }
