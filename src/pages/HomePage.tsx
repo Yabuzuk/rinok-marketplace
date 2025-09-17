@@ -105,6 +105,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
+      backgroundAttachment: 'fixed',
       paddingTop: '24px'
     }}>
       <div className="container">

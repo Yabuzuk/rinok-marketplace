@@ -27,6 +27,7 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
+      backgroundAttachment: 'fixed',
       paddingTop: '100px',
       paddingBottom: '40px'
     }}>
