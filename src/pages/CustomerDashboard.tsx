@@ -15,6 +15,8 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
   const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [addressInput, setAddressInput] = useState('');
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingAddress, setEditingAddress] = useState('');
   
   const getAddressSuggestions = async (query: string) => {
     if (query.length < 3) {
@@ -288,9 +290,76 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                   </div>
                   <div>
                     {(user.addresses || ['г. Москва, ул. Примерная, д. 123, кв. 45']).map((address, index) => (
-                      <p key={index} style={{ color: '#666', marginBottom: '8px' }}>
-                        {address}
-                      </p>
+                      <div key={index} style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        marginBottom: '8px',
+                        padding: '8px',
+                        border: '1px solid #f0f0f0',
+                        borderRadius: '8px'
+                      }}>
+                        {editingIndex === index ? (
+                          <div style={{ flex: 1, marginRight: '8px' }}>
+                            <input
+                              type="text"
+                              value={editingAddress}
+                              onChange={(e) => setEditingAddress(e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '4px 8px',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '4px'
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <span style={{ color: '#666', flex: 1 }}>{address}</span>
+                        )}
+                        
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {editingIndex === index ? (
+                            <>
+                              <button 
+                                className="btn btn-primary"
+                                style={{ fontSize: '12px', padding: '4px 8px' }}
+                                onClick={() => {
+                                  if (editingAddress.trim()) {
+                                    const updatedAddresses = [...(user.addresses || [])];
+                                    updatedAddresses[index] = editingAddress.trim();
+                                    onUpdateProfile?.({ addresses: updatedAddresses });
+                                    setEditingIndex(null);
+                                    setEditingAddress('');
+                                  }
+                                }}
+                              >
+                                Сохранить
+                              </button>
+                              <button 
+                                className="btn btn-secondary"
+                                style={{ fontSize: '12px', padding: '4px 8px' }}
+                                onClick={() => {
+                                  setEditingIndex(null);
+                                  setEditingAddress('');
+                                }}
+                              >
+                                Отмена
+                              </button>
+                            </>
+                          ) : (
+                            <button 
+                              className="btn btn-secondary"
+                              style={{ fontSize: '12px', padding: '4px 8px' }}
+                              onClick={() => {
+                                setEditingIndex(index);
+                                setEditingAddress(address);
+                              }}
+                            >
+                              Изменить
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
