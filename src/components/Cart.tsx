@@ -47,7 +47,7 @@ const Cart: React.FC<CartProps> = ({
       // Используем API Геосаджеста для получения координат
       const geocodeResponse = await fetch(
         `https://suggest-maps.yandex.ru/v1/suggest?` +
-        `apikey=YOUR_GEOSUGGEST_API_KEY&` +
+        `apikey=41a4deeb-0548-4d8e-b897-3c4a6bc08032&` +
         `text=${encodeURIComponent(toAddress)}&` +
         `results=1`
       );
