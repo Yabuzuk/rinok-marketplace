@@ -23,33 +23,6 @@ const Cart: React.FC<CartProps> = ({
   const [deliveryDistance, setDeliveryDistance] = React.useState<number | null>(null);
   const [isCalculatingDelivery, setIsCalculatingDelivery] = React.useState(false);
   
-  // Устанавливаем первый адрес по умолчанию
-  React.useEffect(() => {
-    if (user?.addresses && user.addresses.length > 0 && !selectedAddress) {
-      setSelectedAddress(user.addresses[0]);
-    }
-  }, [user?.addresses, selectedAddress]);
-  
-  // Пересчитываем расстояние при изменении адреса
-  React.useEffect(() => {
-    if (selectedAddress && isOpen) {
-      setIsCalculatingDelivery(true);
-      calculateDeliveryDistance(selectedAddress)
-        .then(distance => {
-          setDeliveryDistance(distance);
-          setIsCalculatingDelivery(false);
-        })
-        .catch(() => {
-          setDeliveryDistance(20); // Fallback
-          setIsCalculatingDelivery(false);
-        });
-    }
-  }, [selectedAddress, isOpen]);
-  
-  if (!isOpen) return null;
-
-  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  
   const calculateDeliveryDistance = React.useCallback(async (toAddress: string): Promise<number> => {
     if (!toAddress || !toAddress.toLowerCase().includes('новосибирск')) {
       return 0;
@@ -105,11 +78,36 @@ const Cart: React.FC<CartProps> = ({
     return 20;
   }, []);
   
+  React.useEffect(() => {
+    if (user?.addresses && user.addresses.length > 0 && !selectedAddress) {
+      setSelectedAddress(user.addresses[0]);
+    }
+  }, [user?.addresses, selectedAddress]);
+  
+  React.useEffect(() => {
+    if (selectedAddress && isOpen) {
+      setIsCalculatingDelivery(true);
+      calculateDeliveryDistance(selectedAddress)
+        .then(distance => {
+          setDeliveryDistance(distance);
+          setIsCalculatingDelivery(false);
+        })
+        .catch(() => {
+          setDeliveryDistance(20);
+          setIsCalculatingDelivery(false);
+        });
+    }
+  }, [selectedAddress, isOpen, calculateDeliveryDistance]);
+  
+  if (!isOpen) return null;
+
+  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  
   const calculateDeliveryFee = (): number => {
     if (!selectedAddress || !selectedAddress.toLowerCase().includes('новосибирск')) {
       return 0;
     }
-    return (deliveryDistance || 20) * 40; // 40 руб за км
+    return (deliveryDistance || 20) * 40;
   };
   
   const deliveryFee = calculateDeliveryFee();
@@ -121,13 +119,11 @@ const Cart: React.FC<CartProps> = ({
       return;
     }
     
-    // Проверяем возможность доставки
     if (deliveryFee === 0 && selectedAddress && !selectedAddress.toLowerCase().includes('новосибирск')) {
       alert('Доставка осуществляется только по Новосибирской области');
       return;
     }
 
-    // Проверяем минимальное количество для каждого товара
     const invalidItems = items.filter(item => item.quantity < item.product.minOrderQuantity);
     if (invalidItems.length > 0) {
       const itemNames = invalidItems.map(item => 
@@ -137,7 +133,6 @@ const Cart: React.FC<CartProps> = ({
       return;
     }
 
-    // Группируем товары по павильонам
     const itemsByPavilion = items.reduce((acc, item) => {
       const pavilion = item.product.pavilionNumber;
       if (!acc[pavilion]) {
@@ -147,7 +142,6 @@ const Cart: React.FC<CartProps> = ({
       return acc;
     }, {} as Record<string, typeof items>);
 
-    // Создаем отдельный заказ для каждого павильона
     const orderPromises = Object.entries(itemsByPavilion).map(async ([pavilionNumber, pavilionItems]) => {
       const pavilionTotal = pavilionItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
       
@@ -175,14 +169,11 @@ const Cart: React.FC<CartProps> = ({
         deliveryAddress: selectedAddress || 'г. Москва, ул. Примерная, д. 123, кв. 45',
         pavilionNumber
       };
-      
-      console.log('Creating order for pavilion:', pavilionNumber, 'type:', typeof pavilionNumber);
 
       return await onCreateOrder(order);
     });
 
     await Promise.all(orderPromises);
-
     alert('Заказы успешно созданы!');
     onClose();
   };
@@ -320,7 +311,6 @@ const Cart: React.FC<CartProps> = ({
           padding: '24px',
           borderTop: '1px solid #f0f0f0'
         }}>
-          {/* Выбор адреса доставки */}
           {user?.addresses && user.addresses.length > 0 && (
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
