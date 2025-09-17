@@ -27,6 +27,7 @@ const AppContent: React.FC = () => {
     return saved ? JSON.parse(saved) : [];
   });
   const [orders, setOrders] = useState<Order[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -55,6 +56,7 @@ const AppContent: React.FC = () => {
       
       setProducts(productsData || []);
       setOrders(ordersData || []);
+      setUsers(usersData || []);
       
       console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users');
     } catch (error) {
@@ -178,6 +180,18 @@ const AppContent: React.FC = () => {
     } catch (error) {
       console.error('Error deleting product:', error);
       alert('Ошибка удаления товара');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await api.deleteUser(userId);
+      // Перезагружаем данные чтобы обновить список пользователей
+      loadData();
+      console.log('User deleted from server:', userId);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Ошибка удаления пользователя');
     }
   };
 
@@ -341,9 +355,10 @@ const AppContent: React.FC = () => {
                       customerName: 'Покупатель'
                     }))}
                     products={products}
-                    users={[]}
+                    users={users}
                     onUpdateProduct={handleUpdateProduct}
                     onDeleteProduct={handleDeleteProduct}
+                    onDeleteUser={handleDeleteUser}
                   />
                 ) : (
                   <Navigate to="/" replace />
