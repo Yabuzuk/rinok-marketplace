@@ -77,6 +77,15 @@ export const api = {
     return response.json();
   },
 
+  updateUser: async (userId: string, updates: any) => {
+    const response = await fetch(`${API_BASE}/api/users/${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    return response.json();
+  },
+
   // Upload image to Telegram and get URL
   uploadImageToTelegram: async (file: File): Promise<string> => {
     try {

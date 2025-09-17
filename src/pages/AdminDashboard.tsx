@@ -13,12 +13,14 @@ interface AdminDashboardProps {
   onUpdateProduct?: (productId: string, updates: Partial<Product>) => void;
   onDeleteProduct?: (productId: string) => void;
   onDeleteUser?: (userId: string) => void;
+  onUpdateUser?: (userId: string, updates: Partial<UserType>) => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users, onUpdateProduct, onDeleteProduct, onDeleteUser }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users, onUpdateProduct, onDeleteProduct, onDeleteUser, onUpdateUser }) => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'delivered'>('all');
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'users'>('orders');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
 
   const getStatusColor = (status: OrderWithCustomer['status']) => {
     switch (status) {
@@ -447,7 +449,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
             {console.log('Sellers:', users.filter(user => user.role === 'seller'))}
             <div className="grid grid-3">
               {users.filter(user => user.role === 'seller').map(user => (
-                <div key={user.id} className="card">
+                <div 
+                  key={user.id} 
+                  className="card" 
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setSelectedUser(user)}
+                >
                   <div style={{
                     width: '60px',
                     height: '60px',
@@ -491,6 +498,132 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Модальное окно пользователя */}
+        {selectedUser && (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000
+            }}
+            onClick={() => setSelectedUser(null)}
+          >
+            <div 
+              style={{
+                background: '#f9f5f0',
+                borderRadius: '16px',
+                padding: '24px',
+                width: '400px',
+                maxHeight: '80vh',
+                overflowY: 'auto'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '600' }}>Информация о пользователе</h3>
+                <button 
+                  onClick={() => setSelectedUser(null)}
+                  style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '32px',
+                  fontWeight: '600',
+                  margin: '0 auto 16px'
+                }}>
+                  {selectedUser.name?.charAt(0)?.toUpperCase() || 'U'}
+                </div>
+              </div>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <strong>Имя:</strong> {selectedUser.name || 'Не указано'}
+              </div>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <strong>Email:</strong> {selectedUser.email}
+              </div>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <strong>Телефон:</strong> {selectedUser.phone || 'Не указан'}
+              </div>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <strong>Павильон:</strong> {selectedUser.pavilionNumber || 'Не указан'}
+              </div>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <strong>ИНН:</strong> {selectedUser.inn || 'Не указан'}
+              </div>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <strong>Статус:</strong> 
+                <span style={{ 
+                  color: selectedUser.blocked ? '#f44336' : '#4caf50',
+                  fontWeight: '600',
+                  marginLeft: '8px'
+                }}>
+                  {selectedUser.blocked ? 'Заблокирован' : 'Активен'}
+                </span>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  className="btn btn-secondary"
+                  style={{ 
+                    flex: 1,
+                    background: selectedUser.blocked ? '#4caf50' : '#ff9800',
+                    color: 'white',
+                    border: 'none'
+                  }}
+                  onClick={() => {
+                    onUpdateUser?.(selectedUser.id, { blocked: !selectedUser.blocked });
+                    setSelectedUser(null);
+                  }}
+                >
+                  {selectedUser.blocked ? 'Разблокировать' : 'Заблокировать'}
+                </button>
+                
+                <button 
+                  className="btn btn-secondary"
+                  style={{ 
+                    flex: 1,
+                    background: '#f44336',
+                    color: 'white',
+                    border: 'none'
+                  }}
+                  onClick={() => {
+                    if (window.confirm(`Вы уверены, что хотите удалить пользователя ${selectedUser.name}?`)) {
+                      onDeleteUser?.(selectedUser.id);
+                      setSelectedUser(null);
+                    }
+                  }}
+                >
+                  Удалить
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -6,6 +6,8 @@ export interface User {
   avatar?: string;
   inn?: string;
   pavilionNumber?: string;
+  blocked?: boolean;
+  phone?: string;
 }
 
 export interface Product {

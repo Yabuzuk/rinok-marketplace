@@ -158,6 +158,17 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
+app.put('/api/users/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const updates = req.body;
+    await db.update('users', userId, updates);
+    res.json({ success: true, id: userId });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Clear all data endpoint (for development)
 app.delete('/api/clear-all', async (req, res) => {
   try {
