@@ -169,17 +169,20 @@ const AppContent: React.FC = () => {
   };
 
   const handleAddToCart = (product: Product, quantity: number = 1) => {
+    const minQuantity = product.minOrderQuantity || 1;
+    const addQuantity = Math.max(quantity, minQuantity);
+    
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.product.id === product.id);
       let newCart;
       if (existingItem) {
         newCart = prevCart.map(item =>
           item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: item.quantity + addQuantity }
             : item
         );
       } else {
-        newCart = [...prevCart, { product, quantity }];
+        newCart = [...prevCart, { product, quantity: addQuantity }];
       }
       localStorage.setItem('cart', JSON.stringify(newCart));
       return newCart;
@@ -285,13 +288,18 @@ const AppContent: React.FC = () => {
 
   const handleUpdateCartQuantity = (productId: string, quantity: number) => {
     setCart(prev => {
+      const item = prev.find(item => item.product.id === productId);
+      const minQuantity = item?.product.minOrderQuantity || 1;
+      
       let newCart;
       if (quantity <= 0) {
         newCart = prev.filter(item => item.product.id !== productId);
       } else {
+        // Округляем до кратного минимальному количеству
+        const adjustedQuantity = Math.max(Math.ceil(quantity / minQuantity) * minQuantity, minQuantity);
         newCart = prev.map(item => 
           item.product.id === productId 
-            ? { ...item, quantity }
+            ? { ...item, quantity: adjustedQuantity }
             : item
         );
       }

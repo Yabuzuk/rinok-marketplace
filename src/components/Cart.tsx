@@ -149,7 +149,7 @@ const Cart: React.FC<CartProps> = ({
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <button 
-                    onClick={() => onUpdateQuantity(item.product.id, item.quantity - 1)}
+                    onClick={() => onUpdateQuantity(item.product.id, item.quantity - (item.product.minOrderQuantity || 1))}
                     style={{
                       width: '32px',
                       height: '32px',
@@ -184,7 +184,7 @@ const Cart: React.FC<CartProps> = ({
                     }}
                   />
                   <button 
-                    onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1)}
+                    onClick={() => onUpdateQuantity(item.product.id, item.quantity + (item.product.minOrderQuantity || 1))}
                     style={{
                       width: '32px',
                       height: '32px',
