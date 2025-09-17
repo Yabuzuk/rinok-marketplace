@@ -43,7 +43,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
         email: 'admin@rinok.com',
         phone: '+7 (999) 000-00-00',
         role: 'admin',
-        type: 'admin'
+        type: 'admin',
+        isAdmin: true
       };
       
       onLogin('admin', adminData);

@@ -70,7 +70,11 @@ const AppContent: React.FC = () => {
   const handleLogin = async (userType: 'customer' | 'seller' | 'admin', userData?: any) => {
     let user;
     if (userData) {
-      if (userData.isLogin) {
+      if (userData.isAdmin) {
+        // Логика администратора - обходим проверку базы данных
+        user = userData;
+        console.log('Admin login successful:', user.id);
+      } else if (userData.isLogin) {
         // Логика входа - только проверка существующего пользователя
         try {
           const existingUser = await api.findUserByEmail(userData.email);
