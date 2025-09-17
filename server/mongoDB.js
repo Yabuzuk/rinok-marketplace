@@ -18,11 +18,25 @@ const productSchema = new mongoose.Schema({
 
 const orderSchema = new mongoose.Schema({
   id: String,
+  customerId: String,
   items: Array,
   total: Number,
-  customerName: String,
-  address: String,
   status: String,
+  deliveryAddress: String,
+  pavilionNumber: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const deliverySchema = new mongoose.Schema({
+  id: String,
+  orderId: String,
+  status: String,
+  pickupAddress: String,
+  deliveryAddress: String,
+  estimatedTime: String,
+  deliveryFee: Number,
+  customerPhone: String,
+  courierId: String,
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -43,6 +57,7 @@ const userSchema = new mongoose.Schema({
 const Product = mongoose.model('Product', productSchema);
 const Order = mongoose.model('Order', orderSchema);
 const User = mongoose.model('User', userSchema);
+const Delivery = mongoose.model('Delivery', deliverySchema);
 
 class MongoDB {
   constructor(connectionString) {
@@ -72,6 +87,9 @@ class MongoDB {
         case 'users':
           Model = User;
           break;
+        case 'deliveries':
+          Model = Delivery;
+          break;
         default:
           throw new Error(`Unknown collection: ${collection}`);
       }
@@ -99,6 +117,9 @@ class MongoDB {
         case 'users':
           Model = User;
           break;
+        case 'deliveries':
+          Model = Delivery;
+          break;
         default:
           throw new Error(`Unknown collection: ${collection}`);
       }
@@ -125,6 +146,9 @@ class MongoDB {
         case 'users':
           Model = User;
           break;
+        case 'deliveries':
+          Model = Delivery;
+          break;
         default:
           throw new Error(`Unknown collection: ${collection}`);
       }
@@ -150,6 +174,9 @@ class MongoDB {
         case 'users':
           Model = User;
           break;
+        case 'deliveries':
+          Model = Delivery;
+          break;
         default:
           throw new Error(`Unknown collection: ${collection}`);
       }
@@ -174,6 +201,9 @@ class MongoDB {
           break;
         case 'users':
           Model = User;
+          break;
+        case 'deliveries':
+          Model = Delivery;
           break;
         default:
           throw new Error(`Unknown collection: ${collection}`);
