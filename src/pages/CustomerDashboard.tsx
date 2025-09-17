@@ -34,7 +34,12 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
       if (response.ok) {
         const data = await response.json();
         console.log('API response:', data);
-        const suggestions = data.results?.map((item: any) => item.title?.text || item.subtitle?.text || item.text) || [];
+        const suggestions = data.results?.map((item: any) => {
+          const title = item.title?.text || item.text || '';
+          const subtitle = item.subtitle?.text || '';
+          // Объединяем адрес с городом и районом
+          return subtitle ? `${title}, ${subtitle}` : title;
+        }) || [];
         setAddressSuggestions(suggestions.slice(0, 5));
       }
     } catch (error) {
