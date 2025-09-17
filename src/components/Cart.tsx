@@ -147,7 +147,7 @@ const Cart: React.FC<CartProps> = ({
       return;
     }
     
-    if (deliveryFee === 0 && selectedAddress && !selectedAddress.toLowerCase().includes('новосибирск')) {
+    if (selectedAddress && !selectedAddress.toLowerCase().includes('новосибирск')) {
       alert('Доставка осуществляется только по Новосибирской области');
       return;
     }
@@ -393,7 +393,7 @@ const Cart: React.FC<CartProps> = ({
               </div>
             )}
             
-            {deliveryFee === 0 && selectedAddress && (
+            {selectedAddress && !selectedAddress.toLowerCase().includes('новосибирск') && (
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
