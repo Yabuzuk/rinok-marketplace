@@ -21,16 +21,16 @@ const Cart: React.FC<CartProps> = ({
 }) => {
   const [selectedAddress, setSelectedAddress] = React.useState<string>('');
   
-  if (!isOpen) return null;
-
-  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  
   // Устанавливаем первый адрес по умолчанию
   React.useEffect(() => {
     if (user?.addresses && user.addresses.length > 0 && !selectedAddress) {
       setSelectedAddress(user.addresses[0]);
     }
   }, [user?.addresses, selectedAddress]);
+  
+  if (!isOpen) return null;
+
+  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   const handleCheckout = async () => {
     if (!user || user.role !== 'customer') {
