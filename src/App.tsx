@@ -37,6 +37,13 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    
+    // Периодическая перезагрузка данных каждые 5 секунд
+    const interval = setInterval(() => {
+      loadData();
+    }, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   // Не перезагружаем данные при смене пользователя
