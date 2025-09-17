@@ -14,9 +14,10 @@ interface AdminDashboardProps {
   onDeleteProduct?: (productId: string) => void;
   onDeleteUser?: (userId: string) => void;
   onUpdateUser?: (userId: string, updates: Partial<UserType>) => void;
+  onUpdateOrderStatus?: (orderId: string, status: Order['status']) => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users, onUpdateProduct, onDeleteProduct, onDeleteUser, onUpdateUser }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users, onUpdateProduct, onDeleteProduct, onDeleteUser, onUpdateUser, onUpdateOrderStatus }) => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'delivered'>('all');
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'users'>('orders');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -260,18 +261,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
               <div style={{ display: 'flex', gap: '8px' }}>
                 {order.status === 'pending' && (
                   <>
-                    <button className="btn btn-primary" style={{ fontSize: '14px', padding: '8px 16px' }}>
+                    <button 
+                      className="btn btn-primary" 
+                      style={{ fontSize: '14px', padding: '8px 16px' }}
+                      onClick={() => onUpdateOrderStatus?.(order.id, 'confirmed')}
+                    >
                       <CheckCircle size={16} />
                       Подтвердить
                     </button>
-                    <button className="btn btn-secondary" style={{ fontSize: '14px', padding: '8px 16px', color: '#f44336' }}>
+                    <button 
+                      className="btn btn-secondary" 
+                      style={{ fontSize: '14px', padding: '8px 16px', color: '#f44336' }}
+                      onClick={() => onUpdateOrderStatus?.(order.id, 'cancelled')}
+                    >
                       <XCircle size={16} />
                       Отменить
                     </button>
                   </>
                 )}
                 {order.status === 'confirmed' && (
-                  <button className="btn btn-primary" style={{ fontSize: '14px', padding: '8px 16px' }}>
+                  <button 
+                    className="btn btn-primary" 
+                    style={{ fontSize: '14px', padding: '8px 16px' }}
+                    onClick={() => onUpdateOrderStatus?.(order.id, 'preparing')}
+                  >
                     Отправить в доставку
                   </button>
                 )}

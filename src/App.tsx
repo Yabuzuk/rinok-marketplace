@@ -37,6 +37,23 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // Добавляем тестовые данные для проверки процесса
+    const testOrder = {
+      id: 'test_order_1',
+      customerId: '1',
+      items: [{
+        productId: 'test_product',
+        productName: 'Яблоки',
+        quantity: 2,
+        price: 150
+      }],
+      total: 300,
+      status: 'pending' as const,
+      createdAt: new Date(),
+      deliveryAddress: 'ул. Примерная, 123'
+    };
+    
+    setOrders([testOrder]);
   }, []);
 
   // Не перезагружаем данные при смене пользователя
@@ -215,6 +232,19 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const handleUpdateOrderStatus = (orderId: string, status: Order['status']) => {
+    setOrders(prev => prev.map(order => 
+      order.id === orderId ? { ...order, status } : order
+    ));
+    
+    // Обновляем статус доставки при подтверждении заказа
+    if (status === 'confirmed') {
+      setDeliveries(prev => prev.map(delivery => 
+        delivery.orderId === orderId ? { ...delivery, status: 'pending' } : delivery
+      ));
+    }
+  };
+
   const handleAddProduct = async (newProduct: Omit<Product, 'id'>) => {
     console.log('Adding product:', newProduct);
     
@@ -240,6 +270,21 @@ const AppContent: React.FC = () => {
     try {
       const order = await api.createOrder(orderData);
       setOrders(prev => [...prev, order]);
+      
+      // Создаем доставку для заказа
+      const delivery = {
+        id: `delivery_${order.id}`,
+        orderId: order.id,
+        status: 'pending' as const,
+        pickupAddress: 'Центральный рынок, павильон продавца',
+        deliveryAddress: order.deliveryAddress,
+        estimatedTime: '30-45 мин',
+        deliveryFee: 150,
+        customerPhone: currentUser?.phone || '+7 (999) 000-00-00'
+      };
+      
+      setDeliveries(prev => [...prev, delivery]);
+      
       setCart([]);
       localStorage.removeItem('cart');
       return order;
@@ -421,6 +466,7 @@ const AppContent: React.FC = () => {
                     onDeleteProduct={handleDeleteProduct}
                     onDeleteUser={handleDeleteUser}
                     onUpdateUser={handleUpdateUser}
+                    onUpdateOrderStatus={handleUpdateOrderStatus}
                   />
                 ) : (
                   <Navigate to="/" replace />

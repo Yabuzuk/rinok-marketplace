@@ -101,7 +101,7 @@ const Cart: React.FC<CartProps> = ({
                   <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>
                     {item.product.name}
                   </h4>
-                  <p style={{ fontSize: '16px', fontWeight: '700', color: '#ff6b35', marginBottom: '4px' }}>
+                  <p style={{ fontSize: '16px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
                     {item.product.price} ₽
                   </p>
                   <p style={{ fontSize: '12px', color: '#666' }}>
@@ -179,7 +179,7 @@ const Cart: React.FC<CartProps> = ({
             marginBottom: '16px'
           }}>
             <span style={{ fontSize: '18px', fontWeight: '600' }}>Итого:</span>
-            <span style={{ fontSize: '20px', fontWeight: '700', color: '#ff6b35' }}>
+            <span style={{ fontSize: '20px', fontWeight: '700', color: '#4caf50' }}>
               {total} ₽
             </span>
           </div>
