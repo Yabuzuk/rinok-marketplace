@@ -22,6 +22,7 @@ const categories = [
 ];
 
 const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }) => {
+  console.log('HomePage products:', products?.length || 0);
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

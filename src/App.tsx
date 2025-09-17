@@ -64,6 +64,7 @@ const AppContent: React.FC = () => {
       setDeliveries(deliveriesData || []);
       
       console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders,', deliveriesData?.length || 0, 'deliveries');
+      console.log('Products data:', productsData);
     } catch (error) {
       console.error('Error loading data from server:', error);
       setProducts([]);
