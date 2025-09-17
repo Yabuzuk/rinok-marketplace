@@ -198,7 +198,9 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
           <h2 style={{ 
             fontSize: '24px', 
             fontWeight: '600',
-            marginBottom: '20px'
+            marginBottom: '20px',
+            color: 'white',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
           }}>
             {showPavilionFilter ? 'Павильоны' : 'Категории'}
           </h2>
@@ -212,12 +214,14 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                   setSelectedPavilion('all');
                 }}
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#8b4513',
+                  background: 'rgba(255,255,255,0.9)',
+                  border: '1px solid rgba(76, 175, 80, 0.3)',
+                  borderRadius: '8px',
+                  padding: '4px 8px',
+                  color: '#2e7d32',
                   fontSize: '14px',
                   cursor: 'pointer',
-                  textDecoration: 'underline'
+                  textDecoration: 'none'
                 }}
               >
                 ← Назад к категориям
@@ -355,7 +359,9 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
           <h2 style={{ 
             fontSize: '24px', 
             fontWeight: '600',
-            marginBottom: '20px'
+            marginBottom: '20px',
+            color: 'white',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
           }}>
             Популярные товары
           </h2>
