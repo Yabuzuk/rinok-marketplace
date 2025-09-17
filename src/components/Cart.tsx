@@ -22,6 +22,8 @@ const Cart: React.FC<CartProps> = ({
   const [selectedAddress, setSelectedAddress] = React.useState<string>('');
   const [deliveryDistance, setDeliveryDistance] = React.useState<number | null>(null);
   const [isCalculatingDelivery, setIsCalculatingDelivery] = React.useState(false);
+  const [cartAddressSuggestions, setCartAddressSuggestions] = React.useState<string[]>([]);
+  const [showCartSuggestions, setShowCartSuggestions] = React.useState(false);
   const [addressSuggestions, setAddressSuggestions] = React.useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [addressInput, setAddressInput] = React.useState('');
@@ -369,19 +371,86 @@ const Cart: React.FC<CartProps> = ({
                 ))}
               </select>
             ) : (
-              <input
-                type="text"
-                value={selectedAddress}
-                onChange={(e) => setSelectedAddress(e.target.value)}
-                placeholder="Введите адрес доставки в Новосибирске"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '8px',
-                  fontSize: '14px'
-                }}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  value={selectedAddress}
+                  onChange={async (e) => {
+                    setSelectedAddress(e.target.value);
+                    if (e.target.value.length >= 3) {
+                      try {
+                        const response = await fetch(
+                          `https://suggest-maps.yandex.ru/v1/suggest?` +
+                          `apikey=41a4deeb-0548-4d8e-b897-3c4a6bc08032&` +
+                          `text=${encodeURIComponent('Новосибирск ' + e.target.value)}&` +
+                          `results=5&` +
+                          `type=house`
+                        );
+                        
+                        if (response.ok) {
+                          const data = await response.json();
+                          const suggestions = data.results?.map((item: any) => {
+                            const title = item.title?.text || item.text || '';
+                            const subtitle = item.subtitle?.text || '';
+                            return subtitle ? `${title}, ${subtitle}` : title;
+                          }) || [];
+                          setCartAddressSuggestions(suggestions.slice(0, 5));
+                          setShowCartSuggestions(true);
+                        }
+                      } catch (error) {
+                        console.error('Ошибка получения подсказок:', error);
+                      }
+                    } else {
+                      setCartAddressSuggestions([]);
+                      setShowCartSuggestions(false);
+                    }
+                  }}
+                  onBlur={() => setTimeout(() => setShowCartSuggestions(false), 200)}
+                  placeholder="Введите адрес доставки в Новосибирске"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}
+                />
+                {showCartSuggestions && cartAddressSuggestions.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    background: 'white',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    zIndex: 1001,
+                    maxHeight: '150px',
+                    overflowY: 'auto'
+                  }}>
+                    {cartAddressSuggestions.map((suggestion, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          padding: '8px 12px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          borderBottom: index < cartAddressSuggestions.length - 1 ? '1px solid #f0f0f0' : 'none'
+                        }}
+                        onMouseDown={() => {
+                          setSelectedAddress(suggestion);
+                          setShowCartSuggestions(false);
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                      >
+                        {suggestion}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
           
