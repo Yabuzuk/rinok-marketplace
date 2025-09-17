@@ -30,7 +30,11 @@ const userSchema = new mongoose.Schema({
   id: String,
   name: String,
   email: String,
+  role: String,
   type: String,
+  avatar: String,
+  inn: String,
+  pavilionNumber: String,
   createdAt: { type: Date, default: Date.now }
 });
 
