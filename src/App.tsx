@@ -181,7 +181,7 @@ const AppContent: React.FC = () => {
     console.log('Adding product:', newProduct);
     
     try {
-      // Номер павильона берем из текущего пользователя
+      // Номер павильона и sellerId берем из текущего пользователя
       const productWithPavilion = {
         ...newProduct,
         sellerId: String(currentUser?.id),
