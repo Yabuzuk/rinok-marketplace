@@ -254,6 +254,11 @@ const AppContent: React.FC = () => {
       const order = await api.createOrder(orderData);
       setOrders(prev => [...prev, order]);
       
+      // Перезагружаем все данные чтобы все пользователи увидели новые заказы
+      setTimeout(() => {
+        loadData();
+      }, 1000);
+      
       setCart([]);
       localStorage.removeItem('cart');
       return order;

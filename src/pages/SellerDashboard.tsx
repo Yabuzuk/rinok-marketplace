@@ -58,6 +58,13 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const sellerOrders = orders.filter(order => 
     order.pavilionNumber === user.pavilionNumber
   );
+  
+  console.log('=== SELLER ORDERS DEBUG ===');
+  console.log('All orders:', orders.length);
+  console.log('User pavilion:', user.pavilionNumber);
+  console.log('Orders with pavilions:', orders.map(o => ({ id: o.id, pavilion: o.pavilionNumber })));
+  console.log('Filtered seller orders:', sellerOrders.length);
+  console.log('============================');
 
   const totalRevenue = sellerOrders.reduce((sum, order) => sum + order.total, 0);
   const totalProducts = sellerProducts.length;
