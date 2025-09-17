@@ -16,7 +16,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
 
   const handleAddToCart = () => {
     if (quantity < product.minOrderQuantity) {
-      alert(`Минимальное количество для заказа: ${product.minOrderQuantity}`);
+      alert(`Минимальное количество для заказа: ${product.minOrderQuantity} кг`);
       return;
     }
     onAddToCart(product, quantity);
@@ -164,7 +164,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
               В наличии
             </div>
             <div style={{ fontSize: '16px', fontWeight: '600' }}>
-              {product.stock} шт.
+              {product.stock} кг
             </div>
           </div>
           <div>
@@ -172,7 +172,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
               Мин. заказ
             </div>
             <div style={{ fontSize: '16px', fontWeight: '600' }}>
-              {product.minOrderQuantity} шт.
+              {product.minOrderQuantity} кг
             </div>
           </div>
         </div>
@@ -240,7 +240,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
             fontSize: '14px',
             color: '#d32f2f'
           }}>
-            Минимальное количество для заказа: {product.minOrderQuantity} шт.
+            Минимальное количество для заказа: {product.minOrderQuantity} кг
           </div>
         )}
 

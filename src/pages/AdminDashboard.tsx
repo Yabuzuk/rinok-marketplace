@@ -400,7 +400,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                       Продавец: {seller?.name || 'Неизвестный'}
                     </p>
                     <p style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>
-                      В наличии: {product.stock} шт.
+                      В наличии: {product.stock} кг
                     </p>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button 
