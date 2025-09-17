@@ -384,6 +384,7 @@ const AppContent: React.FC = () => {
                     onUpdateProduct={handleUpdateProduct}
                     onDeleteProduct={handleDeleteProduct}
                     onCreateOrder={handleCreateOrder}
+                    onUpdateOrderStatus={handleUpdateOrderStatus}
                   />
                 ) : (
                   <Navigate to="/" replace />

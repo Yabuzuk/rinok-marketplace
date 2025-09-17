@@ -11,6 +11,7 @@ interface SellerDashboardProps {
   onUpdateProduct?: (productId: string, updates: Partial<Product>) => void;
   onDeleteProduct?: (productId: string) => void;
   onCreateOrder?: (order: Omit<Order, 'id'>) => void;
+  onUpdateOrderStatus?: (orderId: string, status: Order['status']) => void;
 }
 
 const SellerDashboard: React.FC<SellerDashboardProps> = ({ 
@@ -20,7 +21,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   onAddProduct,
   onUpdateProduct,
   onDeleteProduct,
-  onCreateOrder
+  onCreateOrder,
+  onUpdateOrderStatus
 }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'analytics' | 'settings'>('products');
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -746,20 +748,14 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                               <button 
                                 className="btn btn-primary"
                                 style={{ fontSize: '14px', padding: '8px 16px' }}
-                                onClick={() => {
-                                  // TODO: Добавить обработчик подтверждения
-                                  alert('Заказ подтвержден!');
-                                }}
+                                onClick={() => onUpdateOrderStatus?.(order.id, 'confirmed')}
                               >
                                 Подтвердить
                               </button>
                               <button 
                                 className="btn btn-secondary"
                                 style={{ fontSize: '14px', padding: '8px 16px', color: '#f44336' }}
-                                onClick={() => {
-                                  // TODO: Добавить обработчик отмены
-                                  alert('Заказ отменен!');
-                                }}
+                                onClick={() => onUpdateOrderStatus?.(order.id, 'cancelled')}
                               >
                                 Отменить
                               </button>
@@ -770,10 +766,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                             <button 
                               className="btn btn-primary"
                               style={{ fontSize: '14px', padding: '8px 16px' }}
-                              onClick={() => {
-                                // TODO: Отправить в доставку
-                                alert('Заказ отправлен в доставку!');
-                              }}
+                              onClick={() => onUpdateOrderStatus?.(order.id, 'preparing')}
                             >
                               Отправить в доставку
                             </button>

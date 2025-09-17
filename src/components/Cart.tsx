@@ -23,7 +23,7 @@ const Cart: React.FC<CartProps> = ({
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!user || user.role !== 'customer') {
       alert('Войдите как покупатель для оформления заказа');
       return;
@@ -50,7 +50,7 @@ const Cart: React.FC<CartProps> = ({
     }, {} as Record<string, typeof items>);
 
     // Создаем отдельный заказ для каждого павильона
-    Object.entries(itemsByPavilion).forEach(([pavilionNumber, pavilionItems]) => {
+    const orderPromises = Object.entries(itemsByPavilion).map(async ([pavilionNumber, pavilionItems]) => {
       const pavilionTotal = pavilionItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
       
       const order = {
@@ -68,8 +68,10 @@ const Cart: React.FC<CartProps> = ({
         pavilionNumber
       };
 
-      onCreateOrder(order);
+      return await onCreateOrder(order);
     });
+
+    await Promise.all(orderPromises);
 
     alert('Заказы успешно созданы!');
     onClose();
