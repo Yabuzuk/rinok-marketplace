@@ -26,15 +26,15 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
       const response = await fetch(
         `https://suggest-maps.yandex.ru/v1/suggest?` +
         `apikey=41a4deeb-0548-4d8e-b897-3c4a6bc08032&` +
-        `text=Новосибирская область, ${encodeURIComponent(query)}&` +
-        `results=5&` +
-        `bbox=82.5,54.5~83.5,55.5`
+        `text=${encodeURIComponent(query + ' Новосибирск')}&` +
+        `results=5`
       );
       
       if (response.ok) {
         const data = await response.json();
-        const suggestions = data.results?.map((item: any) => item.title?.text || item.text) || [];
-        setAddressSuggestions(suggestions.filter((addr: string) => addr.includes('Новосибирск')));
+        console.log('API response:', data);
+        const suggestions = data.results?.map((item: any) => item.title?.text || item.subtitle?.text || item.text) || [];
+        setAddressSuggestions(suggestions.slice(0, 5));
       }
     } catch (error) {
       console.error('Ошибка получения подсказок:', error);
