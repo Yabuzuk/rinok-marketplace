@@ -30,11 +30,13 @@ const userSchema = new mongoose.Schema({
   id: String,
   name: String,
   email: String,
+  phone: String,
   role: String,
   type: String,
   avatar: String,
   inn: String,
   pavilionNumber: String,
+  blocked: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 
