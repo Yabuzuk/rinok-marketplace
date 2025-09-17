@@ -291,7 +291,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
                     fontSize: '32px',
                     fontWeight: '600',
                     margin: '0 auto 16px'
-                  }}}>
+                  }}>
                     {courier.name?.charAt(0)?.toUpperCase() || 'C'}
                   </div>
                 </div>
