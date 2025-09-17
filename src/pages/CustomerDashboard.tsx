@@ -17,11 +17,13 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
   const [addressInput, setAddressInput] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingAddress, setEditingAddress] = useState('');
+  const [editingSuggestions, setEditingSuggestions] = useState<string[]>([]);
+  const [showEditingSuggestions, setShowEditingSuggestions] = useState(false);
   
   const getAddressSuggestions = async (query: string) => {
     if (query.length < 3) {
       setAddressSuggestions([]);
-      return;
+      return [];
     }
     
     try {
@@ -35,18 +37,19 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
       
       if (response.ok) {
         const data = await response.json();
-        console.log('API response:', data);
         const suggestions = data.results?.map((item: any) => {
           const title = item.title?.text || item.text || '';
           const subtitle = item.subtitle?.text || '';
-          // Объединяем адрес с городом и районом
           return subtitle ? `${title}, ${subtitle}` : title;
         }) || [];
-        setAddressSuggestions(suggestions.slice(0, 5));
+        const finalSuggestions = suggestions.slice(0, 5);
+        setAddressSuggestions(finalSuggestions);
+        return finalSuggestions;
       }
     } catch (error) {
       console.error('Ошибка получения подсказок:', error);
     }
+    return [];
   };
 
   const getStatusColor = (status: Order['status']) => {
@@ -300,11 +303,19 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                         borderRadius: '8px'
                       }}>
                         {editingIndex === index ? (
-                          <div style={{ flex: 1, marginRight: '8px' }}>
+                          <div style={{ flex: 1, marginRight: '8px', position: 'relative' }}>
                             <input
                               type="text"
                               value={editingAddress}
-                              onChange={(e) => setEditingAddress(e.target.value)}
+                              onChange={(e) => {
+                                setEditingAddress(e.target.value);
+                                getAddressSuggestions(e.target.value).then((suggestions) => {
+                                  setEditingSuggestions(suggestions);
+                                  setShowEditingSuggestions(true);
+                                });
+                              }}
+                              onBlur={() => setTimeout(() => setShowEditingSuggestions(false), 200)}
+                              placeholder="Начните вводить адрес в Новосибирске..."
                               style={{
                                 width: '100%',
                                 padding: '4px 8px',
@@ -312,6 +323,41 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                                 borderRadius: '4px'
                               }}
                             />
+                            {showEditingSuggestions && editingSuggestions.length > 0 && (
+                              <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                left: 0,
+                                right: 0,
+                                background: 'white',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                zIndex: 1000,
+                                maxHeight: '150px',
+                                overflowY: 'auto'
+                              }}>
+                                {editingSuggestions.map((suggestion, suggestionIndex) => (
+                                  <div
+                                    key={suggestionIndex}
+                                    style={{
+                                      padding: '8px',
+                                      cursor: 'pointer',
+                                      fontSize: '12px',
+                                      borderBottom: suggestionIndex < editingSuggestions.length - 1 ? '1px solid #f0f0f0' : 'none'
+                                    }}
+                                    onMouseDown={() => {
+                                      setEditingAddress(suggestion);
+                                      setShowEditingSuggestions(false);
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                                  >
+                                    {suggestion}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <span style={{ color: '#666', flex: 1 }}>{address}</span>
