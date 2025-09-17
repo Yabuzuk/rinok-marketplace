@@ -51,19 +51,26 @@ const AppContent: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [productsData, ordersData, usersData, deliveriesData] = await Promise.all([
+      const [productsData, ordersData, usersData] = await Promise.all([
         api.getProducts(),
         api.getOrders(),
-        api.getUsers(),
-        api.getDeliveries()
+        api.getUsers()
       ]);
       
       setProducts(productsData || []);
       setOrders(ordersData || []);
       setUsers(usersData || []);
-      setDeliveries(deliveriesData || []);
       
-      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders,', deliveriesData?.length || 0, 'deliveries');
+      // Загружаем доставки отдельно
+      try {
+        const deliveriesData = await api.getDeliveries();
+        setDeliveries(deliveriesData || []);
+      } catch (error) {
+        console.log('Deliveries API not available yet, using empty array');
+        setDeliveries([]);
+      }
+      
+      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders');
       console.log('Products data:', productsData);
     } catch (error) {
       console.error('Error loading data from server:', error);
