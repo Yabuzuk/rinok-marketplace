@@ -12,6 +12,34 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses'>('orders');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showAddAddress, setShowAddAddress] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [addressInput, setAddressInput] = useState('');
+  
+  const getAddressSuggestions = async (query: string) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      return;
+    }
+    
+    try {
+      const response = await fetch(
+        `https://suggest-maps.yandex.ru/v1/suggest?` +
+        `apikey=41a4deeb-0548-4d8e-b897-3c4a6bc08032&` +
+        `text=Новосибирская область, ${encodeURIComponent(query)}&` +
+        `results=5&` +
+        `bbox=82.5,54.5~83.5,55.5`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const suggestions = data.results?.map((item: any) => item.title?.text || item.text) || [];
+        setAddressSuggestions(suggestions.filter((addr: string) => addr.includes('Новосибирск')));
+      }
+    } catch (error) {
+      console.error('Ошибка получения подсказок:', error);
+    }
+  };
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -276,8 +304,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                     </h3>
                     <form onSubmit={(e) => {
                       e.preventDefault();
-                      const formData = new FormData(e.target as HTMLFormElement);
-                      const newAddress = formData.get('address') as string;
+                      const newAddress = addressInput;
                       
                       if (newAddress.trim()) {
                         const currentAddresses = user.addresses || ['г. Москва, ул. Примерная, д. 123, кв. 45'];
@@ -286,18 +313,63 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                         onUpdateProfile?.({ addresses: updatedAddresses });
                         alert('Адрес добавлен!');
                         setShowAddAddress(false);
+                        setAddressInput('');
+                        setAddressSuggestions([]);
                       }
                     }}>
                       <div style={{ marginBottom: '16px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
                           Адрес
                         </label>
-                        <input 
-                          name="address"
-                          className="input"
-                          placeholder="г. Москва, ул. Примерная, д. 123, кв. 45"
-                          required
-                        />
+                        <div style={{ position: 'relative' }}>
+                          <input 
+                            name="address"
+                            className="input"
+                            placeholder="Начните вводить адрес в Новосибирске..."
+                            value={addressInput}
+                            onChange={(e) => {
+                              setAddressInput(e.target.value);
+                              getAddressSuggestions(e.target.value);
+                              setShowSuggestions(true);
+                            }}
+                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                            required
+                          />
+                          {showSuggestions && addressSuggestions.length > 0 && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '100%',
+                              left: 0,
+                              right: 0,
+                              background: 'white',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                              zIndex: 1000,
+                              maxHeight: '200px',
+                              overflowY: 'auto'
+                            }}>
+                              {addressSuggestions.map((suggestion, index) => (
+                                <div
+                                  key={index}
+                                  style={{
+                                    padding: '12px',
+                                    cursor: 'pointer',
+                                    borderBottom: index < addressSuggestions.length - 1 ? '1px solid #f0f0f0' : 'none'
+                                  }}
+                                  onMouseDown={() => {
+                                    setAddressInput(suggestion);
+                                    setShowSuggestions(false);
+                                  }}
+                                  onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                                  onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                                >
+                                  {suggestion}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div style={{ display: 'flex', gap: '12px' }}>
                         <button type="submit" className="btn btn-primary">

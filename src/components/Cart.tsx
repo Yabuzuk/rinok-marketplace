@@ -22,6 +22,34 @@ const Cart: React.FC<CartProps> = ({
   const [selectedAddress, setSelectedAddress] = React.useState<string>('');
   const [deliveryDistance, setDeliveryDistance] = React.useState<number | null>(null);
   const [isCalculatingDelivery, setIsCalculatingDelivery] = React.useState(false);
+  const [addressSuggestions, setAddressSuggestions] = React.useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = React.useState(false);
+  const [addressInput, setAddressInput] = React.useState('');
+  
+  const getAddressSuggestions = React.useCallback(async (query: string) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      return;
+    }
+    
+    try {
+      const response = await fetch(
+        `https://suggest-maps.yandex.ru/v1/suggest?` +
+        `apikey=41a4deeb-0548-4d8e-b897-3c4a6bc08032&` +
+        `text=Новосибирская область, ${encodeURIComponent(query)}&` +
+        `results=5&` +
+        `bbox=82.5,54.5~83.5,55.5` // Ограничиваем Новосибирской областью
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const suggestions = data.results?.map((item: any) => item.title?.text || item.text) || [];
+        setAddressSuggestions(suggestions.filter((addr: string) => addr.includes('Новосибирск')));
+      }
+    } catch (error) {
+      console.error('Ошибка получения подсказок:', error);
+    }
+  }, []);
   
   const calculateDeliveryDistance = React.useCallback(async (toAddress: string): Promise<number> => {
     if (!toAddress || !toAddress.toLowerCase().includes('новосибирск')) {
