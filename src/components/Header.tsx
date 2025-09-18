@@ -11,9 +11,14 @@ interface HeaderProps {
   onShowAuthModal: () => void;
   onDashboardClick: () => void;
   onHomeClick: () => void;
+  products?: any[];
+  onProductSelect?: (product: any) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCartClick, onLogin, onShowAuthModal, onDashboardClick, onHomeClick }) => {
+const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCartClick, onLogin, onShowAuthModal, onDashboardClick, onHomeClick, products = [], onProductSelect }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showResults, setShowResults] = useState(false);
 
   return (
     <header style={{ 
@@ -69,8 +74,75 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
           <input 
             className="input"
             placeholder="Найти товары"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (e.target.value.length >= 2) {
+                const filtered = products.filter(product => 
+                  product.name.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                  product.description?.toLowerCase().includes(e.target.value.toLowerCase())
+                ).slice(0, 5);
+                setSearchResults(filtered);
+                setShowResults(true);
+              } else {
+                setSearchResults([]);
+                setShowResults(false);
+              }
+            }}
+            onBlur={() => setTimeout(() => setShowResults(false), 200)}
             style={{ paddingLeft: '48px' }}
           />
+          {showResults && searchResults.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              background: 'white',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              zIndex: 1000,
+              maxHeight: '300px',
+              overflowY: 'auto'
+            }}>
+              {searchResults.map((product, index) => (
+                <div
+                  key={product.id}
+                  style={{
+                    padding: '12px',
+                    cursor: 'pointer',
+                    borderBottom: index < searchResults.length - 1 ? '1px solid #f0f0f0' : 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}
+                  onMouseDown={() => {
+                    onProductSelect?.(product);
+                    setSearchQuery('');
+                    setShowResults(false);
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                >
+                  <img 
+                    src={product.image} 
+                    alt={product.name}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      objectFit: 'cover',
+                      borderRadius: '4px'
+                    }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: '500', fontSize: '14px' }}>{product.name}</div>
+                    <div style={{ color: '#666', fontSize: '12px' }}>{product.price} ₽</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

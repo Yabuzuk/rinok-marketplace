@@ -350,6 +350,11 @@ const AppContent: React.FC = () => {
           onShowAuthModal={() => setShowAuthModal(true)}
           onDashboardClick={handleDashboardClick}
           onHomeClick={handleHomeClick}
+          products={products}
+          onProductSelect={(product) => {
+            handleAddToCart(product, 1);
+            setIsCartOpen(true);
+          }}
         />
         
         <AuthModal 
