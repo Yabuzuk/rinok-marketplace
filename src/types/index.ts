@@ -12,6 +12,9 @@ export interface User {
   rating?: number;
   isActive?: boolean;
   addresses?: string[];
+  companyName?: string;
+  paymentInfo?: string;
+  bankName?: string;
 }
 
 export interface Product {
