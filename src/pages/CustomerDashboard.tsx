@@ -113,8 +113,17 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                     {user.name}
                   </h3>
                   <p style={{ fontSize: '14px', color: '#666' }}>
-                    {user.email}
+                    Покупатель
                   </p>
+                  <button 
+                    className="btn btn-secondary"
+                    style={{ fontSize: '12px', padding: '4px 8px', marginTop: '8px' }}
+                    onClick={() => {
+                      alert('Функция смены роли в разработке');
+                    }}
+                  >
+                    Сменить роль
+                  </button>
                 </div>
               </div>
 

@@ -223,18 +223,6 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
                     <span>{seller.inn}</span>
                   </div>
                 )}
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Mail size={20} color="#4caf50" />
-                  <span>{seller.email}</span>
-                </div>
-                
-                {seller.phone && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Phone size={20} color="#4caf50" />
-                    <span>{seller.phone}</span>
-                  </div>
-                )}
               </div>
 
               <button

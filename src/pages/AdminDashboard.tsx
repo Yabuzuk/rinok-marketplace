@@ -598,6 +598,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                 <strong>Имя:</strong> {selectedUser.name || 'Не указано'}
               </div>
               
+              {selectedUser.companyName && (
+                <div style={{ marginBottom: '16px' }}>
+                  <strong>Название компании:</strong> {selectedUser.companyName}
+                </div>
+              )}
+              
               <div style={{ marginBottom: '16px' }}>
                 <strong>Email:</strong> {selectedUser.email}
               </div>
@@ -613,6 +619,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
               <div style={{ marginBottom: '16px' }}>
                 <strong>ИНН:</strong> {selectedUser.inn || 'Не указан'}
               </div>
+              
+              {selectedUser.paymentInfo && (
+                <div style={{ marginBottom: '16px' }}>
+                  <strong>Платежная инфо:</strong> {selectedUser.paymentInfo}
+                </div>
+              )}
+              
+              {selectedUser.bankName && (
+                <div style={{ marginBottom: '16px' }}>
+                  <strong>Банк:</strong> {selectedUser.bankName}
+                </div>
+              )}
               
               <div style={{ marginBottom: '20px' }}>
                 <strong>Статус:</strong> 
