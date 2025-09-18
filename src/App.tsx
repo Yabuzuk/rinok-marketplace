@@ -491,6 +491,7 @@ const AppContent: React.FC = () => {
                     onDeleteUser={handleDeleteUser}
                     onUpdateUser={handleUpdateUser}
                     onUpdateOrderStatus={handleUpdateOrderStatus}
+                    onLogout={() => setCurrentUser(null)}
                   />
                 ) : (
                   <Navigate to="/" replace />

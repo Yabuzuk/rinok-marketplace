@@ -15,9 +15,10 @@ interface AdminDashboardProps {
   onDeleteUser?: (userId: string) => void;
   onUpdateUser?: (userId: string, updates: Partial<UserType>) => void;
   onUpdateOrderStatus?: (orderId: string, status: Order['status']) => void;
+  onLogout?: () => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users, onUpdateProduct, onDeleteProduct, onDeleteUser, onUpdateUser, onUpdateOrderStatus }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users, onUpdateProduct, onDeleteProduct, onDeleteUser, onUpdateUser, onUpdateOrderStatus, onLogout }) => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'delivered'>('all');
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'users'>('orders');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -92,9 +93,33 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
           }}>
             Панель администратора
           </h1>
-          <p style={{ color: '#666', fontSize: '16px' }}>
-            Управление заказами и мониторинг системы
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p style={{ color: '#666', fontSize: '16px' }}>
+              Управление заказами и мониторинг системы
+            </p>
+            <button 
+              onClick={() => onLogout?.()}
+              style={{
+                padding: '8px 16px',
+                background: 'transparent',
+                border: '1px solid #f44336',
+                borderRadius: '8px',
+                color: '#f44336',
+                cursor: 'pointer',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16,17 21,12 16,7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Выйти
+            </button>
+          </div>
         </div>
 
         {/* Статистика */}
