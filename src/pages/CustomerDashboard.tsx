@@ -127,7 +127,6 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                   >
                     <option value="customer">Покупатель</option>
                     <option value="seller">Продавец</option>
-                    <option value="courier">Курьер</option>
                   </select>
                 </div>
               </div>

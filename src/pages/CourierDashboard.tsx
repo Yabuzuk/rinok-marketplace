@@ -371,7 +371,6 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
                   >
                     <option value="customer">Покупатель</option>
                     <option value="seller">Продавец</option>
-                    <option value="courier">Курьер</option>
                   </select>
                 </div>
                 

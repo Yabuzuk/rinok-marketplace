@@ -183,21 +183,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
           >
             Продавец
           </button>
-          <button
-            onClick={() => setUserType('courier')}
-            style={{
-              flex: 1,
-              padding: '8px 16px',
-              border: 'none',
-              borderRadius: '6px',
-              background: userType === 'courier' ? '#4caf50' : 'transparent',
-              color: userType === 'courier' ? 'white' : '#666',
-              fontSize: '14px',
-              cursor: 'pointer'
-            }}
-          >
-            Курьер
-          </button>
+
           <button
             onClick={() => setUserType('admin')}
             style={{
@@ -327,29 +313,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
             </>
           )}
 
-          {mode === 'register' && userType === 'courier' && (
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}>
-                Транспорт
-              </label>
-              <select
-                name="vehicle"
-                className="input"
-                value={formData.vehicle}
-                onChange={(e) => setFormData({ ...formData, vehicle: e.target.value })}
-                required
-              >
-                <option value="car">Автомобиль</option>
-                <option value="bike">Велосипед</option>
-                <option value="foot">Пешком</option>
-              </select>
-            </div>
-          )}
+
 
           <div style={{ marginBottom: '16px' }}>
             <label style={{
