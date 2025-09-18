@@ -438,6 +438,7 @@ const AppContent: React.FC = () => {
                     onDeleteProduct={handleDeleteProduct}
                     onCreateOrder={handleCreateOrder}
                     onUpdateOrderStatus={handleUpdateOrderStatus}
+                    onUpdateUser={handleUpdateUser}
                     onLogout={() => setCurrentUser(null)}
                   />
                 ) : (

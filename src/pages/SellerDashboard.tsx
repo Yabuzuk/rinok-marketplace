@@ -12,6 +12,7 @@ interface SellerDashboardProps {
   onDeleteProduct?: (productId: string) => void;
   onCreateOrder?: (order: Omit<Order, 'id'>) => void;
   onUpdateOrderStatus?: (orderId: string, status: Order['status']) => void;
+  onUpdateUser?: (userId: string, updates: Partial<UserType>) => void;
   onLogout?: () => void;
 }
 
@@ -24,6 +25,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   onDeleteProduct,
   onCreateOrder,
   onUpdateOrderStatus,
+  onUpdateUser,
   onLogout
 }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'analytics' | 'settings' | 'warehouse'>('products');
@@ -977,21 +979,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         console.log('Обновляем пользователя:', user.id, updates);
                         
                         try {
-                          const response = await fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(updates)
-                          });
-                          
-                          if (response.ok) {
-                            // Обновляем локальное состояние
-                            const updatedUser = { ...user, ...updates };
-                            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-                            alert('Настройки сохранены!');
-                            window.location.reload(); // Перезагружаем страницу
-                          } else {
-                            alert('Ошибка сохранения!');
-                          }
+                          await onUpdateUser?.(user.id, updates);
+                          console.log('Пользователь обновлен в базе данных');
+                          alert('Настройки сохранены!');
                         } catch (error) {
                           console.error('Ошибка:', error);
                           alert('Ошибка сохранения!');
