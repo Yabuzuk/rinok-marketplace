@@ -514,9 +514,20 @@ const AppContent: React.FC = () => {
           user={currentUser}
           cartItemsCount={cartItemsCount}
           onHomeClick={handleHomeClick}
-          onSearchClick={() => {}}
+          onSearchClick={() => {
+            if (currentUser) {
+              // Фокус на поле поиска в хедере
+              const searchInput = document.querySelector('input[placeholder="Найти товары"]') as HTMLInputElement;
+              searchInput?.focus();
+            }
+          }}
           onCartClick={() => setIsCartOpen(true)}
           onDashboardClick={handleDashboardClick}
+          onOrdersClick={() => {
+            if (currentUser?.role === 'customer') {
+              navigate('/customer-dashboard');
+            }
+          }}
         />
     </div>
   );
