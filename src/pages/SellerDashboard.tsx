@@ -963,24 +963,39 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   <div style={{ marginTop: '24px' }}>
                     <button 
                       className="btn btn-primary"
-                      onClick={() => {
-                        const inputs = document.querySelectorAll('.card input');
+                      onClick={async () => {
+                        const inputs = document.querySelectorAll('input[data-field]');
                         const updates: any = {};
                         
                         inputs.forEach((input: any) => {
                           const field = input.getAttribute('data-field');
-                          if (field && input.value) {
-                            updates[field] = input.value;
+                          if (field) {
+                            updates[field] = input.value || '';
                           }
                         });
                         
-                        fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
-                          method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify(updates)
-                        }).then(() => {
-                          alert('Настройки сохранены!');
-                        });
+                        console.log('Обновляем пользователя:', user.id, updates);
+                        
+                        try {
+                          const response = await fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(updates)
+                          });
+                          
+                          if (response.ok) {
+                            // Обновляем локальное состояние
+                            const updatedUser = { ...user, ...updates };
+                            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                            alert('Настройки сохранены!');
+                            window.location.reload(); // Перезагружаем страницу
+                          } else {
+                            alert('Ошибка сохранения!');
+                          }
+                        } catch (error) {
+                          console.error('Ошибка:', error);
+                          alert('Ошибка сохранения!');
+                        }
                       }}
                     >
                       Сохранить изменения
