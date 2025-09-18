@@ -47,6 +47,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   phone: String,
   role: String,
+  roles: [String],
   type: String,
   avatar: String,
   inn: String,

@@ -3,6 +3,7 @@ export interface User {
   email: string;
   name: string;
   role: 'customer' | 'seller' | 'admin' | 'courier';
+  roles?: ('customer' | 'seller' | 'admin' | 'courier')[];
   avatar?: string;
   inn?: string;
   pavilionNumber?: string;

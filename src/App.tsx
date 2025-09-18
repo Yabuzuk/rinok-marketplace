@@ -251,6 +251,26 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const handleSwitchRole = (newRole: 'customer' | 'seller' | 'admin' | 'courier') => {
+    if (!currentUser) return;
+    
+    // Добавляем новую роль в список ролей
+    const currentRoles = currentUser.roles || [currentUser.role];
+    const updatedRoles = currentRoles.includes(newRole) ? currentRoles : [...currentRoles, newRole];
+    
+    const updatedUser = { 
+      ...currentUser, 
+      role: newRole,
+      roles: updatedRoles
+    };
+    
+    setCurrentUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    
+    // Обновляем в базе
+    handleUpdateUser(currentUser.id, { role: newRole, roles: updatedRoles });
+  };
+
   const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
     try {
       await api.updateOrder(orderId, { status });
@@ -425,6 +445,7 @@ const AppContent: React.FC = () => {
                         alert('Ошибка сохранения адреса');
                       }
                     }}
+                    onSwitchRole={handleSwitchRole}
                     onLogout={() => setCurrentUser(null)}
                   />
                 ) : (

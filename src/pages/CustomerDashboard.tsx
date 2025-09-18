@@ -6,10 +6,11 @@ interface CustomerDashboardProps {
   user: UserType;
   orders: Order[];
   onUpdateProfile?: (updates: Partial<UserType>) => void;
+  onSwitchRole?: (role: 'customer' | 'seller' | 'admin' | 'courier') => void;
   onLogout?: () => void;
 }
 
-const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile, onLogout }) => {
+const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile, onSwitchRole, onLogout }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses'>('orders');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showAddAddress, setShowAddAddress] = useState(false);
@@ -115,15 +116,19 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                   <p style={{ fontSize: '14px', color: '#666' }}>
                     Покупатель
                   </p>
-                  <button 
-                    className="btn btn-secondary"
+                  <select 
+                    className="input"
                     style={{ fontSize: '12px', padding: '4px 8px', marginTop: '8px' }}
-                    onClick={() => {
-                      alert('Функция смены роли в разработке');
+                    value={user.role}
+                    onChange={(e) => {
+                      const newRole = e.target.value as 'customer' | 'seller' | 'admin' | 'courier';
+                      onSwitchRole?.(newRole);
                     }}
                   >
-                    Сменить роль
-                  </button>
+                    <option value="customer">Покупатель</option>
+                    <option value="seller">Продавец</option>
+                    <option value="courier">Курьер</option>
+                  </select>
                 </div>
               </div>
 
