@@ -34,12 +34,17 @@ const AppContent: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [skipNextReload, setSkipNextReload] = useState(false);
 
   useEffect(() => {
     loadData();
     
     // Периодическая перезагрузка данных каждые 5 секунд
     const interval = setInterval(() => {
+      if (skipNextReload) {
+        setSkipNextReload(false);
+        return;
+      }
       loadData();
     }, 5000);
     
@@ -195,6 +200,7 @@ const AppContent: React.FC = () => {
       setProducts(prev => prev.map(p => 
         p.id === productId ? { ...p, ...updates, id: productId } : p
       ));
+      setSkipNextReload(true); // Пропускаем следующую автоперезагрузку
       console.log('Product updated on server:', productId, 'Response:', updatedProduct);
     } catch (error) {
       console.error('Error updating product:', error);
