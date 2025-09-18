@@ -191,11 +191,11 @@ const AppContent: React.FC = () => {
 
   const handleUpdateProduct = async (productId: string, updates: Partial<Product>) => {
     try {
-      await api.updateProduct(productId, updates);
+      const updatedProduct = await api.updateProduct(productId, updates);
       setProducts(prev => prev.map(p => 
-        p.id === productId ? { ...p, ...updates } : p
+        p.id === productId ? { ...p, ...updates, id: productId } : p
       ));
-      console.log('Product updated on server:', productId);
+      console.log('Product updated on server:', productId, 'Response:', updatedProduct);
     } catch (error) {
       console.error('Error updating product:', error);
       alert('Ошибка обновления товара');
