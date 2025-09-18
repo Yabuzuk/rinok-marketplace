@@ -235,6 +235,14 @@ const AppContent: React.FC = () => {
   const handleUpdateUser = async (userId: string, updates: Partial<User>) => {
     try {
       await api.updateUser(userId, updates);
+      
+      // Обновляем текущего пользователя если это он
+      if (currentUser && currentUser.id === userId) {
+        const updatedUser = { ...currentUser, ...updates };
+        setCurrentUser(updatedUser);
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      }
+      
       loadData();
       console.log('User updated:', userId, updates);
     } catch (error) {
