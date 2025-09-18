@@ -202,23 +202,16 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
                   {seller.name?.charAt(0)?.toUpperCase() || 'П'}
                 </div>
                 <h3 style={{ fontSize: '24px', fontWeight: '600', color: '#2e7d32' }}>
-                  {seller.name}
+                  {seller.companyName || seller.name}
                 </h3>
+                {seller.companyName && seller.companyName !== seller.name && (
+                  <p style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
+                    Владелец: {seller.name}
+                  </p>
+                )}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Mail size={20} color="#4caf50" />
-                  <span>{seller.email}</span>
-                </div>
-                
-                {seller.phone && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Phone size={20} color="#4caf50" />
-                    <span>{seller.phone}</span>
-                  </div>
-                )}
-                
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <MapPin size={20} color="#4caf50" />
                   <span>Павильон {seller.pavilionNumber}</span>
@@ -228,6 +221,18 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontWeight: '600', color: '#4caf50' }}>ИНН:</span>
                     <span>{seller.inn}</span>
+                  </div>
+                )}
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Mail size={20} color="#4caf50" />
+                  <span>{seller.email}</span>
+                </div>
+                
+                {seller.phone && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Phone size={20} color="#4caf50" />
+                    <span>{seller.phone}</span>
                   </div>
                 )}
               </div>
