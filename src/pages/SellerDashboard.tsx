@@ -34,6 +34,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   // Слушатель для переключения на вкладку склада
   React.useEffect(() => {
@@ -885,6 +886,11 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         className="input" 
                         data-field="pavilionNumber"
                         defaultValue={user.pavilionNumber || ''}
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
                       />
                     </div>
                     
@@ -896,6 +902,11 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         className="input" 
                         data-field="companyName"
                         defaultValue={user.companyName || user.name}
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
                       />
                     </div>
                     
@@ -907,6 +918,11 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         className="input" 
                         data-field="inn"
                         defaultValue={user.inn || ''}
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
                       />
                     </div>
                     
@@ -919,6 +935,11 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         data-field="phone"
                         defaultValue={user.phone || ''}
                         placeholder="+7 (999) 123-45-67"
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
                       />
                     </div>
                     
@@ -931,6 +952,11 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         data-field="paymentInfo"
                         defaultValue={user.paymentInfo || ''}
                         placeholder="1234 5678 9012 3456"
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
                       />
                     </div>
                     
@@ -943,6 +969,11 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         data-field="bankName"
                         defaultValue={user.bankName || ''}
                         placeholder="Сбербанк"
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
                       />
                     </div>
                   </div>
@@ -962,34 +993,49 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     </div>
                   </div>
                   
-                  <div style={{ marginTop: '24px' }}>
-                    <button 
-                      className="btn btn-primary"
-                      onClick={async () => {
-                        const inputs = document.querySelectorAll('input[data-field]');
-                        const updates: any = {};
-                        
-                        inputs.forEach((input: any) => {
-                          const field = input.getAttribute('data-field');
-                          if (field) {
-                            updates[field] = input.value || '';
-                          }
-                        });
-                        
-                        console.log('Обновляем пользователя:', user.id, updates);
-                        
-                        try {
-                          await onUpdateUser?.(user.id, updates);
-                          console.log('Пользователь обновлен в базе данных');
-                          alert('Настройки сохранены!');
-                        } catch (error) {
-                          console.error('Ошибка:', error);
-                          alert('Ошибка сохранения!');
-                        }
-                      }}
-                    >
-                      Сохранить изменения
-                    </button>
+                  <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
+                    {!isEditingProfile ? (
+                      <button 
+                        className="btn btn-primary"
+                        onClick={() => setIsEditingProfile(true)}
+                      >
+                        Редактировать личные данные
+                      </button>
+                    ) : (
+                      <>
+                        <button 
+                          className="btn btn-primary"
+                          onClick={async () => {
+                            const inputs = document.querySelectorAll('input[data-field]');
+                            const updates: any = {};
+                            
+                            inputs.forEach((input: any) => {
+                              const field = input.getAttribute('data-field');
+                              if (field) {
+                                updates[field] = input.value || '';
+                              }
+                            });
+                            
+                            try {
+                              await onUpdateUser?.(user.id, updates);
+                              setIsEditingProfile(false);
+                              alert('Настройки сохранены!');
+                            } catch (error) {
+                              console.error('Ошибка:', error);
+                              alert('Ошибка сохранения!');
+                            }
+                          }}
+                        >
+                          Сохранить
+                        </button>
+                        <button 
+                          className="btn btn-secondary"
+                          onClick={() => setIsEditingProfile(false)}
+                        >
+                          Отмена
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
