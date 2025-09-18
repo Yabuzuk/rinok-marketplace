@@ -54,14 +54,15 @@ app.post('/api/products', async (req, res) => {
 app.put('/api/products/:id', async (req, res) => {
   try {
     const productId = req.params.id;
-    const updates = req.body;
-    // Для простоты создаем обновленный продукт
-    const updatedProduct = {
-      ...updates,
-      id: productId,
+    const updates = {
+      ...req.body,
       updatedAt: new Date().toISOString()
     };
-    await db.save('products', updatedProduct);
+    await db.update('products', productId, updates);
+    const updatedProduct = {
+      ...updates,
+      id: productId
+    };
     res.json(updatedProduct);
   } catch (error) {
     res.status(500).json({ error: error.message });
