@@ -184,21 +184,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
             Продавец
           </button>
 
-          <button
-            onClick={() => setUserType('admin')}
-            style={{
-              flex: 1,
-              padding: '8px 16px',
-              border: 'none',
-              borderRadius: '6px',
-              background: userType === 'admin' ? '#4caf50' : 'transparent',
-              color: userType === 'admin' ? 'white' : '#666',
-              fontSize: '14px',
-              cursor: 'pointer'
-            }}
-          >
-            Админ
-          </button>
+
         </div>
 
         <form onSubmit={handleSubmit}>

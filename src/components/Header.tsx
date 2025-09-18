@@ -7,7 +7,7 @@ interface HeaderProps {
   cartItemsCount: number;
   onAuthClick: () => void;
   onCartClick: () => void;
-  onLogin: (userType: 'customer' | 'seller', userData?: any) => void;
+  onLogin: (userType: 'customer' | 'seller' | 'admin', userData?: any) => void;
   onShowAuthModal: () => void;
   onDashboardClick: () => void;
   onHomeClick: () => void;
@@ -146,6 +146,37 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button 
+            onClick={() => onLogin('admin', {
+              id: 'admin',
+              name: 'Администратор',
+              email: 'admin@rinok.com',
+              phone: '+7 (999) 000-00-00',
+              role: 'admin',
+              type: 'admin',
+              isAdmin: true
+            })}
+            style={{ 
+              background: 'none',
+              border: '1px solid #f44336',
+              color: '#f44336',
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#f44336';
+              e.currentTarget.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.color = '#f44336';
+            }}
+          >
+            Админ
+          </button>
           <button 
             onClick={onCartClick}
             style={{ 
