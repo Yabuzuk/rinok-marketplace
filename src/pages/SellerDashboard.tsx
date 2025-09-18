@@ -181,7 +181,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
         pavilionNumber: editingProduct.pavilionNumber
       };
 
-      onUpdateProduct?.(editingProduct.id, updates);
+      console.log('Обновляем товар:', editingProduct.id, updates);
+      await onUpdateProduct?.(editingProduct.id, updates);
       setEditingProduct(null);
       setSelectedImage(null);
       setImagePreview('');
