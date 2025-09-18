@@ -863,6 +863,143 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
               </div>
             )}
 
+            {activeTab === 'settings' && (
+              <div>
+                <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
+                  Настройки продавца
+                </h2>
+
+                <div className="card">
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                    Общая информация о компании
+                  </h3>
+                  
+                  <div className="grid grid-2" style={{ gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        Номер склада
+                      </label>
+                      <input 
+                        className="input" 
+                        defaultValue={user.pavilionNumber || ''}
+                        onBlur={(e) => {
+                          // Обновляем данные пользователя через API
+                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ pavilionNumber: e.target.value })
+                          });
+                        }}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        Название (ИП или ООО)
+                      </label>
+                      <input 
+                        className="input" 
+                        defaultValue={user.companyName || user.name}
+                        onBlur={(e) => {
+                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ companyName: e.target.value })
+                          });
+                        }}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        ИНН
+                      </label>
+                      <input 
+                        className="input" 
+                        defaultValue={user.inn || ''}
+                        onBlur={(e) => {
+                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ inn: e.target.value })
+                          });
+                        }}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        Телефон
+                      </label>
+                      <input 
+                        className="input" 
+                        defaultValue={user.phone || ''}
+                        placeholder="+7 (999) 123-45-67"
+                        onBlur={(e) => {
+                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ phone: e.target.value })
+                          });
+                        }}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        Номер карты / Мобильный банк
+                      </label>
+                      <input 
+                        className="input" 
+                        defaultValue={user.paymentInfo || ''}
+                        placeholder="1234 5678 9012 3456"
+                        onBlur={(e) => {
+                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ paymentInfo: e.target.value })
+                          });
+                        }}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        Наименование банка
+                      </label>
+                      <input 
+                        className="input" 
+                        defaultValue={user.bankName || ''}
+                        placeholder="Сбербанк"
+                        onBlur={(e) => {
+                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ bankName: e.target.value })
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginTop: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                      Статус аккаунта
+                    </label>
+                    <div style={{
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      background: user.blocked ? '#ffebee' : '#e8f5e8',
+                      color: user.blocked ? '#c62828' : '#2e7d32',
+                      fontWeight: '500'
+                    }}>
+                      {user.blocked ? 'Заблокирован' : 'Активен'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'warehouse' && (
               <div>
                 <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
