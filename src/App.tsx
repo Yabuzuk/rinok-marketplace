@@ -528,6 +528,15 @@ const AppContent: React.FC = () => {
               navigate('/customer-dashboard');
             }
           }}
+          onWarehouseClick={() => {
+            if (currentUser?.role === 'seller') {
+              navigate('/seller-dashboard');
+              // Устанавливаем вкладку склад через URL параметр
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('setWarehouseTab'));
+              }, 100);
+            }
+          }}
         />
     </div>
   );

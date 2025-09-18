@@ -26,12 +26,19 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   onUpdateOrderStatus,
   onLogout
 }) => {
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'analytics' | 'settings'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'analytics' | 'settings' | 'warehouse'>('products');
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Слушатель для переключения на вкладку склада
+  React.useEffect(() => {
+    const handleWarehouseTab = () => setActiveTab('warehouse');
+    window.addEventListener('setWarehouseTab', handleWarehouseTab);
+    return () => window.removeEventListener('setWarehouseTab', handleWarehouseTab);
+  }, []);
 
   // Очищаем localStorage при загрузке
   React.useEffect(() => {
@@ -852,6 +859,92 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     </h3>
                     <p style={{ color: '#666' }}>Товаров</p>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'warehouse' && (
+              <div>
+                <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
+                  Склад - Остатки товаров
+                </h2>
+
+                <div className="card">
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: '2fr 1fr 1fr 1fr', 
+                    gap: '16px',
+                    padding: '12px 16px',
+                    borderBottom: '2px solid #f0f0f0',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    color: '#666'
+                  }}>
+                    <div>Название</div>
+                    <div>Остаток</div>
+                    <div>Мин. кол-во</div>
+                    <div>Действия</div>
+                  </div>
+                  
+                  {sellerProducts.map(product => (
+                    <div key={product.id} style={{
+                      display: 'grid',
+                      gridTemplateColumns: '2fr 1fr 1fr 1fr',
+                      gap: '16px',
+                      padding: '16px',
+                      borderBottom: '1px solid #f0f0f0',
+                      alignItems: 'center'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '500', marginBottom: '4px' }}>{product.name}</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>{product.category}</div>
+                      </div>
+                      
+                      <div style={{ 
+                        fontSize: '16px', 
+                        fontWeight: '600',
+                        color: product.stock < (product.minOrderQuantity || 1) ? '#f44336' : '#4caf50'
+                      }}>
+                        {product.stock} кг
+                      </div>
+                      
+                      <div style={{ fontSize: '14px', color: '#666' }}>
+                        {product.minOrderQuantity || 1} кг
+                      </div>
+                      
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                          type="number"
+                          min="0"
+                          defaultValue={product.stock}
+                          style={{
+                            width: '80px',
+                            padding: '4px 8px',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '4px',
+                            fontSize: '14px'
+                          }}
+                          onBlur={(e) => {
+                            const newStock = Number(e.target.value);
+                            if (newStock !== product.stock) {
+                              onUpdateProduct?.(product.id, { stock: newStock });
+                            }
+                          }}
+                        />
+                        <span style={{ fontSize: '12px', color: '#666' }}>кг</span>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {sellerProducts.length === 0 && (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      padding: '48px',
+                      color: '#666'
+                    }}>
+                      Нет товаров на складе
+                    </div>
+                  )}
                 </div>
               </div>
             )}

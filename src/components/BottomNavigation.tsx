@@ -14,6 +14,7 @@ interface BottomNavigationProps {
   onCartClick: () => void;
   onDashboardClick: () => void;
   onOrdersClick?: () => void;
+  onWarehouseClick?: () => void;
 }
 
 const BottomNavigation: React.FC<BottomNavigationProps> = ({
@@ -23,7 +24,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onSearchClick,
   onCartClick,
   onDashboardClick,
-  onOrdersClick
+  onOrdersClick,
+  onWarehouseClick
 }) => {
   if (!user) {
     // Гостевое меню
@@ -70,7 +72,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           { icon: <BarChart3 size={20} />, label: 'Статистика', onClick: onDashboardClick },
           { icon: <Package size={20} />, label: 'Товары', onClick: onDashboardClick },
           { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onDashboardClick },
-          { icon: <Warehouse size={20} />, label: 'Склад', onClick: onDashboardClick },
+          { icon: <Warehouse size={20} />, label: 'Склад', onClick: onWarehouseClick },
           { icon: <User size={20} />, label: 'Профиль', onClick: onDashboardClick }
         ];
       
