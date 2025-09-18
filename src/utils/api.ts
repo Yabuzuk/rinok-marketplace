@@ -19,12 +19,16 @@ export const api = {
   },
 
   updateProduct: async (productId: string, updates: any) => {
+    console.log('API updateProduct called with:', { productId, updates });
+    console.log('Request URL:', `${API_BASE}/products/${productId}`);
     const response = await fetch(`${API_BASE}/products/${productId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
     });
-    return response.json();
+    const result = await response.json();
+    console.log('API updateProduct response:', { status: response.status, result });
+    return result;
   },
 
   deleteProduct: async (productId: string) => {
