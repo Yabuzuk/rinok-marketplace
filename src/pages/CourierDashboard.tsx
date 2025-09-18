@@ -9,6 +9,7 @@ interface CourierDashboardProps {
   onAcceptOrder?: (orderId: string) => void;
   onUpdateOrderStatus?: (orderId: string, status: Order['status']) => void;
   onUpdateProfile?: (updates: Partial<UserType>) => void;
+  onSwitchRole?: (role: 'customer' | 'seller' | 'admin' | 'courier') => void;
   onLogout?: () => void;
 }
 
@@ -18,6 +19,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
   onAcceptOrder,
   onUpdateOrderStatus,
   onUpdateProfile,
+  onSwitchRole,
   onLogout
 }) => {
   const [activeTab, setActiveTab] = useState<'available' | 'active' | 'completed' | 'profile'>('available');
@@ -354,6 +356,23 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
                 
                 <div style={{ marginBottom: '16px' }}>
                   <strong>Имя:</strong> {courier.name}
+                </div>
+                
+                <div style={{ marginBottom: '16px' }}>
+                  <strong>Роль:</strong> Курьер
+                  <select 
+                    className="input"
+                    style={{ fontSize: '12px', padding: '4px 8px', marginTop: '8px', width: '150px' }}
+                    value={courier.role}
+                    onChange={(e) => {
+                      const newRole = e.target.value as 'customer' | 'seller' | 'admin' | 'courier';
+                      onSwitchRole?.(newRole);
+                    }}
+                  >
+                    <option value="customer">Покупатель</option>
+                    <option value="seller">Продавец</option>
+                    <option value="courier">Курьер</option>
+                  </select>
                 </div>
                 
                 <div style={{ marginBottom: '16px' }}>

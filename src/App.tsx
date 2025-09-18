@@ -468,6 +468,7 @@ const AppContent: React.FC = () => {
                     onCreateOrder={handleCreateOrder}
                     onUpdateOrderStatus={handleUpdateOrderStatus}
                     onUpdateUser={handleUpdateUser}
+                    onSwitchRole={handleSwitchRole}
                     onLogout={() => setCurrentUser(null)}
                   />
                 ) : (
@@ -497,6 +498,7 @@ const AppContent: React.FC = () => {
                       setCurrentUser(updatedUser);
                       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
                     }}
+                    onSwitchRole={handleSwitchRole}
                     onLogout={() => setCurrentUser(null)}
                   />
                 ) : (

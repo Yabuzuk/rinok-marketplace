@@ -13,6 +13,7 @@ interface SellerDashboardProps {
   onCreateOrder?: (order: Omit<Order, 'id'>) => void;
   onUpdateOrderStatus?: (orderId: string, status: Order['status']) => void;
   onUpdateUser?: (userId: string, updates: Partial<UserType>) => void;
+  onSwitchRole?: (role: 'customer' | 'seller' | 'admin' | 'courier') => void;
   onLogout?: () => void;
 }
 
@@ -26,6 +27,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   onCreateOrder,
   onUpdateOrderStatus,
   onUpdateUser,
+  onSwitchRole,
   onLogout
 }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'analytics' | 'settings' | 'warehouse'>('products');
@@ -244,6 +246,19 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   <p style={{ fontSize: '14px', color: '#666' }}>
                     Продавец
                   </p>
+                  <select 
+                    className="input"
+                    style={{ fontSize: '12px', padding: '4px 8px', marginTop: '8px' }}
+                    value={user.role}
+                    onChange={(e) => {
+                      const newRole = e.target.value as 'customer' | 'seller' | 'admin' | 'courier';
+                      onSwitchRole?.(newRole);
+                    }}
+                  >
+                    <option value="customer">Покупатель</option>
+                    <option value="seller">Продавец</option>
+                    <option value="courier">Курьер</option>
+                  </select>
                 </div>
               </div>
 
