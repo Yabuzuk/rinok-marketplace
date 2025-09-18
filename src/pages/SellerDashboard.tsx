@@ -176,7 +176,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
         category: formData.get('category') as string,
         description: formData.get('description') as string,
         stock: Number(formData.get('stock')),
-        minOrderQuantity: Number(formData.get('minOrderQuantity'))
+        minOrderQuantity: Number(formData.get('minOrderQuantity')),
+        sellerId: editingProduct.sellerId,
+        pavilionNumber: editingProduct.pavilionNumber
       };
 
       onUpdateProduct?.(editingProduct.id, updates);
