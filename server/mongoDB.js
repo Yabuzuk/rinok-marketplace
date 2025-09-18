@@ -53,6 +53,9 @@ const userSchema = new mongoose.Schema({
   pavilionNumber: String,
   blocked: { type: Boolean, default: false },
   addresses: [String],
+  companyName: String,
+  paymentInfo: String,
+  bankName: String,
   createdAt: { type: Date, default: Date.now }
 });
 
