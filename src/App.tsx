@@ -4,6 +4,7 @@ import Header from './components/Header';
 import AuthModal from './components/AuthModal';
 import EmojiBackground from './components/EmojiBackground';
 import Cart from './components/Cart';
+import BottomNavigation from './components/BottomNavigation';
 import HomePage from './pages/HomePage';
 import CustomerDashboard from './pages/CustomerDashboard';
 import SellerDashboard from './pages/SellerDashboard';
@@ -363,7 +364,7 @@ const AppContent: React.FC = () => {
           onLogin={handleLogin}
         />
 
-        <main>
+        <main style={{ paddingBottom: '80px' }}>
           {loading ? (
             <div style={{
               display: 'flex',
@@ -509,11 +510,14 @@ const AppContent: React.FC = () => {
           onCreateOrder={handleCreateOrder}
         />
 
-
-
-
-
-
+        <BottomNavigation
+          user={currentUser}
+          cartItemsCount={cartItemsCount}
+          onHomeClick={handleHomeClick}
+          onSearchClick={() => {}}
+          onCartClick={() => setIsCartOpen(true)}
+          onDashboardClick={handleDashboardClick}
+        />
     </div>
   );
 };
