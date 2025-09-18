@@ -21,13 +21,26 @@ export const api = {
   updateProduct: async (productId: string, updates: any) => {
     console.log('API updateProduct called with:', { productId, updates });
     console.log('Request URL:', `${API_BASE}/products/${productId}`);
-    const response = await fetch(`${API_BASE}/products/${productId}`, {
+    console.log('Request body:', JSON.stringify(updates));
+    
+    const requestOptions = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
-    });
+    };
+    console.log('Full request options:', requestOptions);
+    
+    const response = await fetch(`${API_BASE}/products/${productId}`, requestOptions);
+    console.log('Response status:', response.status, response.statusText);
+    
     const result = await response.json();
     console.log('API updateProduct response:', { status: response.status, result });
+    
+    if (response.status !== 200) {
+      console.error('Update failed with status:', response.status);
+      throw new Error(`Update failed: ${response.status} ${response.statusText}`);
+    }
+    
     return result;
   },
 
