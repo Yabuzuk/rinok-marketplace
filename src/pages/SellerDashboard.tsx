@@ -881,15 +881,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       </label>
                       <input 
                         className="input" 
+                        data-field="pavilionNumber"
                         defaultValue={user.pavilionNumber || ''}
-                        onBlur={(e) => {
-                          // Обновляем данные пользователя через API
-                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ pavilionNumber: e.target.value })
-                          });
-                        }}
                       />
                     </div>
                     
@@ -899,14 +892,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       </label>
                       <input 
                         className="input" 
+                        data-field="companyName"
                         defaultValue={user.companyName || user.name}
-                        onBlur={(e) => {
-                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ companyName: e.target.value })
-                          });
-                        }}
                       />
                     </div>
                     
@@ -916,14 +903,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       </label>
                       <input 
                         className="input" 
+                        data-field="inn"
                         defaultValue={user.inn || ''}
-                        onBlur={(e) => {
-                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ inn: e.target.value })
-                          });
-                        }}
                       />
                     </div>
                     
@@ -933,15 +914,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       </label>
                       <input 
                         className="input" 
+                        data-field="phone"
                         defaultValue={user.phone || ''}
                         placeholder="+7 (999) 123-45-67"
-                        onBlur={(e) => {
-                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ phone: e.target.value })
-                          });
-                        }}
                       />
                     </div>
                     
@@ -951,15 +926,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       </label>
                       <input 
                         className="input" 
+                        data-field="paymentInfo"
                         defaultValue={user.paymentInfo || ''}
                         placeholder="1234 5678 9012 3456"
-                        onBlur={(e) => {
-                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ paymentInfo: e.target.value })
-                          });
-                        }}
                       />
                     </div>
                     
@@ -969,15 +938,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       </label>
                       <input 
                         className="input" 
+                        data-field="bankName"
                         defaultValue={user.bankName || ''}
                         placeholder="Сбербанк"
-                        onBlur={(e) => {
-                          fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ bankName: e.target.value })
-                          });
-                        }}
                       />
                     </div>
                   </div>
@@ -995,6 +958,33 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     }}>
                       {user.blocked ? 'Заблокирован' : 'Активен'}
                     </div>
+                  </div>
+                  
+                  <div style={{ marginTop: '24px' }}>
+                    <button 
+                      className="btn btn-primary"
+                      onClick={() => {
+                        const inputs = document.querySelectorAll('.card input');
+                        const updates: any = {};
+                        
+                        inputs.forEach((input: any) => {
+                          const field = input.getAttribute('data-field');
+                          if (field && input.value) {
+                            updates[field] = input.value;
+                          }
+                        });
+                        
+                        fetch(`${process.env.NODE_ENV === 'production' ? 'https://rinok-server.onrender.com' : 'http://localhost:3001'}/api/users/${user.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(updates)
+                        }).then(() => {
+                          alert('Настройки сохранены!');
+                        });
+                      }}
+                    >
+                      Сохранить изменения
+                    </button>
                   </div>
                 </div>
               </div>
