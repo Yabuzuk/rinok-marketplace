@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   Home, Search, ShoppingCart, User, Package, 
   BarChart3, Clipboard, Warehouse, Truck, 
-  Map, Clock, Users, Settings, Shield
+  Map, Clock, Users, Settings, Shield, Store, Menu
 } from 'lucide-react';
 import { User as UserType } from '../types';
 
@@ -15,6 +15,8 @@ interface BottomNavigationProps {
   onDashboardClick: () => void;
   onOrdersClick?: () => void;
   onWarehouseClick?: () => void;
+  onPavilionSelect?: (pavilionNumber: string) => void;
+  pavilions?: string[];
 }
 
 const BottomNavigation: React.FC<BottomNavigationProps> = ({
@@ -25,8 +27,12 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onCartClick,
   onDashboardClick,
   onOrdersClick,
-  onWarehouseClick
+  onWarehouseClick,
+  onPavilionSelect,
+  pavilions = []
 }) => {
+  const [showPavilions, setShowPavilions] = React.useState(false);
+  const [showBurgerMenu, setShowBurgerMenu] = React.useState(false);
   if (!user) {
     // Гостевое меню
     return (
@@ -60,11 +66,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
     switch (user.role) {
       case 'customer':
         return [
-          { icon: <Search size={20} />, label: 'Поиск', onClick: onSearchClick },
-          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onOrdersClick },
-          { icon: <Home size={28} />, label: 'Главная', onClick: onHomeClick, isMain: true },
+          { icon: <Store size={20} />, label: 'Павильоны', onClick: () => setShowPavilions(true) },
           { icon: <ShoppingCart size={20} />, label: 'Корзина', onClick: onCartClick, badge: cartItemsCount },
-          { icon: <User size={20} />, label: 'Профиль', onClick: onDashboardClick }
+          { icon: <Home size={28} />, label: 'Главная', onClick: onHomeClick, isMain: true },
+          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onOrdersClick },
+          { icon: <Menu size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true) }
         ];
       
       case 'seller':
@@ -123,6 +129,115 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           isMain={item.isMain}
         />
       ))}
+      
+      {/* Модальное окно павильонов */}
+      {showPavilions && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }} onClick={() => setShowPavilions(false)}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            width: '300px',
+            maxHeight: '400px',
+            overflowY: 'auto'
+          }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ marginBottom: '16px', textAlign: 'center' }}>Выберите павильон</h3>
+            {pavilions.map(pavilion => (
+              <button
+                key={pavilion}
+                onClick={() => {
+                  onPavilionSelect?.(pavilion);
+                  setShowPavilions(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  margin: '4px 0',
+                  border: '1px solid #c8e6c9',
+                  borderRadius: '8px',
+                  background: 'white',
+                  cursor: 'pointer',
+                  textAlign: 'left'
+                }}
+              >
+                🏢 Павильон {pavilion}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Бургер меню */}
+      {showBurgerMenu && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }} onClick={() => setShowBurgerMenu(false)}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            width: '250px'
+          }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ marginBottom: '16px', textAlign: 'center' }}>Меню</h3>
+            <button
+              onClick={() => {
+                onDashboardClick();
+                setShowBurgerMenu(false);
+              }}
+              style={{
+                width: '100%',
+                padding: '12px',
+                margin: '4px 0',
+                border: '1px solid #c8e6c9',
+                borderRadius: '8px',
+                background: 'white',
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+            >
+              👤 Профиль
+            </button>
+            <button
+              onClick={() => {
+                alert('Раздел "О нас" в разработке');
+                setShowBurgerMenu(false);
+              }}
+              style={{
+                width: '100%',
+                padding: '12px',
+                margin: '4px 0',
+                border: '1px solid #c8e6c9',
+                borderRadius: '8px',
+                background: 'white',
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+            >
+              ℹ️ О нас
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

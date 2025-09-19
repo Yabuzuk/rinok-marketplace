@@ -578,6 +578,8 @@ const AppContent: React.FC = () => {
               }, 100);
             }
           }}
+          onPavilionSelect={(pavilionNumber) => navigate(`/pavilion/${pavilionNumber}`)}
+          pavilions={Array.from(new Set(products.filter(p => p.pavilionNumber).map(p => p.pavilionNumber))).sort()}
         />
     </div>
   );
