@@ -11,7 +11,7 @@ interface CustomerDashboardProps {
 }
 
 const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile, onSwitchRole, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses'>('orders');
+  const [activeTab, setActiveTab] = useState<'profile' | 'addresses'>('profile');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
@@ -129,25 +129,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
               </div>
 
               <nav>
-                <button
-                  onClick={() => setActiveTab('orders')}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: 'none',
-                    background: activeTab === 'orders' ? '#f5f5f5' : 'transparent',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    cursor: 'pointer',
-                    marginBottom: '8px',
-                    fontSize: '14px'
-                  }}
-                >
-                  <Package size={18} />
-                  Мои заказы
-                </button>
+
 
                 <button
                   onClick={() => setActiveTab('addresses')}
@@ -218,91 +200,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
 
           {/* Main Content */}
           <div style={{ flex: 1 }}>
-            {activeTab === 'orders' && (
-              <div>
-                <h2 style={{ 
-                  fontSize: '24px', 
-                  fontWeight: '600',
-                  marginBottom: '24px'
-                }}>
-                  Мои заказы
-                </h2>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {(() => {
-                    const customerOrders = orders.filter(order => String(order.customerId) === String(user.id));
-                    console.log('=== CUSTOMER ORDERS DEBUG ===');
-                    console.log('All orders:', orders.length);
-                    console.log('User ID:', user.id, 'type:', typeof user.id);
-                    console.log('Customer orders:', customerOrders.length);
-                    console.log('Orders by customer ID:', orders.map(o => ({ id: o.id, customerId: o.customerId, type: typeof o.customerId })));
-                    console.log('==============================');
-                    return customerOrders;
-                  })().map(order => (
-                    <div key={order.id} className="card">
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: '16px'
-                      }}>
-                        <div>
-                          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
-                            Заказ #{order.id.slice(-6)}
-                          </h3>
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '8px',
-                            color: '#666',
-                            fontSize: '14px'
-                          }}>
-                            <Clock size={14} />
-                            {new Date(order.createdAt).toLocaleDateString('ru-RU')}
-                          </div>
-                        </div>
-
-                        <div style={{
-                          padding: '4px 12px',
-                          borderRadius: '20px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          color: getStatusColor(order.status),
-                          background: `${getStatusColor(order.status)}20`
-                        }}>
-                          {getStatusText(order.status)}
-                        </div>
-                      </div>
-
-                      <div style={{ marginBottom: '16px' }}>
-                        <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-                          Товаров: {order.items.length}
-                        </p>
-                        <p style={{ fontSize: '14px', color: '#666' }}>
-                          Адрес: {order.deliveryAddress}
-                        </p>
-                      </div>
-
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <span style={{ fontSize: '18px', fontWeight: '600' }}>
-                          {order.total} ₽
-                        </span>
-                        <button 
-                          className="btn btn-secondary"
-                          onClick={() => setSelectedOrder(order)}
-                        >
-                          Подробнее
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {activeTab === 'addresses' && (
               <div>

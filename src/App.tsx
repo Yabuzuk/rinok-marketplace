@@ -11,6 +11,7 @@ import SellerDashboard from './pages/SellerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import CourierDashboard from './pages/CourierDashboard';
 import PavilionPage from './pages/PavilionPage';
+import OrdersPage from './pages/OrdersPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 import { api } from './utils/api';
@@ -436,6 +437,20 @@ const AppContent: React.FC = () => {
             />
             
             <Route 
+              path="/orders" 
+              element={
+                currentUser ? (
+                  <OrdersPage 
+                    user={currentUser}
+                    orders={orders}
+                  />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              } 
+            />
+            
+            <Route 
               path="/customer-dashboard" 
               element={
                 currentUser?.role === 'customer' ? (
@@ -565,8 +580,8 @@ const AppContent: React.FC = () => {
           onCartClick={() => setIsCartOpen(true)}
           onDashboardClick={handleDashboardClick}
           onOrdersClick={() => {
-            if (currentUser?.role === 'customer') {
-              navigate('/customer-dashboard');
+            if (currentUser) {
+              navigate('/orders');
             }
           }}
           onWarehouseClick={() => {

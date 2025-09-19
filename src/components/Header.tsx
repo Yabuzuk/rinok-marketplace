@@ -146,41 +146,6 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button 
-            onClick={onCartClick}
-            style={{ 
-              position: 'relative',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '8px',
-              transition: 'background 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#f0e6d6'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-          >
-            <ShoppingCart size={24} color="#666" />
-            {cartItemsCount > 0 && (
-              <span style={{
-                position: 'absolute',
-                top: '0',
-                right: '0',
-                background: '#8b4513',
-                color: 'white',
-                borderRadius: '50%',
-                width: '20px',
-                height: '20px',
-                fontSize: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: '600'
-              }}>
-                {cartItemsCount}
-              </span>
-            )}
-          </button>
 
           <div style={{ position: 'relative' }}>
             {user ? (
