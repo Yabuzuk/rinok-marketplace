@@ -136,21 +136,7 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
                   position: 'relative'
                 }}
               >
-                {/* Эффект травы под карточкой */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: '-12px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '130%',
-                  height: '24px',
-                  background: `
-                    radial-gradient(ellipse at center, rgba(34, 139, 34, 0.6) 0%, rgba(34, 139, 34, 0.3) 50%, transparent 70%),
-                    url("data:image/svg+xml,%3Csvg width='20' height='8' viewBox='0 0 20 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23228b22' fill-opacity='0.4'%3E%3Cpath d='M2 8c0-2 1-4 1-4s1 2 1 4zm4 0c0-2 1-4 1-4s1 2 1 4zm4 0c0-2 1-4 1-4s1 2 1 4zm4 0c0-2 1-4 1-4s1 2 1 4z'/%3E%3C/g%3E%3C/svg%3E")
-                  `,
-                  borderRadius: '50%',
-                  zIndex: -1
-                }} />
+
                 
                 <ProductCard
                   product={product}
