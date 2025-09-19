@@ -287,12 +287,18 @@ const AppContent: React.FC = () => {
   const handleAddProduct = async (newProduct: Omit<Product, 'id'>) => {
     console.log('Adding product:', newProduct);
     
+    // Проверяем наличие номера павильона
+    if (!currentUser?.pavilionNumber) {
+      alert('Для добавления товаров необходимо указать номер павильона в настройках');
+      return;
+    }
+    
     try {
       // Номер павильона и sellerId берем из текущего пользователя
       const productWithPavilion = {
         ...newProduct,
         sellerId: currentUser?.id || '',
-        pavilionNumber: currentUser?.pavilionNumber || ''
+        pavilionNumber: currentUser?.pavilionNumber
       };
       
       console.log('Creating product with sellerId:', currentUser?.id, 'pavilionNumber:', currentUser?.pavilionNumber);
