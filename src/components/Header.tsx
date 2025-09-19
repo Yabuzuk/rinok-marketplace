@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'space-between',
-        height: '72px'
+        height: '56px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
           <div 
