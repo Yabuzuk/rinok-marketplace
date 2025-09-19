@@ -25,16 +25,24 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
   console.log('HomePage products:', products?.length || 0);
   const navigate = useNavigate();
   
+  // Отладка: показываем данные о продавцах и товарах
+  console.log('=== DEBUG INFO ===');
+  console.log('Users:', users.length, users.map(u => ({ id: u.id, name: u.name, role: u.role, pavilion: u.pavilionNumber, sellerActive: u.sellerActive })));
+  console.log('Products:', products.length, products.map(p => ({ name: p.name, sellerId: p.sellerId, pavilion: p.pavilionNumber })));
+  
   // Фильтруем товары только от активных продавцов
   const activeProducts = products.filter(product => {
     // Поиск продавца по ID или по номеру павильона
     const seller = users.find(u => 
-      u.id === product.sellerId || 
+      String(u.id) === String(product.sellerId) || 
       (u.pavilionNumber === product.pavilionNumber && u.role === 'seller')
     );
-    console.log('Product:', product.name, 'Seller:', seller?.name, 'Active:', seller?.sellerActive);
+    console.log('Product:', product.name, 'sellerId:', product.sellerId, 'Seller found:', seller?.name, 'Active:', seller?.sellerActive);
     return seller && seller.sellerActive === true;
   });
+  
+  console.log('Active products after filter:', activeProducts.length);
+  console.log('==================');
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
