@@ -1106,7 +1106,15 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     }}>
                       <div>
                         <div style={{ fontWeight: '500', marginBottom: '4px' }}>{product.name}</div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>{product.category}</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>
+                          {product.category === 'fruits' ? 'Фрукты' :
+                           product.category === 'vegetables' ? 'Овощи' :
+                           product.category === 'greens' ? 'Зелень' :
+                           product.category === 'berries' ? 'Ягоды' :
+                           product.category === 'nuts' ? 'Орехи' :
+                           product.category === 'spices' ? 'Специи' :
+                           product.category}
+                        </div>
                       </div>
                       
                       <div style={{ 

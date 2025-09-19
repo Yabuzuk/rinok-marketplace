@@ -60,9 +60,9 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
     switch (user.role) {
       case 'customer':
         return [
-          { icon: <Home size={20} />, label: 'Главная', onClick: onHomeClick },
           { icon: <Search size={20} />, label: 'Поиск', onClick: onSearchClick },
           { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onOrdersClick },
+          { icon: <Home size={28} />, label: 'Главная', onClick: onHomeClick, isMain: true },
           { icon: <ShoppingCart size={20} />, label: 'Корзина', onClick: onCartClick, badge: cartItemsCount },
           { icon: <User size={20} />, label: 'Профиль', onClick: onDashboardClick }
         ];
@@ -120,6 +120,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           label={item.label}
           badge={item.badge}
           onClick={item.onClick}
+          isMain={item.isMain}
         />
       ))}
     </div>
@@ -131,7 +132,8 @@ const NavButton: React.FC<{
   label: string;
   badge?: number;
   onClick?: () => void;
-}> = ({ icon, label, badge, onClick }) => (
+  isMain?: boolean;
+}> = ({ icon, label, badge, onClick, isMain }) => (
   <button
     onClick={onClick}
     style={{
@@ -142,10 +144,11 @@ const NavButton: React.FC<{
       background: 'none',
       border: 'none',
       cursor: 'pointer',
-      padding: '8px',
+      padding: isMain ? '12px' : '8px',
       borderRadius: '8px',
       position: 'relative',
-      minWidth: '60px'
+      minWidth: isMain ? '80px' : '60px',
+      transform: isMain ? 'scale(1.1)' : 'scale(1)'
     }}
   >
     <div style={{ position: 'relative' }}>
