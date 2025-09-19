@@ -27,8 +27,13 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
   
   // Фильтруем товары только от активных продавцов
   const activeProducts = products.filter(product => {
-    const seller = users.find(u => u.id === product.sellerId);
-    return seller?.sellerActive !== false;
+    // Поиск продавца по ID или по номеру павильона
+    const seller = users.find(u => 
+      u.id === product.sellerId || 
+      (u.pavilionNumber === product.pavilionNumber && u.role === 'seller')
+    );
+    console.log('Product:', product.name, 'Seller:', seller?.name, 'Active:', seller?.sellerActive);
+    return seller && seller.sellerActive === true;
   });
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

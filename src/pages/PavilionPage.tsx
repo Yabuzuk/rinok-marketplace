@@ -21,7 +21,7 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
   const seller = users.find(u => u.pavilionNumber === pavilionNumber && u.role === 'seller');
   
   // Проверяем активность продавца
-  if (seller && seller.sellerActive === false) {
+  if (seller && seller.sellerActive !== true) {
     return (
       <div style={{
         minHeight: '100vh',

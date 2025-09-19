@@ -291,9 +291,11 @@ const AppContent: React.FC = () => {
       // Номер павильона и sellerId берем из текущего пользователя
       const productWithPavilion = {
         ...newProduct,
-        sellerId: String(currentUser?.id),
+        sellerId: currentUser?.id || '',
         pavilionNumber: currentUser?.pavilionNumber || ''
       };
+      
+      console.log('Creating product with sellerId:', currentUser?.id, 'pavilionNumber:', currentUser?.pavilionNumber);
       
       const product = await api.createProduct(productWithPavilion);
       setProducts(prev => [...prev, product]);

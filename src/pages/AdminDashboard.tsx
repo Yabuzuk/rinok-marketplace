@@ -647,11 +647,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                 <div style={{ marginBottom: '20px' }}>
                   <strong>Лавка:</strong> 
                   <span style={{ 
-                    color: selectedUser.sellerActive !== false ? '#4caf50' : '#f44336',
+                    color: selectedUser.sellerActive === true ? '#4caf50' : '#f44336',
                     fontWeight: '600',
                     marginLeft: '8px'
                   }}>
-                    {selectedUser.sellerActive !== false ? 'Работает' : 'Не работает'}
+                    {selectedUser.sellerActive === true ? 'Работает' : 'Не работает'}
                   </span>
                 </div>
               )}
@@ -678,16 +678,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                     className="btn btn-secondary"
                     style={{ 
                       flex: 1,
-                      background: selectedUser.sellerActive !== false ? '#ff9800' : '#4caf50',
+                      background: selectedUser.sellerActive === true ? '#ff9800' : '#4caf50',
                       color: 'white',
                       border: 'none'
                     }}
                     onClick={() => {
-                      onUpdateUser?.(selectedUser.id, { sellerActive: selectedUser.sellerActive === false });
+                      onUpdateUser?.(selectedUser.id, { sellerActive: selectedUser.sellerActive !== true });
                       setSelectedUser(null);
                     }}
                   >
-                    {selectedUser.sellerActive !== false ? 'Закрыть лавку' : 'Открыть лавку'}
+                    {selectedUser.sellerActive === true ? 'Закрыть лавку' : 'Открыть лавку'}
                   </button>
                 )}
                 
