@@ -110,7 +110,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     >
       <div 
         style={{
-          background: '#f9f5f0',
+          background: 'white',
           borderRadius: '16px',
           padding: '16px',
           width: '100%',

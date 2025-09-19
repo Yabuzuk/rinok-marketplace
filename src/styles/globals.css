@@ -41,17 +41,17 @@ body {
 }
 
 .btn-secondary {
-  background: #f1f8e9;
+  background: white;
   color: #2e7d32;
   border: 1px solid #c8e6c9;
 }
 
 .btn-secondary:hover {
-  background: #e8f5e8;
+  background: #f9f9f9;
 }
 
 .card {
-  background: #f1f8e9;
+  background: white;
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
@@ -65,7 +65,7 @@ body {
   border-radius: 12px;
   font-size: 14px;
   transition: border-color 0.2s ease;
-  background: #f1f8e9;
+  background: white;
 }
 
 .input:focus {

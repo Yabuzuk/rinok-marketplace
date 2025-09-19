@@ -22,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
 
   return (
     <header style={{ 
-      background: '#f9f5f0', 
+      background: 'white', 
       borderBottom: '1px solid #d4c4b0',
       position: 'sticky',
       top: 0,

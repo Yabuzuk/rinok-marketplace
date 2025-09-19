@@ -126,7 +126,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
       <div className="container">
         {/* Hero Section with Latest Products */}
         <div style={{
-          background: '#f1f8e9',
+          background: 'white',
           borderRadius: '20px',
           padding: '24px',
           marginBottom: '32px',
@@ -251,7 +251,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                     padding: '8px 4px',
                     cursor: 'pointer',
                     transition: 'transform 0.2s ease',
-                    background: selectedPavilion === 'all' ? '#4caf50' : '#f1f8e9',
+                    background: selectedPavilion === 'all' ? '#4caf50' : 'white',
                     color: selectedPavilion === 'all' ? 'white' : '#2e7d32'
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -280,7 +280,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                         padding: '8px 4px',
                         cursor: 'pointer',
                         transition: 'transform 0.2s ease',
-                        background: selectedPavilion === pavilion ? '#4caf50' : '#f1f8e9',
+                        background: selectedPavilion === pavilion ? '#4caf50' : 'white',
                         color: selectedPavilion === pavilion ? 'white' : '#2e7d32'
                       }}
                       onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -338,7 +338,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                     padding: '8px 4px',
                     cursor: 'pointer',
                     transition: 'transform 0.2s ease',
-                    background: selectedCategory === category.id && !showPavilionFilter ? '#4caf50' : '#f1f8e9',
+                    background: selectedCategory === category.id && !showPavilionFilter ? '#4caf50' : 'white',
                     color: selectedCategory === category.id && !showPavilionFilter ? 'white' : '#2e7d32'
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}

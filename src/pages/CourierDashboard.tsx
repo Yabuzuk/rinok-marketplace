@@ -60,11 +60,6 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
   return (
     <div style={{
       minHeight: '100vh',
-      background: `url('/images/green-grass-summer-gazon-fon-trava-zelenaia.jpg')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      backgroundAttachment: 'fixed',
       paddingTop: '100px',
       paddingBottom: '40px'
     }}>

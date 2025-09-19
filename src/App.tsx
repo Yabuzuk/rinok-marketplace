@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
-import EmojiBackground from './components/EmojiBackground';
+
 import Cart from './components/Cart';
 import BottomNavigation from './components/BottomNavigation';
 import HomePage from './pages/HomePage';
@@ -376,8 +376,8 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="App">
-        <EmojiBackground />
+    <div className="App" style={{ background: '#f1f8e9', minHeight: '100vh' }}>
+
         <Header 
           user={currentUser}
           cartItemsCount={cartItemsCount}
