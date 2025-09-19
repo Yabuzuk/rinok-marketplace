@@ -499,6 +499,22 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                       />
                     </div>
 
+                    <div>
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}>
+                        Новый пароль (оставьте пустым, чтобы не менять)
+                      </label>
+                      <input 
+                        className="input"
+                        type="password"
+                        placeholder="Новый пароль"
+                      />
+                    </div>
+
                     <button 
                       className="btn btn-primary" 
                       style={{ alignSelf: 'flex-start' }}
@@ -509,12 +525,17 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                         const nameInput = inputs?.[0] as HTMLInputElement;
                         const emailInput = inputs?.[1] as HTMLInputElement;
                         const phoneInput = inputs?.[2] as HTMLInputElement;
+                        const passwordInput = inputs?.[3] as HTMLInputElement;
                         
-                        const updates = {
+                        const updates: any = {
                           name: nameInput?.value || user.name,
                           email: emailInput?.value || user.email,
                           phone: phoneInput?.value || ''
                         };
+                        
+                        if (passwordInput?.value) {
+                          updates.password = passwordInput.value;
+                        }
                         
                         onUpdateProfile?.(updates);
                         alert('Профиль обновлен!');

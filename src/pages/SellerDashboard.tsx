@@ -987,6 +987,23 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         }}
                       />
                     </div>
+                    
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        Новый пароль (оставьте пустым, чтобы не менять)
+                      </label>
+                      <input 
+                        className="input" 
+                        data-field="password"
+                        type="password"
+                        placeholder="Новый пароль"
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
+                      />
+                    </div>
                   </div>
                   
                   <div style={{ marginTop: '16px' }}>
@@ -1023,6 +1040,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                             inputs.forEach((input: any) => {
                               const field = input.getAttribute('data-field');
                               if (field) {
+                                if (field === 'password' && !input.value) {
+                                  return; // Не обновляем пароль, если поле пустое
+                                }
                                 updates[field] = input.value || '';
                               }
                             });
