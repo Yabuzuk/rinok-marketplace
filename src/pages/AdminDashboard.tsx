@@ -23,6 +23,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'users'>('orders');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+  const [editingUser, setEditingUser] = useState<UserType | null>(null);
 
   const getStatusColor = (status: OrderWithCustomer['status']) => {
     switch (status) {
@@ -661,6 +662,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                   className="btn btn-secondary"
                   style={{ 
                     flex: 1,
+                    background: '#2196f3',
+                    color: 'white',
+                    border: 'none'
+                  }}
+                  onClick={() => {
+                    setEditingUser(selectedUser);
+                    setSelectedUser(null);
+                  }}
+                >
+                  Редактировать
+                </button>
+                
+                <button 
+                  className="btn btn-secondary"
+                  style={{ 
+                    flex: 1,
                     background: selectedUser.blocked ? '#4caf50' : '#ff9800',
                     color: 'white',
                     border: 'none'
@@ -709,6 +726,108 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                   Удалить
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Модальное окно редактирования пользователя */}
+        {editingUser && (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000
+            }}
+            onClick={() => setEditingUser(null)}
+          >
+            <div 
+              style={{
+                background: '#f9f5f0',
+                borderRadius: '20px',
+                padding: '24px',
+                width: '400px',
+                maxHeight: '80vh',
+                overflowY: 'auto'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px' }}>
+                Редактирование пользователя
+              </h3>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target as HTMLFormElement);
+                const updates: any = {
+                  email: formData.get('email') as string,
+                  name: formData.get('name') as string
+                };
+                
+                const password = formData.get('password') as string;
+                if (password) {
+                  updates.password = password;
+                }
+                
+                onUpdateUser?.(editingUser.id, updates);
+                setEditingUser(null);
+              }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                    Имя
+                  </label>
+                  <input 
+                    name="name" 
+                    className="input" 
+                    defaultValue={editingUser.name} 
+                    required 
+                  />
+                </div>
+                
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                    Email
+                  </label>
+                  <input 
+                    name="email" 
+                    type="email" 
+                    className="input" 
+                    defaultValue={editingUser.email} 
+                    required 
+                  />
+                </div>
+                
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                    Новый пароль (оставьте пустым, чтобы не менять)
+                  </label>
+                  <input 
+                    name="password" 
+                    type="password" 
+                    className="input" 
+                    placeholder="Новый пароль"
+                  />
+                </div>
+                
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button type="submit" className="btn btn-primary">
+                    Сохранить
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary"
+                    onClick={() => setEditingUser(null)}
+                  >
+                    Отмена
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
