@@ -147,53 +147,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
 
-          <div style={{ position: 'relative' }}>
-            {user ? (
-              <button 
-                onClick={onDashboardClick}
-                style={{ 
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '8px',
-                  transition: 'background 0.2s ease'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#f0e6d6'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-              >
-                <User size={20} color="#666" />
-                <span style={{ color: '#666', fontSize: '12px', display: window.innerWidth > 768 ? 'block' : 'none' }}>
-                  Личный кабинет
-                </span>
-              </button>
-            ) : (
-              <button 
-                onClick={onShowAuthModal}
-                style={{ 
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '8px',
-                  transition: 'background 0.2s ease'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#f0e6d6'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-              >
-                <User size={20} color="#666" />
-                <span style={{ color: '#666', fontSize: '12px', display: window.innerWidth > 768 ? 'block' : 'none' }}>
-                  Войти
-                </span>
-              </button>
-            )}
-          </div>
+
         </div>
       </div>
     </header>

@@ -17,6 +17,7 @@ interface BottomNavigationProps {
   onWarehouseClick?: () => void;
   onPavilionSelect?: (pavilionNumber: string) => void;
   pavilions?: string[];
+  onAuthClick: () => void;
 }
 
 const BottomNavigation: React.FC<BottomNavigationProps> = ({
@@ -29,7 +30,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onOrdersClick,
   onWarehouseClick,
   onPavilionSelect,
-  pavilions = []
+  pavilions = [],
+  onAuthClick
 }) => {
   const [showPavilions, setShowPavilions] = React.useState(false);
   const [showBurgerMenu, setShowBurgerMenu] = React.useState(false);
@@ -57,7 +59,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           badge={cartItemsCount}
           onClick={onCartClick} 
         />
-        <NavButton icon={<User size={20} />} label="Войти" onClick={onDashboardClick} />
+        <NavButton icon={<User size={20} />} label="Войти" onClick={onAuthClick} />
       </div>
     );
   }
