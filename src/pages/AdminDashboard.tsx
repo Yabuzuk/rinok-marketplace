@@ -643,7 +643,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                 </span>
               </div>
               
-              <div style={{ display: 'flex', gap: '12px' }}>
+              {selectedUser.role === 'seller' && (
+                <div style={{ marginBottom: '20px' }}>
+                  <strong>Лавка:</strong> 
+                  <span style={{ 
+                    color: selectedUser.sellerActive !== false ? '#4caf50' : '#f44336',
+                    fontWeight: '600',
+                    marginLeft: '8px'
+                  }}>
+                    {selectedUser.sellerActive !== false ? 'Работает' : 'Не работает'}
+                  </span>
+                </div>
+              )}
+              
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <button 
                   className="btn btn-secondary"
                   style={{ 
@@ -659,6 +672,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                 >
                   {selectedUser.blocked ? 'Разблокировать' : 'Заблокировать'}
                 </button>
+                
+                {selectedUser.role === 'seller' && (
+                  <button 
+                    className="btn btn-secondary"
+                    style={{ 
+                      flex: 1,
+                      background: selectedUser.sellerActive !== false ? '#ff9800' : '#4caf50',
+                      color: 'white',
+                      border: 'none'
+                    }}
+                    onClick={() => {
+                      onUpdateUser?.(selectedUser.id, { sellerActive: selectedUser.sellerActive === false });
+                      setSelectedUser(null);
+                    }}
+                  >
+                    {selectedUser.sellerActive !== false ? 'Закрыть лавку' : 'Открыть лавку'}
+                  </button>
+                )}
                 
                 <button 
                   className="btn btn-secondary"

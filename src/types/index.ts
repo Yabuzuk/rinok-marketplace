@@ -12,6 +12,7 @@ export interface User {
   vehicle?: 'car' | 'bike' | 'foot';
   rating?: number;
   isActive?: boolean;
+  sellerActive?: boolean;
   addresses?: string[];
   companyName?: string;
   paymentInfo?: string;

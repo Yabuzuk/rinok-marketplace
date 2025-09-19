@@ -57,6 +57,7 @@ const userSchema = new mongoose.Schema({
   companyName: String,
   paymentInfo: String,
   bankName: String,
+  sellerActive: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 

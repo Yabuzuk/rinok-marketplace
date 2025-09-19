@@ -24,6 +24,12 @@ const categories = [
 const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }) => {
   console.log('HomePage products:', products?.length || 0);
   const navigate = useNavigate();
+  
+  // Фильтруем товары только от активных продавцов
+  const activeProducts = products.filter(product => {
+    const seller = users.find(u => u.id === product.sellerId);
+    return seller?.sellerActive !== false;
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,20 +63,20 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
   const filteredProducts = (() => {
     if (showPavilionFilter) {
       if (selectedPavilion === 'all') {
-        return products;
+        return activeProducts;
       }
-      return products.filter(product => 
+      return activeProducts.filter(product => 
         product.pavilionNumber === selectedPavilion
       );
     }
     
     return selectedCategory === 'all' 
-      ? products 
-      : products.filter(product => product.category === selectedCategory);
+      ? activeProducts 
+      : activeProducts.filter(product => product.category === selectedCategory);
   })();
 
-  // Получаем уникальные номера павильонов из товаров
-  const pavilionNumbers = products
+  // Получаем уникальные номера павильонов из активных товаров
+  const pavilionNumbers = activeProducts
     .filter(p => p.pavilionNumber)
     .map(p => p.pavilionNumber);
   const pavilions = pavilionNumbers

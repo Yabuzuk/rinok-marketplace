@@ -19,6 +19,41 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
 
   const pavilionProducts = products.filter(p => p.pavilionNumber === pavilionNumber);
   const seller = users.find(u => u.pavilionNumber === pavilionNumber && u.role === 'seller');
+  
+  // Проверяем активность продавца
+  if (seller && seller.sellerActive === false) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#f5f5f5'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '48px',
+          background: 'white',
+          borderRadius: '16px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ fontSize: '64px', marginBottom: '16px' }}>🚫</div>
+          <h2 style={{ fontSize: '24px', marginBottom: '8px', color: '#666' }}>
+            Лавка не работает
+          </h2>
+          <p style={{ color: '#999', marginBottom: '24px' }}>
+            Павильон {pavilionNumber} временно закрыт
+          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="btn btn-primary"
+          >
+            На главную
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
