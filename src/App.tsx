@@ -139,7 +139,6 @@ const AppContent: React.FC = () => {
           user = { 
             ...userData, 
             role: userType,
-            type: userType,
             id: userData.id || Date.now().toString(),
             pavilionNumber: userData.pavilionNumber || ''
           };
