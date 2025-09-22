@@ -485,7 +485,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
         {activeTab === 'users' && (
           <div>
             <div className="grid grid-3">
-              {users.filter(user => user.role === 'seller').map(user => (
+              {users.map(user => (
                 <div 
                   key={user.id} 
                   className="card" 

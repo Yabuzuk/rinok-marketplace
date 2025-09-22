@@ -270,6 +270,15 @@ const AppContent: React.FC = () => {
     
     // Обновляем в базе
     handleUpdateUser(currentUser.id, { role: newRole, roles: updatedRoles });
+    
+    // Если переключаемся на продавца, обновляем запись в базе
+    if (newRole === 'seller') {
+      handleUpdateUser(currentUser.id, { 
+        role: 'seller', 
+        roles: updatedRoles,
+        sellerActive: true 
+      });
+    }
   };
 
   const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
