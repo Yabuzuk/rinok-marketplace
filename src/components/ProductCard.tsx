@@ -39,15 +39,36 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
         background: '#f8f8f8',
         position: 'relative'
       }}>
-        <img 
-          src={product.image} 
-          alt={product.name}
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            objectFit: 'cover' 
-          }}
-        />
+        {product.image && (product.image.startsWith('http') || product.image.startsWith('data:')) ? (
+          <img 
+            src={product.image} 
+            alt={product.name}
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover' 
+            }}
+            onError={(e) => {
+              console.log('Image failed to load:', product.image);
+              e.currentTarget.style.display = 'none';
+              if (e.currentTarget.parentElement) {
+                e.currentTarget.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 48px; background: #f0f0f0;">📦</div>';
+              }
+            }}
+          />
+        ) : (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            fontSize: '48px',
+            background: '#f0f0f0'
+          }}>
+            {product.image || '📦'}
+          </div>
+        )}
         <button 
           onClick={(e) => {
             e.stopPropagation();
