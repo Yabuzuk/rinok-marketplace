@@ -8,9 +8,10 @@ interface CustomerDashboardProps {
   onUpdateProfile?: (updates: Partial<UserType>) => void;
   onSwitchRole?: (role: 'customer' | 'seller' | 'admin' | 'courier') => void;
   onLogout?: () => void;
+  onCancelOrder?: (orderId: string) => void;
 }
 
-const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile, onSwitchRole, onLogout }) => {
+const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile, onSwitchRole, onLogout, onCancelOrder }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'addresses'>('profile');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showAddAddress, setShowAddAddress] = useState(false);
@@ -200,6 +201,69 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
 
           {/* Main Content */}
           <div style={{ flex: 1 }}>
+            {/* Мои заказы */}
+            <div style={{ marginBottom: '32px' }}>
+              <h2 style={{ 
+                fontSize: '24px', 
+                fontWeight: '600',
+                marginBottom: '24px'
+              }}>
+                Мои заказы
+              </h2>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {orders.filter(order => order.customerId === user.id).map(order => (
+                  <div key={order.id} className="card" style={{ cursor: 'pointer' }} onClick={() => setSelectedOrder(order)}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: '12px'
+                    }}>
+                      <div>
+                        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
+                          Заказ #{order.id.slice(-6)}
+                        </h3>
+                        <p style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+                          {new Date(order.createdAt).toLocaleDateString('ru-RU')}
+                        </p>
+                        <p style={{ fontSize: '14px', color: '#666' }}>
+                          Товаров: {order.items.length}
+                        </p>
+                      </div>
+                      
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{
+                          padding: '4px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          color: getStatusColor(order.status),
+                          background: `${getStatusColor(order.status)}20`,
+                          marginBottom: '8px'
+                        }}>
+                          {getStatusText(order.status)}
+                        </div>
+                        <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
+                          {order.total} ₽
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {orders.filter(order => order.customerId === user.id).length === 0 && (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '48px',
+                    color: '#666'
+                  }}>
+                    <Package size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+                    <p>У вас пока нет заказов</p>
+                  </div>
+                )}
+              </div>
+            </div>
 
 
             {activeTab === 'addresses' && (
@@ -512,11 +576,32 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
               paddingTop: '16px',
               borderTop: '2px solid #eee',
               fontSize: '18px',
-              fontWeight: '600'
+              fontWeight: '600',
+              marginBottom: '16px'
             }}>
               <span>Итого:</span>
               <span>{selectedOrder.total} ₽</span>
             </div>
+            
+            {(selectedOrder.status === 'pending' || selectedOrder.status === 'confirmed') && (
+              <button 
+                className="btn btn-secondary"
+                style={{ 
+                  width: '100%',
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  border: 'none'
+                }}
+                onClick={() => {
+                  if (window.confirm('Вы уверены, что хотите отменить заказ?')) {
+                    onCancelOrder?.(selectedOrder.id);
+                    setSelectedOrder(null);
+                  }
+                }}
+              >
+                Отменить заказ
+              </button>
+            )}
           </div>
         </div>
       )}

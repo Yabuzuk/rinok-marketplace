@@ -471,6 +471,16 @@ const AppContent: React.FC = () => {
                     }}
                     onSwitchRole={handleSwitchRole}
                     onLogout={() => setCurrentUser(null)}
+                    onCancelOrder={async (orderId) => {
+                      try {
+                        await supabaseApi.updateOrder(orderId, { status: 'cancelled' });
+                        loadData();
+                        alert('Заказ отменен');
+                      } catch (error) {
+                        console.error('Error cancelling order:', error);
+                        alert('Ошибка отмены заказа');
+                      }
+                    }}
                   />
                 ) : (
                   <Navigate to="/" replace />
