@@ -510,7 +510,7 @@ const AppContent: React.FC = () => {
                     courier={currentUser}
                     onAcceptOrder={async (orderId) => {
                       try {
-                        await api.updateOrder(orderId, { courierId: currentUser.id, status: 'delivering' });
+                        await supabaseApi.updateOrder(orderId, { courierId: currentUser.id, status: 'delivering' });
                         loadData();
                       } catch (error) {
                         console.error('Error accepting order:', error);
