@@ -61,7 +61,7 @@ export const supabaseApi = {
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('createdAt', { ascending: false });
     
     if (error) throw error;
     return data || [];
@@ -109,7 +109,7 @@ export const supabaseApi = {
     const { data: orders, error: ordersError } = await supabase
       .from('orders')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('createdAt', { ascending: false });
     
     if (ordersError) throw ordersError;
 
@@ -119,7 +119,7 @@ export const supabaseApi = {
         const { data: items, error: itemsError } = await supabase
           .from('order_items')
           .select('*')
-          .eq('order_id', order.id);
+          .eq('orderId', order.id);
         
         if (itemsError) throw itemsError;
         
@@ -144,13 +144,13 @@ export const supabaseApi = {
       .from('orders')
       .insert([{
         id: orderWithId.id,
-        customer_id: orderWithId.customerId,
+        customerId: orderWithId.customerId,
         total: orderWithId.total,
         status: orderWithId.status,
-        delivery_address: orderWithId.deliveryAddress,
-        pavilion_number: orderWithId.pavilionNumber,
-        courier_id: orderWithId.courierId,
-        created_at: orderWithId.createdAt
+        deliveryAddress: orderWithId.deliveryAddress,
+        pavilionNumber: orderWithId.pavilionNumber,
+        courierId: orderWithId.courierId,
+        createdAt: orderWithId.createdAt
       }])
       .select()
       .single();
@@ -163,9 +163,9 @@ export const supabaseApi = {
         .from('order_items')
         .insert(
           orderWithId.items.map(item => ({
-            order_id: orderWithId.id,
-            product_id: item.productId,
-            product_name: item.productName,
+            orderId: orderWithId.id,
+            productId: item.productId,
+            productName: item.productName,
             quantity: item.quantity,
             price: item.price
           }))
@@ -182,8 +182,8 @@ export const supabaseApi = {
       .from('orders')
       .update({
         status: updates.status,
-        courier_id: updates.courierId,
-        pavilion_number: updates.pavilionNumber
+        courierId: updates.courierId,
+        pavilionNumber: updates.pavilionNumber
       })
       .eq('id', id)
       .select()
