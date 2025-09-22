@@ -14,7 +14,7 @@ import PavilionPage from './pages/PavilionPage';
 import OrdersPage from './pages/OrdersPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
-import { api } from './utils/api';
+
 import { supabaseApi } from './utils/supabaseApi';
 import './styles/globals.css';
 
@@ -76,15 +76,7 @@ const AppContent: React.FC = () => {
       setOrders(ordersData || []);
       setUsers(usersData || []);
       
-      // Загружаем доставки отдельно
-      try {
-        const deliveriesData = await api.getDeliveries();
-        setDeliveries(deliveriesData || []);
-        console.log('Loaded deliveries:', deliveriesData?.length || 0);
-      } catch (error) {
-        console.log('Deliveries API not available yet, using empty array');
-        setDeliveries([]);
-      }
+      setDeliveries([]);
       
       console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders');
       console.log('Products data:', productsData);
