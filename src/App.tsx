@@ -444,6 +444,16 @@ const AppContent: React.FC = () => {
                   <OrdersPage 
                     user={currentUser}
                     orders={orders}
+                    onCancelOrder={async (orderId) => {
+                      try {
+                        await supabaseApi.updateOrder(orderId, { status: 'cancelled' });
+                        loadData();
+                        alert('Заказ отменен');
+                      } catch (error) {
+                        console.error('Error cancelling order:', error);
+                        alert('Ошибка отмены заказа');
+                      }
+                    }}
                   />
                 ) : (
                   <Navigate to="/" replace />

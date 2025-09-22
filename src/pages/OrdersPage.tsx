@@ -1,17 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Package } from 'lucide-react';
+import { ArrowLeft, Package, Clock } from 'lucide-react';
 import { Order, User } from '../types';
 
 interface OrdersPageProps {
   user: User;
   orders: Order[];
+  onCancelOrder?: (orderId: string) => void;
 }
 
-const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders }) => {
+const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders, onCancelOrder }) => {
   const navigate = useNavigate();
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   
   const userOrders = orders.filter(order => order.customerId === user.id);
+  
+  const getStatusColor = (status: Order['status']) => {
+    switch (status) {
+      case 'delivered': return '#4caf50';
+      case 'delivering': return '#ff9800';
+      case 'preparing': return '#2196f3';
+      case 'cancelled': return '#f44336';
+      default: return '#666';
+    }
+  };
+
+  const getStatusText = (status: Order['status']) => {
+    switch (status) {
+      case 'pending': return 'Ожидает подтверждения';
+      case 'confirmed': return 'Подтвержден';
+      case 'preparing': return 'Готовится';
+      case 'delivering': return 'В пути';
+      case 'delivered': return 'Доставлен';
+      case 'cancelled': return 'Отменен';
+    }
+  };
 
   return (
     <div style={{ paddingTop: '100px', paddingBottom: '100px', minHeight: '100vh' }}>
@@ -47,59 +70,140 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders }) => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {userOrders.map(order => (
-              <div key={order.id} className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+              <div key={order.id} className="card" style={{ cursor: 'pointer' }} onClick={() => setSelectedOrder(order)}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: '12px'
+                }}>
                   <div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
-                      Заказ #{order.id.slice(-8)}
+                    <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
+                      Заказ #{order.id.slice(-6)}
                     </h3>
+                    <p style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+                      {new Date(order.createdAt).toLocaleDateString('ru-RU')}
+                    </p>
                     <p style={{ fontSize: '14px', color: '#666' }}>
-                      {new Date(order.createdAt).toLocaleDateString()}
+                      Товаров: {order.items.length}
                     </p>
                   </div>
-                  <div style={{
-                    padding: '4px 12px',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    background: order.status === 'pending' ? '#fff3cd' : 
-                               order.status === 'confirmed' ? '#d1ecf1' : 
-                               order.status === 'preparing' ? '#d4edda' : 
-                               order.status === 'delivered' ? '#d4edda' : '#f8d7da',
-                    color: order.status === 'pending' ? '#856404' : 
-                          order.status === 'confirmed' ? '#0c5460' : 
-                          order.status === 'preparing' ? '#155724' : 
-                          order.status === 'delivered' ? '#155724' : '#721c24'
-                  }}>
-                    {order.status === 'pending' ? 'Ожидает подтверждения' :
-                     order.status === 'confirmed' ? 'Подтвержден' :
-                     order.status === 'preparing' ? 'Готовится' :
-                     order.status === 'delivered' ? 'Доставлен' : order.status}
-                  </div>
-                </div>
-
-                <div style={{ marginBottom: '16px' }}>
-                  {order.items.map((item, index) => (
-                    <div key={index} style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      padding: '8px 0',
-                      borderBottom: index < order.items.length - 1 ? '1px solid #f0f0f0' : 'none'
+                  
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      color: getStatusColor(order.status),
+                      background: `${getStatusColor(order.status)}20`,
+                      marginBottom: '8px'
                     }}>
-                      <span>{item.productName} x {item.quantity}</span>
-                      <span style={{ fontWeight: '600' }}>{item.price * item.quantity} ₽</span>
+                      {getStatusText(order.status)}
                     </div>
-                  ))}
-                </div>
-
-                <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
-                  Итого: {order.total} ₽
+                    <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
+                      {order.total} ₽
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+      
+      {/* Модальное окно с подробностями заказа */}
+      {selectedOrder && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div className="card" style={{ maxWidth: '500px', width: '90%', maxHeight: '80vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '600' }}>
+                Заказ #{selectedOrder.id.slice(-6)}
+              </h3>
+              <button 
+                onClick={() => setSelectedOrder(null)}
+                style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <strong>Статус:</strong> {getStatusText(selectedOrder.status)}
+            </div>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <strong>Дата заказа:</strong> {new Date(selectedOrder.createdAt).toLocaleDateString('ru-RU')}
+            </div>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <strong>Адрес доставки:</strong> {selectedOrder.deliveryAddress}
+            </div>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <strong>Товары:</strong>
+              <div style={{ marginTop: '8px' }}>
+                {selectedOrder.items.map((item, index) => (
+                  <div key={index} style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    padding: '8px 0',
+                    borderBottom: index < selectedOrder.items.length - 1 ? '1px solid #eee' : 'none'
+                  }}>
+                    <span>{item.productName} x {item.quantity}</span>
+                    <span>{item.price * item.quantity} ₽</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              paddingTop: '16px',
+              borderTop: '2px solid #eee',
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '16px'
+            }}>
+              <span>Итого:</span>
+              <span>{selectedOrder.total} ₽</span>
+            </div>
+            
+            {(selectedOrder.status === 'pending' || selectedOrder.status === 'confirmed') && (
+              <button 
+                className="btn btn-secondary"
+                style={{ 
+                  width: '100%',
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  border: 'none'
+                }}
+                onClick={() => {
+                  if (window.confirm('Вы уверены, что хотите отменить заказ?')) {
+                    onCancelOrder?.(selectedOrder.id);
+                    setSelectedOrder(null);
+                  }
+                }}
+              >
+                Отменить заказ
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
