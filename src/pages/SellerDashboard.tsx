@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Package, Plus, BarChart3, Settings, Eye, Edit, Trash2, Upload } from 'lucide-react';
 import { Product, Order, User as UserType } from '../types';
 import { api } from '../utils/api';
+import { uploadImage } from '../utils/supabase';
 
 interface SellerDashboardProps {
   user: UserType;
@@ -114,9 +115,15 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       let imageUrl = formData.get('imageUrl') as string;
       
       if (selectedImage) {
-        console.log('Загружаем изображение в Telegram...');
-        imageUrl = await api.uploadImageToTelegram(selectedImage);
-        console.log('Получена ссылка:', imageUrl);
+        console.log('Загружаем изображение в Supabase...');
+        const supabaseUrl = await uploadImage(selectedImage);
+        if (supabaseUrl) {
+          imageUrl = supabaseUrl;
+          console.log('Получена ссылка:', imageUrl);
+        } else {
+          alert('Ошибка загрузки изображения');
+          return;
+        }
       }
       
       const newProduct = {
@@ -176,9 +183,15 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       let imageUrl = formData.get('imageUrl') as string || editingProduct.image;
       
       if (selectedImage) {
-        console.log('Обновляем изображение через Telegram...');
-        imageUrl = await api.uploadImageToTelegram(selectedImage);
-        console.log('Получена новая ссылка:', imageUrl);
+        console.log('Обновляем изображение через Supabase...');
+        const supabaseUrl = await uploadImage(selectedImage);
+        if (supabaseUrl) {
+          imageUrl = supabaseUrl;
+          console.log('Получена новая ссылка:', imageUrl);
+        } else {
+          alert('Ошибка загрузки изображения');
+          return;
+        }
       }
       
       const updates = {
