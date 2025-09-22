@@ -460,7 +460,7 @@ const AppContent: React.FC = () => {
                     orders={orders}
                     onUpdateProfile={async (updates) => {
                       try {
-                        await api.updateUser(currentUser.id, updates);
+                        await supabaseApi.updateUser(currentUser.id, updates);
                         const updatedUser = { ...currentUser, ...updates };
                         setCurrentUser(updatedUser);
                         localStorage.setItem('currentUser', JSON.stringify(updatedUser));
