@@ -128,6 +128,17 @@ const AppContent: React.FC = () => {
             return;
           }
           
+          // Проверяем уникальность номера павильона для продавцов
+          if (userType === 'seller' && userData.pavilionNumber) {
+            const existingPavilion = users.find(u => 
+              u.pavilionNumber === userData.pavilionNumber && u.role === 'seller'
+            );
+            if (existingPavilion) {
+              alert(`Павильон ${userData.pavilionNumber} уже занят другим продавцом.`);
+              return;
+            }
+          }
+          
           user = { 
             ...userData, 
             role: userType,
@@ -227,6 +238,19 @@ const AppContent: React.FC = () => {
 
   const handleUpdateUser = async (userId: string, updates: Partial<User>) => {
     try {
+      // Проверяем уникальность номера павильона
+      if (updates.pavilionNumber) {
+        const existingPavilion = users.find(u => 
+          u.pavilionNumber === updates.pavilionNumber && 
+          u.role === 'seller' && 
+          u.id !== userId
+        );
+        if (existingPavilion) {
+          alert(`Павильон ${updates.pavilionNumber} уже занят другим продавцом.`);
+          return;
+        }
+      }
+      
       await supabaseApi.updateUser(userId, updates);
       
       // Обновляем текущего пользователя если это он
