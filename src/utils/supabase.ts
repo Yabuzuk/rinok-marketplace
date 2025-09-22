@@ -13,10 +13,14 @@ export const uploadImage = async (file: File, bucket: string = 'product-images')
     
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
 
     if (error) {
       console.error('Upload error:', error);
+      // Fallback на старый метод если Supabase не работает
       return null;
     }
 

@@ -15,6 +15,7 @@ import OrdersPage from './pages/OrdersPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 import { api } from './utils/api';
+import { supabaseApi } from './utils/supabaseApi';
 import './styles/globals.css';
 
 
@@ -66,9 +67,9 @@ const AppContent: React.FC = () => {
   const loadData = async () => {
     try {
       const [productsData, ordersData, usersData] = await Promise.all([
-        api.getProducts(),
-        api.getOrders(),
-        api.getUsers()
+        supabaseApi.getProducts(),
+        supabaseApi.getOrders(),
+        supabaseApi.getUsers()
       ]);
       
       setProducts(productsData || []);
