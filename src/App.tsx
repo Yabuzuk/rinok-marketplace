@@ -110,7 +110,7 @@ const AppContent: React.FC = () => {
       } else if (userData.isLogin) {
         // Логика входа - только проверка существующего пользователя
         try {
-          const existingUser = await api.findUserByEmail(userData.email);
+          const existingUser = await supabaseApi.findUserByEmail(userData.email);
           if (existingUser) {
             if (existingUser.blocked) {
               alert('Ваш аккаунт заблокирован администратором');
@@ -130,7 +130,7 @@ const AppContent: React.FC = () => {
       } else {
         // Логика регистрации - создаем нового пользователя
         try {
-          const existingUser = await api.findUserByEmail(userData.email);
+          const existingUser = await supabaseApi.findUserByEmail(userData.email);
           if (existingUser) {
             alert('Пользователь с таким email уже существует.');
             return;
@@ -144,7 +144,7 @@ const AppContent: React.FC = () => {
             pavilionNumber: userData.pavilionNumber || ''
           };
           
-          await api.createUser(user);
+          await supabaseApi.createUser(user);
           console.log('Registration successful:', user.id);
         } catch (error) {
           console.error('Registration error:', error);
@@ -199,7 +199,7 @@ const AppContent: React.FC = () => {
 
   const handleUpdateProduct = async (productId: string, updates: Partial<Product>) => {
     try {
-      const updatedProduct = await api.updateProduct(productId, updates);
+      const updatedProduct = await supabaseApi.updateProduct(productId, updates);
       setProducts(prev => prev.map(p => 
         p.id === productId ? { ...p, ...updates, id: productId } : p
       ));
@@ -213,7 +213,7 @@ const AppContent: React.FC = () => {
 
   const handleDeleteProduct = async (productId: string) => {
     try {
-      await api.deleteProduct(productId);
+      await supabaseApi.deleteProduct(productId);
       setProducts(prev => prev.filter(p => p.id !== productId));
       console.log('Product deleted from server:', productId);
     } catch (error) {
@@ -224,7 +224,7 @@ const AppContent: React.FC = () => {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      await api.deleteUser(userId);
+      await supabaseApi.deleteUser(userId);
       // Перезагружаем данные чтобы обновить список пользователей
       loadData();
       console.log('User deleted from server:', userId);
@@ -236,7 +236,7 @@ const AppContent: React.FC = () => {
 
   const handleUpdateUser = async (userId: string, updates: Partial<User>) => {
     try {
-      await api.updateUser(userId, updates);
+      await supabaseApi.updateUser(userId, updates);
       
       // Обновляем текущего пользователя если это он
       if (currentUser && currentUser.id === userId) {
@@ -275,7 +275,7 @@ const AppContent: React.FC = () => {
 
   const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
     try {
-      await api.updateOrder(orderId, { status });
+      await supabaseApi.updateOrder(orderId, { status });
       
       // Просто обновляем статус заказа - никаких отдельных доставок
       
@@ -305,7 +305,7 @@ const AppContent: React.FC = () => {
       
       console.log('Creating product with sellerId:', currentUser?.id, 'pavilionNumber:', currentUser?.pavilionNumber);
       
-      const product = await api.createProduct(productWithPavilion);
+      const product = await supabaseApi.createProduct(productWithPavilion);
       setProducts(prev => [...prev, product]);
       console.log('Product saved to server:', product.id);
       
@@ -317,7 +317,7 @@ const AppContent: React.FC = () => {
 
   const handleCreateOrder = async (orderData: Omit<Order, 'id'>) => {
     try {
-      const order = await api.createOrder(orderData);
+      const order = await supabaseApi.createOrder(orderData);
       setOrders(prev => [...prev, order]);
       
       // Перезагружаем все данные немедленно
