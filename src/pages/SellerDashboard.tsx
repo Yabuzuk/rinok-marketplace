@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Package, Plus, BarChart3, Settings, Eye, Edit, Trash2, Upload } from 'lucide-react';
 import { Product, Order, User as UserType } from '../types';
-import { api } from '../utils/api';
+
 import { uploadImage } from '../utils/supabase';
 
 interface SellerDashboardProps {
