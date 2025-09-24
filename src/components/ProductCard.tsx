@@ -1,6 +1,5 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 
 interface ProductCardProps {
@@ -10,32 +9,26 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProductClick }) => {
-  const navigate = useNavigate();
-  
   return (
     <div 
-      className="card" 
       style={{ 
-        padding: '16px',
         cursor: 'pointer',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+        transition: 'transform 0.2s ease'
       }}
       onClick={() => onProductClick(product)}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12)';
+        e.currentTarget.style.transform = 'scale(1.02)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.06)';
+        e.currentTarget.style.transform = 'scale(1)';
       }}
     >
       <div style={{ 
         width: '100%',
-        height: '160px',
+        aspectRatio: '1',
         borderRadius: '12px',
         overflow: 'hidden',
-        marginBottom: '12px',
+        marginBottom: '8px',
         background: '#f8f8f8',
         position: 'relative'
       }}>
@@ -49,10 +42,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
               objectFit: 'cover' 
             }}
             onError={(e) => {
-              console.log('Image failed to load:', product.image);
               e.currentTarget.style.display = 'none';
               if (e.currentTarget.parentElement) {
-                e.currentTarget.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 48px; background: #f0f0f0;">📦</div>';
+                e.currentTarget.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 32px; background: #f0f0f0;">📦</div>';
               }
             }}
           />
@@ -63,7 +55,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
             justifyContent: 'center',
             width: '100%',
             height: '100%',
-            fontSize: '48px',
+            fontSize: '32px',
             background: '#f0f0f0'
           }}>
             {product.image || '📦'}
@@ -76,13 +68,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
           }}
           style={{
             position: 'absolute',
-            bottom: '8px',
-            right: '8px',
-            width: '42px',
-            height: '42px',
+            bottom: '6px',
+            right: '6px',
+            width: '32px',
+            height: '32px',
             borderRadius: '50%',
             border: 'none',
-            background: 'rgba(255, 255, 255, 0.8)',
+            background: 'rgba(255, 255, 255, 0.9)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -90,38 +82,35 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
             transition: 'all 0.2s ease'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+            e.currentTarget.style.background = 'white';
             e.currentTarget.style.transform = 'scale(1.1)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
             e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          <Plus size={24} color="#4caf50" strokeWidth={3} />
+          <Plus size={18} color="#4caf50" strokeWidth={3} />
         </button>
-
       </div>
 
-      <div style={{ marginBottom: '8px' }}>
+      <div style={{ textAlign: 'center' }}>
+        <h3 style={{ 
+          fontSize: '14px', 
+          fontWeight: '600',
+          lineHeight: '1.2',
+          margin: '0 0 4px 0',
+          color: '#2e7d32'
+        }}>
+          {product.name}
+        </h3>
         <span style={{ 
-          fontSize: '18px', 
+          fontSize: '16px', 
           fontWeight: '700',
           color: '#4caf50'
         }}>
           {product.price} ₽
         </span>
-      </div>
-
-      <div>
-        <h3 style={{ 
-          fontSize: '16px', 
-          fontWeight: '600',
-          lineHeight: '1.3',
-          margin: 0
-        }}>
-          {product.name}
-        </h3>
       </div>
     </div>
   );
