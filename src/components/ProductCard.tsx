@@ -71,8 +71,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
             position: 'absolute',
             bottom: '6px',
             right: '6px',
-            width: '32px',
-            height: '32px',
+            width: window.innerWidth > 768 ? '45px' : '32px',
+            height: window.innerWidth > 768 ? '45px' : '32px',
             borderRadius: '50%',
             border: 'none',
             background: 'rgba(255, 255, 255, 0.9)',
@@ -91,7 +91,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
             e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          <Plus size={18} color="#4caf50" strokeWidth={3} />
+          <Plus size={window.innerWidth > 768 ? 25 : 18} color="#000000" strokeWidth={3} />
         </button>
       </div>
 
