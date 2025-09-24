@@ -97,7 +97,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
 
       <div style={{ textAlign: 'left' }}>
         <div style={{ 
-          fontSize: '14px', 
+          fontSize: window.innerWidth > 768 ? '28px' : '14px', 
           fontWeight: '500',
           color: '#e53e3e',
           margin: '0 0 2px 0'
@@ -105,7 +105,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
           {product.price} ₽
         </div>
         <h3 style={{ 
-          fontSize: '12px', 
+          fontSize: window.innerWidth > 768 ? '24px' : '12px', 
           fontWeight: '300',
           lineHeight: '1.2',
           margin: 0,

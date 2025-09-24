@@ -430,12 +430,67 @@ const AppContent: React.FC = () => {
           {loading ? (
             <div style={{
               display: 'flex',
+              flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              height: '50vh',
-              fontSize: '18px'
+              height: '50vh'
             }}>
-              Формируем каталог товаров...
+              <div style={{
+                fontSize: '48px',
+                marginBottom: '20px',
+                animation: 'bounce 2s infinite'
+              }}>
+                📦
+              </div>
+              <div style={{
+                width: '200px',
+                height: '20px',
+                background: '#8B4513',
+                borderRadius: '10px',
+                position: 'relative',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  left: '20px',
+                  fontSize: '24px',
+                  animation: 'slideIn 3s infinite'
+                }}>🍎</div>
+                <div style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  left: '60px',
+                  fontSize: '24px',
+                  animation: 'slideIn 3s infinite 0.5s'
+                }}>🥕</div>
+                <div style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  left: '100px',
+                  fontSize: '24px',
+                  animation: 'slideIn 3s infinite 1s'
+                }}>🥬</div>
+              </div>
+              <div style={{
+                marginTop: '20px',
+                fontSize: '16px',
+                color: '#666'
+              }}>
+                Формируем каталог товаров...
+              </div>
+              <style>{`
+                @keyframes bounce {
+                  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+                  40% { transform: translateY(-10px); }
+                  60% { transform: translateY(-5px); }
+                }
+                @keyframes slideIn {
+                  0% { opacity: 0; transform: translateX(-20px); }
+                  50% { opacity: 1; transform: translateX(0); }
+                  100% { opacity: 1; transform: translateX(0); }
+                }
+              `}</style>
             </div>
           ) : (
           <Routes>
