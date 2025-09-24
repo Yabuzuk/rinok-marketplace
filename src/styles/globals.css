@@ -91,10 +91,13 @@ body {
 }
 
 @media (max-width: 768px) {
-  .grid-2,
+  .grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
   .grid-3,
   .grid-4 {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
   
   .container {
