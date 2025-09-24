@@ -152,13 +152,8 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                 <div 
                   key={`${product.id}-${index}`}
                   style={{
-                    minWidth: '160px',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    borderRadius: '12px',
-                    padding: '12px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    border: '1px solid rgba(76, 175, 80, 0.3)'
+                    minWidth: '130px',
+                    cursor: 'pointer'
                   }}
                   onClick={() => onAddToCart(product)}
                 >
@@ -167,7 +162,6 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                     height: '130px',
                     background: '#f9f5f0',
                     borderRadius: '16px',
-                    margin: '0 auto 8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
