@@ -97,7 +97,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
       <div style={{ textAlign: 'left' }}>
         <div style={{ 
           fontSize: '14px', 
-          fontWeight: '300',
+          fontWeight: '500',
           color: '#e53e3e',
           margin: '0 0 2px 0'
         }}>
