@@ -195,14 +195,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                       product.image || '📦'
                     )}
                   </div>
-                  <div style={{
-                    fontSize: '16px',
-                    fontWeight: '700',
-                    textAlign: 'center',
-                    color: '#4caf50'
-                  }}>
-                    {product.price} ₽
-                  </div>
+
                 </div>
               ))}
             </div>
@@ -259,7 +252,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                 >
                   <div style={{ 
                     fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
-                    marginBottom: window.innerWidth <= 768 ? '4px' : '6px' 
+                    marginBottom: window.innerWidth <= 768 ? '2px' : '6px' 
                   }}>
                     🛒
                   </div>
@@ -288,7 +281,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                     >
                       <div style={{ 
                         fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
-                        marginBottom: window.innerWidth <= 768 ? '4px' : '6px' 
+                        marginBottom: window.innerWidth <= 768 ? '2px' : '6px' 
                       }}>
                         🏢
                       </div>
@@ -346,7 +339,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                 >
                   <div style={{ 
                     fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
-                    marginBottom: window.innerWidth <= 768 ? '4px' : '6px' 
+                    marginBottom: window.innerWidth <= 768 ? '2px' : '6px' 
                   }}>
                     {category.icon}
                   </div>

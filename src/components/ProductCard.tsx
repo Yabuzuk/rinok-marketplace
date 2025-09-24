@@ -30,7 +30,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
         overflow: 'hidden',
         marginBottom: '4px',
         background: '#f8f8f8',
-        position: 'relative'
+        position: 'relative',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
       }}>
         {product.image && (product.image.startsWith('http') || product.image.startsWith('data:')) ? (
           <img 
