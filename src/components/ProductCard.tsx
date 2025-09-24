@@ -95,22 +95,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
       </div>
 
       <div style={{ textAlign: 'center' }}>
-        <h3 style={{ 
+        <div style={{ 
           fontSize: '14px', 
-          fontWeight: '600',
+          fontWeight: '300',
+          color: '#e53e3e',
+          margin: '0 0 4px 0'
+        }}>
+          {product.price} ₽
+        </div>
+        <h3 style={{ 
+          fontSize: '12px', 
+          fontWeight: '300',
           lineHeight: '1.2',
-          margin: '0 0 4px 0',
-          color: '#2e7d32'
+          margin: 0,
+          color: '#333'
         }}>
           {product.name}
         </h3>
-        <span style={{ 
-          fontSize: '16px', 
-          fontWeight: '700',
-          color: '#4caf50'
-        }}>
-          {product.price} ₽
-        </span>
       </div>
     </div>
   );
