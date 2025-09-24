@@ -28,7 +28,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
         aspectRatio: '1',
         borderRadius: '12px',
         overflow: 'hidden',
-        marginBottom: '8px',
+        marginBottom: '4px',
         background: '#f8f8f8',
         position: 'relative'
       }}>
@@ -94,12 +94,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
         </button>
       </div>
 
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'left' }}>
         <div style={{ 
           fontSize: '14px', 
           fontWeight: '300',
           color: '#e53e3e',
-          margin: '0 0 4px 0'
+          margin: '0 0 2px 0'
         }}>
           {product.price} ₽
         </div>
