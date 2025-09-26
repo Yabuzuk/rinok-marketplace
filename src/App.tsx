@@ -402,7 +402,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="App" style={{ background: '#ffffff', minHeight: '100vh' }}>
+    <div className="App" style={{ background: '#F6F9FC', minHeight: '100vh' }}>
 
         <Header 
           user={currentUser}
