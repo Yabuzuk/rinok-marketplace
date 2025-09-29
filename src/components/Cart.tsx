@@ -27,6 +27,7 @@ const Cart: React.FC<CartProps> = ({
   const [addressSuggestions, setAddressSuggestions] = React.useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [addressInput, setAddressInput] = React.useState('');
+  const [showPaymentForm, setShowPaymentForm] = React.useState(false);
   
   const getAddressSuggestions = React.useCallback(async (query: string) => {
     if (query.length < 3) {
@@ -210,7 +211,7 @@ const Cart: React.FC<CartProps> = ({
 
     await Promise.all(orderPromises);
     alert('Заказы успешно созданы!');
-    onClose();
+    setShowPaymentForm(true);
   };
 
   return (
@@ -506,32 +507,34 @@ const Cart: React.FC<CartProps> = ({
               </span>
             </div>
           </div>
-          <button 
-            className="btn btn-primary"
-            onClick={handleCheckout}
-            style={{ width: '100%', marginBottom: '12px' }}
-          >
-            Оформить заказ
-          </button>
-          
-          <form 
-            id="tinkoff-form" 
-            action="https://securepay.tinkoff.ru/html/payForm/initialize" 
-            method="POST"
-            style={{ width: '100%' }}
-          >
-            <input type="hidden" name="TerminalKey" value="ВАШ_TERMINAL_KEY" />
-            <input type="hidden" name="Amount" value={totalWithDelivery * 100} />
-            <input type="hidden" name="OrderId" value={Date.now().toString()} />
-            <input type="hidden" name="Description" value="Оплата заказа в Rinok" />
+          {!showPaymentForm ? (
             <button 
-              type="submit"
-              className="btn btn-secondary"
+              className="btn btn-primary"
+              onClick={handleCheckout}
               style={{ width: '100%' }}
             >
-              Оплатить картой
+              Оформить заказ
             </button>
-          </form>
+          ) : (
+            <form 
+              id="tinkoff-form" 
+              action="https://securepay.tinkoff.ru/html/payForm/initialize" 
+              method="POST"
+              style={{ width: '100%' }}
+            >
+              <input type="hidden" name="TerminalKey" value="ВАШ_TERMINAL_KEY" />
+              <input type="hidden" name="Amount" value={totalWithDelivery * 100} />
+              <input type="hidden" name="OrderId" value={Date.now().toString()} />
+              <input type="hidden" name="Description" value="Оплата заказа в Rinok" />
+              <button 
+                type="submit"
+                className="btn btn-primary"
+                style={{ width: '100%' }}
+              >
+                Оплатить картой
+              </button>
+            </form>
+          )}
         </div>
       )}
     </div>
