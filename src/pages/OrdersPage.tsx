@@ -182,25 +182,47 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders, onCancelOrder }) 
               <span>{selectedOrder.total} ₽</span>
             </div>
             
-            {(selectedOrder.status === 'pending' || selectedOrder.status === 'confirmed') && (
-              <button 
-                className="btn btn-secondary"
-                style={{ 
-                  width: '100%',
-                  backgroundColor: '#f44336',
-                  color: 'white',
-                  border: 'none'
-                }}
-                onClick={() => {
-                  if (window.confirm('Вы уверены, что хотите отменить заказ?')) {
-                    onCancelOrder?.(selectedOrder.id);
-                    setSelectedOrder(null);
-                  }
-                }}
-              >
-                Отменить заказ
-              </button>
-            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {selectedOrder.status === 'confirmed' && (
+                <form 
+                  action="https://securepay.tinkoff.ru/html/payForm/initialize" 
+                  method="POST"
+                  style={{ width: '100%' }}
+                >
+                  <input type="hidden" name="TerminalKey" value="ВАШ_TERMINAL_KEY" />
+                  <input type="hidden" name="Amount" value={selectedOrder.total * 100} />
+                  <input type="hidden" name="OrderId" value={selectedOrder.id} />
+                  <input type="hidden" name="Description" value={`Оплата заказа #${selectedOrder.id.slice(-6)}`} />
+                  <button 
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{ width: '100%' }}
+                  >
+                    Оплатить картой ({selectedOrder.total} ₽)
+                  </button>
+                </form>
+              )}
+              
+              {(selectedOrder.status === 'pending' || selectedOrder.status === 'confirmed') && (
+                <button 
+                  className="btn btn-secondary"
+                  style={{ 
+                    width: '100%',
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    border: 'none'
+                  }}
+                  onClick={() => {
+                    if (window.confirm('Вы уверены, что хотите отменить заказ?')) {
+                      onCancelOrder?.(selectedOrder.id);
+                      setSelectedOrder(null);
+                    }
+                  }}
+                >
+                  Отменить заказ
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
