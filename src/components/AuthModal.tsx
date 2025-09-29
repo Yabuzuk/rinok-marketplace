@@ -4,12 +4,12 @@ import { X, User, Mail, Lock, Phone } from 'lucide-react';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (userType: 'customer' | 'seller' | 'admin' | 'courier', userData: any) => void;
+  onLogin: (userType: 'customer' | 'seller' | 'admin' | 'courier' | 'manager', userData: any) => void;
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [userType, setUserType] = useState<'customer' | 'seller' | 'admin' | 'courier'>('customer');
+  const [userType, setUserType] = useState<'customer' | 'seller' | 'admin' | 'courier' | 'manager'>('customer');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -49,6 +49,28 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       };
       
       onLogin('admin', adminData);
+      onClose();
+      return;
+    }
+
+    // Проверка для менеджера
+    if (userType === 'manager') {
+      if (formData.email !== 'manager' || formData.password !== 'manager') {
+        alert('Неверный логин или пароль менеджера');
+        return;
+      }
+      
+      const managerData = {
+        id: 'manager',
+        name: 'Менеджер',
+        email: 'manager@rinok.com',
+        phone: '+7 (999) 111-11-11',
+        role: 'manager',
+        type: 'manager',
+        isManager: true
+      };
+      
+      onLogin('manager', managerData);
       onClose();
       return;
     }
@@ -184,21 +206,38 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
             Продавец
           </button>
           {mode === 'login' && (
-            <button
-              onClick={() => setUserType('admin')}
-              style={{
-                flex: 1,
-                padding: '8px 16px',
-                border: 'none',
-                borderRadius: '6px',
-                background: userType === 'admin' ? '#4caf50' : 'transparent',
-                color: userType === 'admin' ? 'white' : '#666',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-            >
-              Админ
-            </button>
+            <>
+              <button
+                onClick={() => setUserType('admin')}
+                style={{
+                  flex: 1,
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: userType === 'admin' ? '#4caf50' : 'transparent',
+                  color: userType === 'admin' ? 'white' : '#666',
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+              >
+                Админ
+              </button>
+              <button
+                onClick={() => setUserType('manager')}
+                style={{
+                  flex: 1,
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: userType === 'manager' ? '#9c27b0' : 'transparent',
+                  color: userType === 'manager' ? 'white' : '#666',
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+              >
+                Менеджер
+              </button>
+            </>
           )}
 
 
