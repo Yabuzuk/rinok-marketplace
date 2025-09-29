@@ -90,7 +90,19 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   console.log('Filtered seller orders:', sellerOrders.length);
   console.log('============================');
 
-  const totalRevenue = sellerOrders.reduce((sum, order) => sum + order.total, 0);
+  // Расчет выручки за текущий месяц
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  
+  const monthlyRevenue = sellerOrders
+    .filter(order => {
+      const orderDate = new Date(order.createdAt);
+      return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+    })
+    .reduce((sum, order) => sum + order.total, 0);
+  
+  const platformCommission = monthlyRevenue * 0.05; // 5% комиссия
   const totalProducts = sellerProducts.length;
   const totalOrders = sellerOrders.length;
 
@@ -865,26 +877,45 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   Аналитика
                 </h2>
 
-                <div className="grid grid-3" style={{ marginBottom: '32px' }}>
+                <div className="grid grid-2" style={{ marginBottom: '32px' }}>
                   <div className="card" style={{ textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '32px', fontWeight: '700', color: '#ff6b35', marginBottom: '8px' }}>
-                      {totalRevenue.toLocaleString()} ₽
+                    <h3 style={{ fontSize: '32px', fontWeight: '700', color: '#4caf50', marginBottom: '8px' }}>
+                      {monthlyRevenue.toLocaleString()} ₽
                     </h3>
-                    <p style={{ color: '#666' }}>Общая выручка</p>
+                    <p style={{ color: '#666' }}>Выручка за месяц</p>
+                    <p style={{ fontSize: '12px', color: '#999' }}>
+                      {currentDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
+                    </p>
                   </div>
                   
                   <div className="card" style={{ textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '32px', fontWeight: '700', color: '#ff6b35', marginBottom: '8px' }}>
+                    <h3 style={{ fontSize: '32px', fontWeight: '700', color: '#ff9800', marginBottom: '8px' }}>
+                      {platformCommission.toLocaleString()} ₽
+                    </h3>
+                    <p style={{ color: '#666' }}>Комиссия площадки (5%)</p>
+                    <p style={{ fontSize: '12px', color: '#999' }}>
+                      От выручки за месяц
+                    </p>
+                  </div>
+                  
+                  <div className="card" style={{ textAlign: 'center' }}>
+                    <h3 style={{ fontSize: '32px', fontWeight: '700', color: '#2196f3', marginBottom: '8px' }}>
                       {totalOrders}
                     </h3>
                     <p style={{ color: '#666' }}>Заказов</p>
+                    <p style={{ fontSize: '12px', color: '#999' }}>
+                      Всего за время
+                    </p>
                   </div>
                   
                   <div className="card" style={{ textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '32px', fontWeight: '700', color: '#ff6b35', marginBottom: '8px' }}>
+                    <h3 style={{ fontSize: '32px', fontWeight: '700', color: '#9c27b0', marginBottom: '8px' }}>
                       {totalProducts}
                     </h3>
                     <p style={{ color: '#666' }}>Товаров</p>
+                    <p style={{ fontSize: '12px', color: '#999' }}>
+                      В каталоге
+                    </p>
                   </div>
                 </div>
               </div>
