@@ -885,7 +885,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                 
                 try {
                   // Используем прямое создание через API
-                  const { supabaseApi } = await import('../../utils/supabaseApi');
+                  const { supabaseApi } = await import('../utils/supabaseApi');
                   const managerId = `manager_${Date.now()}`;
                   const newManager = {
                     id: managerId,
