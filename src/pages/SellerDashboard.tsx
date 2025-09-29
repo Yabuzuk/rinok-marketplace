@@ -100,7 +100,12 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       const orderDate = new Date(order.createdAt);
       return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
     })
-    .reduce((sum, order) => sum + order.total, 0);
+    .reduce((sum, order) => {
+      const orderTotal = order.items
+        .filter(item => item.productId !== 'delivery')
+        .reduce((itemSum, item) => itemSum + item.price * item.quantity, 0);
+      return sum + orderTotal;
+    }, 0);
   
   const platformCommission = monthlyRevenue * 0.05; // 5% комиссия
   const totalProducts = sellerProducts.length;
