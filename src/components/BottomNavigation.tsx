@@ -18,6 +18,7 @@ interface BottomNavigationProps {
   onPavilionSelect?: (pavilionNumber: string) => void;
   pavilions?: string[];
   onAuthClick: () => void;
+  onLogout?: () => void;
 }
 
 const BottomNavigation: React.FC<BottomNavigationProps> = ({
@@ -31,7 +32,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onWarehouseClick,
   onPavilionSelect,
   pavilions = [],
-  onAuthClick
+  onAuthClick,
+  onLogout
 }) => {
   const [showPavilions, setShowPavilions] = React.useState(false);
   const [showBurgerMenu, setShowBurgerMenu] = React.useState(false);
@@ -100,6 +102,12 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onDashboardClick },
           { icon: <Settings size={20} />, label: 'Настройки', onClick: onDashboardClick },
           { icon: <Shield size={20} />, label: 'Админ', onClick: onDashboardClick }
+        ];
+      
+      case 'manager':
+        return [
+          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onDashboardClick },
+          { icon: <User size={20} />, label: 'Профиль', onClick: () => setShowBurgerMenu(true) }
         ];
       
       default:
@@ -201,42 +209,67 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
             width: '250px'
           }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ marginBottom: '16px', textAlign: 'center' }}>Меню</h3>
-            <button
-              onClick={() => {
-                onDashboardClick();
-                setShowBurgerMenu(false);
-              }}
-              style={{
-                width: '100%',
-                padding: '12px',
-                margin: '4px 0',
-                border: '1px solid #c8e6c9',
-                borderRadius: '8px',
-                background: 'white',
-                cursor: 'pointer',
-                textAlign: 'left'
-              }}
-            >
-              👤 Профиль
-            </button>
-            <button
-              onClick={() => {
-                alert('Раздел "О нас" в разработке');
-                setShowBurgerMenu(false);
-              }}
-              style={{
-                width: '100%',
-                padding: '12px',
-                margin: '4px 0',
-                border: '1px solid #c8e6c9',
-                borderRadius: '8px',
-                background: 'white',
-                cursor: 'pointer',
-                textAlign: 'left'
-              }}
-            >
-              ℹ️ О нас
-            </button>
+            {user.role !== 'manager' && (
+              <>
+                <button
+                  onClick={() => {
+                    onDashboardClick();
+                    setShowBurgerMenu(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    margin: '4px 0',
+                    border: '1px solid #c8e6c9',
+                    borderRadius: '8px',
+                    background: 'white',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  👤 Профиль
+                </button>
+                <button
+                  onClick={() => {
+                    alert('Раздел "О нас" в разработке');
+                    setShowBurgerMenu(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    margin: '4px 0',
+                    border: '1px solid #c8e6c9',
+                    borderRadius: '8px',
+                    background: 'white',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  ℹ️ О нас
+                </button>
+              </>
+            )}
+            {user.role === 'manager' && (
+              <button
+                onClick={() => {
+                  onLogout?.();
+                  setShowBurgerMenu(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  margin: '4px 0',
+                  border: '1px solid #f44336',
+                  borderRadius: '8px',
+                  background: 'white',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  color: '#f44336'
+                }}
+              >
+                🚪 Выйти
+              </button>
+            )}
           </div>
         </div>
       )}
