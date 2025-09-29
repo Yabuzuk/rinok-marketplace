@@ -575,17 +575,30 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
             <div style={{ marginBottom: '16px' }}>
               <strong>Товары:</strong>
               <div style={{ marginTop: '8px' }}>
-                {selectedOrder.items.map((item, index) => (
+                {selectedOrder.items.filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
                   <div key={index} style={{ 
                     display: 'flex', 
                     justifyContent: 'space-between', 
                     padding: '8px 0',
-                    borderBottom: index < selectedOrder.items.length - 1 ? '1px solid #eee' : 'none'
+                    borderBottom: index < filteredItems.length - 1 ? '1px solid #eee' : 'none'
                   }}>
                     <span>{item.productName} x {item.quantity}</span>
                     <span>{item.price * item.quantity} ₽</span>
                   </div>
                 ))}
+                {selectedOrder.deliveryPrice && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    padding: '8px 0',
+                    borderTop: '1px solid #eee',
+                    marginTop: '8px',
+                    fontWeight: '500'
+                  }}>
+                    <span>Доставка</span>
+                    <span>{selectedOrder.deliveryPrice} ₽</span>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -600,7 +613,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
               marginBottom: '16px'
             }}>
               <span>Итого:</span>
-              <span>{selectedOrder.total} ₽</span>
+              <span>{selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (selectedOrder.deliveryPrice || 0)} ₽</span>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

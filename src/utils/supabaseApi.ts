@@ -125,6 +125,8 @@ export const supabaseApi = {
         
         return {
           ...order,
+          deliveryPrice: order.deliveryprice,
+          managerId: order.managerid,
           items: items || []
         };
       })
