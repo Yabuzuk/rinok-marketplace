@@ -649,10 +649,12 @@ const AppContent: React.FC = () => {
                     onUpdateOrderStatus={handleUpdateOrderStatus}
                     onUpdateOrder={async (orderId, updates) => {
                       try {
+                        console.log('Updating order:', orderId, 'with updates:', updates);
                         await supabaseApi.updateOrder(orderId, updates);
                         loadData();
                       } catch (error) {
                         console.error('Error updating order:', error);
+                        console.error('Full error details:', error);
                       }
                     }}
                     onSwitchRole={handleSwitchRole}
