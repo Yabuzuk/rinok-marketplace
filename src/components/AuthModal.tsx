@@ -53,8 +53,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       return;
     }
 
-    // Проверка для менеджера
-    if (userType === 'manager') {
+    // Проверка для менеджера (только при входе)
+    if (userType === 'manager' && mode === 'login') {
       if (formData.email !== 'manager' || formData.password !== 'manager') {
         alert('Неверный логин или пароль менеджера');
         return;
