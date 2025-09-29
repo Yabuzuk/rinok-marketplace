@@ -43,15 +43,20 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
       return;
     }
 
-    await onUpdateOrder?.(order.id, {
-      status: 'manager_confirmed',
-      deliveryPrice: deliveryPrice,
-      managerId: user.id
-    });
-    
-    setSelectedOrder(null);
-    setDeliveryPrice(0);
-    alert('Заказ подтвержден с указанием стоимости доставки');
+    try {
+      await onUpdateOrder?.(order.id, {
+        status: 'manager_confirmed',
+        deliveryPrice: deliveryPrice,
+        managerId: user.id
+      });
+      
+      setSelectedOrder(null);
+      setDeliveryPrice(0);
+      alert('Заказ подтвержден с указанием стоимости доставки');
+    } catch (error) {
+      console.error('Error confirming order:', error);
+      alert('Ошибка подтверждения заказа');
+    }
   };
 
   return (

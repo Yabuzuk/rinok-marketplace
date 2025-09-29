@@ -252,26 +252,7 @@ const AppContent: React.FC = () => {
         }
       }
       
-      // Проверяем существует ли пользователь
-      const existingUser = users.find(u => u.id === userId);
-      console.log('Updating user:', userId, 'exists:', !!existingUser, 'updates:', updates);
-      
-      if (!existingUser) {
-        // Если не существует, создаем нового
-        const newUser = {
-          id: userId,
-          email: updates.email || '',
-          name: updates.name || '',
-          role: updates.role || 'customer',
-          ...updates
-        } as User;
-        console.log('Creating new user:', newUser);
-        await supabaseApi.createUser(newUser);
-      } else {
-        // Если существует, обновляем
-        console.log('Updating existing user:', userId, updates);
-        await supabaseApi.updateUser(userId, updates);
-      }
+я не  await supabaseApi.updateUser(userId, updates);
       
       // Обновляем текущего пользователя если это он
       if (currentUser && currentUser.id === userId) {
@@ -742,7 +723,6 @@ const AppContent: React.FC = () => {
           onPavilionSelect={(pavilionNumber) => navigate(`/pavilion/${pavilionNumber}`)}
           pavilions={Array.from(new Set(products.filter(p => p.pavilionNumber).map(p => p.pavilionNumber))).sort()}
           onAuthClick={() => setShowAuthModal(true)}
-          onLogout={handleLogout}
         />
     </div>
   );
