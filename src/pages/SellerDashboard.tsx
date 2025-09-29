@@ -817,12 +817,12 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         </div>
 
                         <div style={{ marginBottom: '16px' }}>
-                          {order.items.map((item, index) => (
+                          {order.items.filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
                             <div key={index} style={{ 
                               display: 'flex', 
                               justifyContent: 'space-between', 
                               padding: '8px 0',
-                              borderBottom: index < order.items.length - 1 ? '1px solid #f0f0f0' : 'none'
+                              borderBottom: index < filteredItems.length - 1 ? '1px solid #f0f0f0' : 'none'
                             }}>
                               <span>{item.productName} x {item.quantity}</span>
                               <span style={{ fontWeight: '600' }}>{item.price * item.quantity} ₽</span>
@@ -832,7 +832,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
-                            Итого: {order.total} ₽
+                            Итого: {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽
                           </div>
                           
                           {order.status === 'pending' && (
