@@ -134,15 +134,8 @@ const Cart: React.FC<CartProps> = ({
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   
-  const calculateDeliveryFee = (): number => {
-    if (!selectedAddress || !selectedAddress.toLowerCase().includes('новосибирск')) {
-      return 0;
-    }
-    return (deliveryDistance || 20) * 40;
-  };
-  
-  const deliveryFee = calculateDeliveryFee();
-  const totalWithDelivery = total + deliveryFee;
+  const deliveryFee = 0; // Доставку добавляет менеджер
+  const totalWithDelivery = total;
 
   const handleCheckout = async () => {
     if (!user || user.role !== 'customer') {
@@ -181,7 +174,7 @@ const Cart: React.FC<CartProps> = ({
     const orderPromises = Object.entries(itemsByPavilion).map(async ([pavilionNumber, pavilionItems]) => {
       const pavilionTotal = pavilionItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
       
-      const pavilionDeliveryFee = calculateDeliveryFee();
+      const pavilionDeliveryFee = 0; // Доставку добавляет менеджер
       
       const order = {
         customerId: user.id,
@@ -192,12 +185,7 @@ const Cart: React.FC<CartProps> = ({
             quantity: item.quantity,
             price: item.product.price
           })),
-          ...(pavilionDeliveryFee > 0 ? [{
-            productId: 'delivery',
-            productName: 'Доставка',
-            quantity: 1,
-            price: pavilionDeliveryFee
-          }] : [])
+          // Доставку добавляет менеджер
         ],
         total: pavilionTotal + pavilionDeliveryFee,
         status: 'pending' as const,
@@ -466,33 +454,7 @@ const Cart: React.FC<CartProps> = ({
               <span style={{ fontSize: '16px' }}>{total} ₽</span>
             </div>
             
-            {(deliveryFee > 0 || isCalculatingDelivery) && (
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '8px'
-              }}>
-                <span style={{ fontSize: '16px' }}>
-                  Доставка {deliveryDistance && `(${deliveryDistance} км)`}:
-                </span>
-                <span style={{ fontSize: '16px' }}>
-                  {isCalculatingDelivery ? 'Рассчитываем...' : `${deliveryFee} ₽`}
-                </span>
-              </div>
-            )}
-            
-            {deliveryDistance === 0 && selectedAddress && (
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '8px',
-                color: '#f44336'
-              }}>
-                <span style={{ fontSize: '14px' }}>Доставка только по Новосибирской области</span>
-              </div>
-            )}
+
             
             <div style={{
               display: 'flex',
