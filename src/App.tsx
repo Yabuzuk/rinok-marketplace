@@ -252,7 +252,7 @@ const AppContent: React.FC = () => {
         }
       }
       
-я не  await supabaseApi.updateUser(userId, updates);
+      await supabaseApi.updateUser(userId, updates);
       
       // Обновляем текущего пользователя если это он
       if (currentUser && currentUser.id === userId) {
