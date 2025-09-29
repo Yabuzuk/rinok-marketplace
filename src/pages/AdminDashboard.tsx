@@ -24,6 +24,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
+  const [showCreateManager, setShowCreateManager] = useState(false);
 
   const getStatusColor = (status: OrderWithCustomer['status']) => {
     switch (status) {
@@ -484,6 +485,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
         {/* Управление пользователями */}
         {activeTab === 'users' && (
           <div>
+            <div style={{ marginBottom: '24px' }}>
+              <button 
+                className="btn btn-primary"
+                onClick={() => setShowCreateManager(true)}
+              >
+                + Добавить менеджера
+              </button>
+            </div>
+            
             <div className="grid grid-3">
               {users.map(user => (
                 <div 
@@ -823,6 +833,112 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                     type="button" 
                     className="btn btn-secondary"
                     onClick={() => setEditingUser(null)}
+                  >
+                    Отмена
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Модальное окно создания менеджера */}
+        {showCreateManager && (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000
+            }}
+            onClick={() => setShowCreateManager(false)}
+          >
+            <div 
+              style={{
+                background: 'white',
+                borderRadius: '16px',
+                padding: '24px',
+                width: '400px'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px' }}>
+                Создать менеджера
+              </h3>
+              
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target as HTMLFormElement);
+                
+                const managerData = {
+                  name: formData.get('name') as string,
+                  email: formData.get('email') as string,
+                  phone: formData.get('phone') as string,
+                  role: 'manager' as const
+                };
+                
+                try {
+                  const managerId = `manager_${Date.now()}`;
+                  await onUpdateUser?.(managerId, managerData);
+                  setShowCreateManager(false);
+                  alert('Менеджер успешно создан!');
+                } catch (error) {
+                  console.error('Error creating manager:', error);
+                  alert('Ошибка создания менеджера');
+                }
+              }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                    Имя
+                  </label>
+                  <input 
+                    name="name" 
+                    className="input" 
+                    required 
+                    placeholder="Введите имя менеджера"
+                  />
+                </div>
+                
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                    Email
+                  </label>
+                  <input 
+                    name="email" 
+                    type="email" 
+                    className="input" 
+                    required 
+                    placeholder="manager@example.com"
+                  />
+                </div>
+                
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                    Телефон
+                  </label>
+                  <input 
+                    name="phone" 
+                    type="tel" 
+                    className="input" 
+                    required 
+                    placeholder="+7 (999) 123-45-67"
+                  />
+                </div>
+                
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button type="submit" className="btn btn-primary">
+                    Создать менеджера
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary"
+                    onClick={() => setShowCreateManager(false)}
                   >
                     Отмена
                   </button>
