@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Plus, Minus } from 'lucide-react';
 import { CartItem, User, Order } from '../types';
 
@@ -509,10 +509,29 @@ const Cart: React.FC<CartProps> = ({
           <button 
             className="btn btn-primary"
             onClick={handleCheckout}
-            style={{ width: '100%' }}
+            style={{ width: '100%', marginBottom: '12px' }}
           >
             Оформить заказ
           </button>
+          
+          <form 
+            id="tinkoff-form" 
+            action="https://securepay.tinkoff.ru/html/payForm/initialize" 
+            method="POST"
+            style={{ width: '100%' }}
+          >
+            <input type="hidden" name="TerminalKey" value="ВАШ_TERMINAL_KEY" />
+            <input type="hidden" name="Amount" value={totalWithDelivery * 100} />
+            <input type="hidden" name="OrderId" value={Date.now().toString()} />
+            <input type="hidden" name="Description" value="Оплата заказа в Rinok" />
+            <button 
+              type="submit"
+              className="btn btn-secondary"
+              style={{ width: '100%' }}
+            >
+              Оплатить картой
+            </button>
+          </form>
         </div>
       )}
     </div>
