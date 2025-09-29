@@ -136,7 +136,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           key={index}
           icon={item.icon}
           label={item.label}
-          badge={item.badge || undefined}
+          badge={'badge' in item ? item.badge : undefined}
           onClick={item.onClick}
           isMain={item.isMain}
         />
