@@ -55,20 +55,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
 
     // Проверка для менеджера (только при входе)
     if (userType === 'manager' && mode === 'login') {
-      if (formData.email !== 'manager' || formData.password !== 'manager') {
-        alert('Неверный логин или пароль менеджера');
-        return;
-      }
-      
-      const managerData = {
-        id: 'manager',
-        name: 'Менеджер',
-        email: 'manager@rinok.com',
-        phone: '+7 (999) 111-11-11',
-        role: 'manager'
-      };
-      
-      onLogin('manager', managerData);
+      // Используем обычную логику входа по email
+      onLogin('manager', { email: formData.email, password: formData.password, isLogin: true });
       onClose();
       return;
     }
@@ -272,15 +260,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
               fontWeight: '500'
             }}>
               <Mail size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-              {userType === 'admin' || userType === 'manager' ? 'Логин' : 'Email'}
+              {userType === 'admin' ? 'Логин' : 'Email'}
             </label>
             <input
               name="email"
-              type={userType === 'admin' || userType === 'manager' ? 'text' : 'email'}
+              type={userType === 'admin' ? 'text' : 'email'}
               className="input"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder={userType === 'admin' ? 'admin' : userType === 'manager' ? 'manager' : 'example@email.com'}
+              placeholder={userType === 'admin' ? 'admin' : 'example@email.com'}
               required
             />
           </div>
