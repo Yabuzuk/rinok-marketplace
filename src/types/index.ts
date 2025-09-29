@@ -17,6 +17,7 @@ export interface User {
   companyName?: string;
   paymentInfo?: string;
   bankName?: string;
+  password?: string;
 }
 
 export interface Product {
