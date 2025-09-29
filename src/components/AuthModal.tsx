@@ -274,15 +274,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
               fontWeight: '500'
             }}>
               <Mail size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-              {userType === 'admin' ? 'Логин' : 'Email'}
+              {userType === 'admin' || userType === 'manager' ? 'Логин' : 'Email'}
             </label>
             <input
               name="email"
-              type={userType === 'admin' ? 'text' : 'email'}
+              type={userType === 'admin' || userType === 'manager' ? 'text' : 'email'}
               className="input"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder={userType === 'admin' ? 'admin' : 'example@email.com'}
+              placeholder={userType === 'admin' ? 'admin' : userType === 'manager' ? 'manager' : 'example@email.com'}
               required
             />
           </div>
