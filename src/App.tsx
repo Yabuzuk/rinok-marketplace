@@ -252,20 +252,7 @@ const AppContent: React.FC = () => {
         }
       }
       
-      // Если пользователь не существует, создаем нового
-      const existingUser = users.find(u => u.id === userId);
-      if (!existingUser) {
-        const newUser = { 
-          id: userId, 
-          email: updates.email || '',
-          name: updates.name || '',
-          role: updates.role || 'customer',
-          ...updates 
-        } as User;
-        await supabaseApi.createUser(newUser);
-      } else {
-        await supabaseApi.updateUser(userId, updates);
-      }
+      await supabaseApi.updateUser(userId, updates);
       
       // Обновляем текущего пользователя если это он
       if (currentUser && currentUser.id === userId) {

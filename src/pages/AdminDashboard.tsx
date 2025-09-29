@@ -884,7 +884,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                 };
                 
                 try {
-                  // Используем прямое создание через API
                   const { supabaseApi } = await import('../utils/supabaseApi');
                   const managerId = `manager_${Date.now()}`;
                   const newManager = {
@@ -894,7 +893,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                   await supabaseApi.createUser(newManager);
                   setShowCreateManager(false);
                   alert('Менеджер успешно создан!');
-                  // Перезагружаем страницу для обновления списка
                   window.location.reload();
                 } catch (error) {
                   console.error('Error creating manager:', error);
