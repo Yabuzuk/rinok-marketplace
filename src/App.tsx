@@ -388,7 +388,7 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleDashboardClick = () => {
+  const handleDashboardClick = (tab?: string) => {
     if (currentUser) {
       const path = currentUser.role === 'customer' ? '/customer-dashboard' : 
                    currentUser.role === 'seller' ? '/seller-dashboard' : 
@@ -396,6 +396,13 @@ const AppContent: React.FC = () => {
                    currentUser.role === 'manager' ? '/manager-dashboard' :
                    '/admin-dashboard';
       navigate(path);
+      
+      // Для менеджера переключаем вкладку
+      if (currentUser.role === 'manager' && tab) {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('switchManagerTab', { detail: tab }));
+        }, 100);
+      }
     }
   };
 

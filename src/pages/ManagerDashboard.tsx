@@ -19,11 +19,24 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
   onSwitchRole,
   onLogout
 }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'settings'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'in-progress' | 'archive' | 'settings'>('orders');
+
+  // Слушатель для переключения вкладок
+  React.useEffect(() => {
+    const handleTabSwitch = (event: any) => {
+      if (event.detail) {
+        setActiveTab(event.detail);
+      }
+    };
+    window.addEventListener('switchManagerTab', handleTabSwitch);
+    return () => window.removeEventListener('switchManagerTab', handleTabSwitch);
+  }, []);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [deliveryPrice, setDeliveryPrice] = useState<number>(0);
 
   const confirmedOrders = orders.filter(order => order.status === 'confirmed');
+  const inProgressOrders = orders.filter(order => order.status === 'manager_confirmed');
+  const archivedOrders = orders.filter(order => order.status === 'delivered');
 
   const getStatusText = (status: Order['status']) => {
     switch (status) {
@@ -120,7 +133,47 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                   }}
                 >
                   <Package size={18} />
-                  Заказы на подтверждение
+                  Новые заказы
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('in-progress')}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: 'none',
+                    background: activeTab === 'in-progress' ? '#f5f5f5' : 'transparent',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    cursor: 'pointer',
+                    marginBottom: '8px',
+                    fontSize: '14px'
+                  }}
+                >
+                  <Package size={18} />
+                  Заказы в работе
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('archive')}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: 'none',
+                    background: activeTab === 'archive' ? '#f5f5f5' : 'transparent',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    cursor: 'pointer',
+                    marginBottom: '8px',
+                    fontSize: '14px'
+                  }}
+                >
+                  <Package size={18} />
+                  Архив заказов
                 </button>
 
                 <button
@@ -175,7 +228,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
             {activeTab === 'orders' && (
               <div>
                 <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
-                  Заказы на подтверждение ({confirmedOrders.length})
+                  Новые заказы ({confirmedOrders.length})
                 </h2>
 
                 {confirmedOrders.length === 0 ? (
@@ -238,6 +291,177 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                           >
                             Подтвердить с доставкой
                           </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'in-progress' && (
+              <div>
+                <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
+                  Заказы в работе ({inProgressOrders.length})
+                </h2>
+
+                {inProgressOrders.length === 0 ? (
+                  <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
+                    <Package size={48} style={{ margin: '0 auto 16px', opacity: 0.5, color: '#666' }} />
+                    <p style={{ color: '#666' }}>Нет заказов в работе</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {inProgressOrders.map(order => (
+                      <div key={order.id} className="card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                          <div>
+                            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
+                              Заказ #{order.id.slice(-8)}
+                            </h3>
+                            <p style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </p>
+                            <p style={{ fontSize: '14px', color: '#666' }}>
+                              Адрес: {order.deliveryAddress}
+                            </p>
+                          </div>
+                          
+                          <div style={{
+                            padding: '4px 12px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            background: '#e8f5e8',
+                            color: '#2e7d32'
+                          }}>
+                            {getStatusText(order.status)}
+                          </div>
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                          {order.items.filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
+                            <div key={index} style={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              padding: '8px 0',
+                              borderBottom: index < filteredItems.length - 1 ? '1px solid #f0f0f0' : 'none'
+                            }}>
+                              <span>{item.productName} x {item.quantity}</span>
+                              <span style={{ fontWeight: '600' }}>{item.price * item.quantity} ₽</span>
+                            </div>
+                          ))}
+                          {order.deliveryPrice && (
+                            <div style={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              padding: '8px 0',
+                              borderTop: '1px solid #f0f0f0',
+                              marginTop: '8px'
+                            }}>
+                              <span>Доставка</span>
+                              <span style={{ fontWeight: '600' }}>{order.deliveryPrice} ₽</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
+                            Итого: {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽
+                          </div>
+                          
+                          <button 
+                            className="btn btn-primary"
+                            style={{ fontSize: '14px', padding: '8px 16px', background: '#4caf50' }}
+                            onClick={async () => {
+                              try {
+                                await onUpdateOrder?.(order.id, { status: 'delivered' });
+                                alert('Заказ отмечен как выполненный');
+                              } catch (error) {
+                                alert('Ошибка обновления статуса');
+                              }
+                            }}
+                          >
+                            Заказ выполнен
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'archive' && (
+              <div>
+                <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
+                  Архив заказов ({archivedOrders.length})
+                </h2>
+
+                {archivedOrders.length === 0 ? (
+                  <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
+                    <Package size={48} style={{ margin: '0 auto 16px', opacity: 0.5, color: '#666' }} />
+                    <p style={{ color: '#666' }}>Нет выполненных заказов</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {archivedOrders.map(order => (
+                      <div key={order.id} className="card" style={{ opacity: 0.8 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                          <div>
+                            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
+                              Заказ #{order.id.slice(-8)}
+                            </h3>
+                            <p style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </p>
+                            <p style={{ fontSize: '14px', color: '#666' }}>
+                              Адрес: {order.deliveryAddress}
+                            </p>
+                          </div>
+                          
+                          <div style={{
+                            padding: '4px 12px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            background: '#e8f5e8',
+                            color: '#2e7d32'
+                          }}>
+                            Выполнен
+                          </div>
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                          {order.items.filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
+                            <div key={index} style={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              padding: '8px 0',
+                              borderBottom: index < filteredItems.length - 1 ? '1px solid #f0f0f0' : 'none'
+                            }}>
+                              <span>{item.productName} x {item.quantity}</span>
+                              <span style={{ fontWeight: '600' }}>{item.price * item.quantity} ₽</span>
+                            </div>
+                          ))}
+                          {order.deliveryPrice && (
+                            <div style={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              padding: '8px 0',
+                              borderTop: '1px solid #f0f0f0',
+                              marginTop: '8px'
+                            }}>
+                              <span>Доставка</span>
+                              <span style={{ fontWeight: '600' }}>{order.deliveryPrice} ₽</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
+                            Итого: {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽
+                          </div>
                         </div>
                       </div>
                     ))}

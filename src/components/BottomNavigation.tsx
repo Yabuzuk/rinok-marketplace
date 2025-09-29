@@ -12,7 +12,7 @@ interface BottomNavigationProps {
   onHomeClick: () => void;
   onSearchClick: () => void;
   onCartClick: () => void;
-  onDashboardClick: () => void;
+  onDashboardClick: (tab?: string) => void;
   onOrdersClick?: () => void;
   onWarehouseClick?: () => void;
   onPavilionSelect?: (pavilionNumber: string) => void;
@@ -106,7 +106,9 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
       
       case 'manager':
         return [
-          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onDashboardClick },
+          { icon: <Clipboard size={20} />, label: 'Новые', onClick: onDashboardClick },
+          { icon: <Clock size={20} />, label: 'В работе', onClick: () => onDashboardClick?.('in-progress') },
+          { icon: <Package size={20} />, label: 'Архив', onClick: () => onDashboardClick?.('archive') },
           { icon: <User size={20} />, label: 'Профиль', onClick: () => setShowBurgerMenu(true) }
         ];
       
