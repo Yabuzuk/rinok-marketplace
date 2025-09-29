@@ -28,7 +28,8 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders, onCancelOrder }) 
   const getStatusText = (status: Order['status']) => {
     switch (status) {
       case 'pending': return 'Ожидает подтверждения';
-      case 'confirmed': return 'Подтвержден';
+      case 'confirmed': return 'Подтвержден продавцом';
+      case 'manager_confirmed': return 'Подтвержден менеджером';
       case 'preparing': return 'Готовится';
       case 'delivering': return 'В пути';
       case 'delivered': return 'Доставлен';
@@ -183,14 +184,14 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders, onCancelOrder }) 
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {selectedOrder.status === 'confirmed' && (
+              {selectedOrder.status === 'manager_confirmed' && (
                 <form 
                   action="https://securepay.tinkoff.ru/html/payForm/initialize" 
                   method="POST"
                   style={{ width: '100%' }}
                 >
                   <input type="hidden" name="TerminalKey" value="ВАШ_TERMINAL_KEY" />
-                  <input type="hidden" name="Amount" value={selectedOrder.total * 100} />
+                  <input type="hidden" name="Amount" value={(selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (selectedOrder.deliveryPrice || 0)) * 100} />
                   <input type="hidden" name="OrderId" value={selectedOrder.id} />
                   <input type="hidden" name="Description" value={`Оплата заказа #${selectedOrder.id.slice(-6)}`} />
                   <button 
@@ -198,12 +199,12 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders, onCancelOrder }) 
                     className="btn btn-primary"
                     style={{ width: '100%' }}
                   >
-                    Оплатить картой ({selectedOrder.total} ₽)
+                    Оплатить картой ({selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (selectedOrder.deliveryPrice || 0)} ₽)
                   </button>
                 </form>
               )}
               
-              {(selectedOrder.status === 'pending' || selectedOrder.status === 'confirmed') && (
+              {(selectedOrder.status === 'pending' || selectedOrder.status === 'confirmed' || selectedOrder.status === 'manager_confirmed') && (
                 <button 
                   className="btn btn-secondary"
                   style={{ 

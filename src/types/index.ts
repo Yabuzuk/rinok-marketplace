@@ -2,8 +2,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'customer' | 'seller' | 'admin' | 'courier';
-  roles?: ('customer' | 'seller' | 'admin' | 'courier')[];
+  role: 'customer' | 'seller' | 'admin' | 'courier' | 'manager';
+  roles?: ('customer' | 'seller' | 'admin' | 'courier' | 'manager')[];
   avatar?: string;
   inn?: string;
   pavilionNumber?: string;
@@ -39,7 +39,9 @@ export interface Order {
   customerId: string;
   items: OrderItem[];
   total: number;
-  status: 'pending' | 'confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'manager_confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
+  deliveryPrice?: number;
+  managerId?: string;
   createdAt: Date;
   deliveryAddress: string;
   pavilionNumber?: string;

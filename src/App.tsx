@@ -10,6 +10,7 @@ import CustomerDashboard from './pages/CustomerDashboard';
 import SellerDashboard from './pages/SellerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import CourierDashboard from './pages/CourierDashboard';
+import ManagerDashboard from './pages/ManagerDashboard';
 import PavilionPage from './pages/PavilionPage';
 import OrdersPage from './pages/OrdersPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
@@ -92,7 +93,7 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleLogin = async (userType: 'customer' | 'seller' | 'admin' | 'courier', userData?: any) => {
+  const handleLogin = async (userType: 'customer' | 'seller' | 'admin' | 'courier' | 'manager', userData?: any) => {
     let user;
     if (userData) {
       if (userData.isAdmin) {
@@ -268,7 +269,7 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleSwitchRole = (newRole: 'customer' | 'seller' | 'admin' | 'courier') => {
+  const handleSwitchRole = (newRole: 'customer' | 'seller' | 'admin' | 'courier' | 'manager') => {
     if (!currentUser) return;
     
     // Добавляем новую роль в список ролей
@@ -392,6 +393,7 @@ const AppContent: React.FC = () => {
       const path = currentUser.role === 'customer' ? '/customer-dashboard' : 
                    currentUser.role === 'seller' ? '/seller-dashboard' : 
                    currentUser.role === 'courier' ? '/courier-dashboard' :
+                   currentUser.role === 'manager' ? '/manager-dashboard' :
                    '/admin-dashboard';
       navigate(path);
     }
@@ -620,6 +622,31 @@ const AppContent: React.FC = () => {
                       const updatedUser = { ...currentUser, ...updates };
                       setCurrentUser(updatedUser);
                       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                    }}
+                    onSwitchRole={handleSwitchRole}
+                    onLogout={() => setCurrentUser(null)}
+                  />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              } 
+            />
+            
+            <Route 
+              path="/manager-dashboard" 
+              element={
+                currentUser?.role === 'manager' ? (
+                  <ManagerDashboard 
+                    user={currentUser}
+                    orders={orders}
+                    onUpdateOrderStatus={handleUpdateOrderStatus}
+                    onUpdateOrder={async (orderId, updates) => {
+                      try {
+                        await supabaseApi.updateOrder(orderId, updates);
+                        loadData();
+                      } catch (error) {
+                        console.error('Error updating order:', error);
+                      }
                     }}
                     onSwitchRole={handleSwitchRole}
                     onLogout={() => setCurrentUser(null)}
