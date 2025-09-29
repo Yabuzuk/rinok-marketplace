@@ -252,25 +252,45 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
               </>
             )}
             {user.role === 'manager' && (
-              <button
-                onClick={() => {
-                  onLogout?.();
-                  setShowBurgerMenu(false);
-                }}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  margin: '4px 0',
-                  border: '1px solid #f44336',
-                  borderRadius: '8px',
-                  background: 'white',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  color: '#f44336'
-                }}
-              >
-                🚪 Выйти
-              </button>
+              <>
+                <button
+                  onClick={() => {
+                    onDashboardClick();
+                    setShowBurgerMenu(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    margin: '4px 0',
+                    border: '1px solid #c8e6c9',
+                    borderRadius: '8px',
+                    background: 'white',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  👤 Личный кабинет
+                </button>
+                <button
+                  onClick={() => {
+                    onLogout?.();
+                    setShowBurgerMenu(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    margin: '4px 0',
+                    border: '1px solid #f44336',
+                    borderRadius: '8px',
+                    background: 'white',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    color: '#f44336'
+                  }}
+                >
+                  🚪 Выйти
+                </button>
+              </>
             )}
           </div>
         </div>
