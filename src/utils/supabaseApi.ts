@@ -183,9 +183,7 @@ export const supabaseApi = {
       .update({
         status: updates.status,
         courierId: updates.courierId,
-        pavilionNumber: updates.pavilionNumber,
-        deliveryPrice: updates.deliveryPrice,
-        managerId: updates.managerId
+        pavilionNumber: updates.pavilionNumber
       })
       .eq('id', id)
       .select()
