@@ -1,8 +1,9 @@
 import React from 'react';
 import { 
   Home, Search, ShoppingCart, User, Package, 
-  BarChart3, Clipboard, Warehouse, Truck, 
-  Map, Clock, Users, Settings, Shield, Store, Menu
+  BarChart3, FileText, Warehouse, Truck, 
+  MapPin, Timer, Users, Settings, Shield, Building2, MoreHorizontal,
+  TrendingUp, Box, CheckSquare, UserCircle
 } from 'lucide-react';
 import { User as UserType } from '../types';
 
@@ -70,46 +71,46 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
     switch (user.role) {
       case 'customer':
         return [
-          { icon: <Store size={20} />, label: 'Павильоны', onClick: () => setShowPavilions(true), badge: undefined },
+          { icon: <Building2 size={20} />, label: 'Павильоны', onClick: () => setShowPavilions(true), badge: undefined },
           { icon: <ShoppingCart size={20} />, label: 'Корзина', onClick: onCartClick, badge: cartItemsCount },
           { icon: <Home size={28} />, label: 'Главная', onClick: onHomeClick, isMain: true, badge: undefined },
-          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onOrdersClick || (() => {}), badge: undefined },
-          { icon: <Menu size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
+          { icon: <FileText size={20} />, label: 'Заказы', onClick: onOrdersClick || (() => {}), badge: undefined },
+          { icon: <MoreHorizontal size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
         ];
       
       case 'seller':
         return [
-          { icon: <BarChart3 size={20} />, label: 'Статистика', onClick: () => onDashboardClick('analytics'), badge: undefined },
-          { icon: <Package size={20} />, label: 'Товары', onClick: () => onDashboardClick('products'), badge: undefined },
-          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: undefined },
+          { icon: <TrendingUp size={20} />, label: 'Статистика', onClick: () => onDashboardClick('analytics'), badge: undefined },
+          { icon: <Box size={20} />, label: 'Товары', onClick: () => onDashboardClick('products'), badge: undefined },
+          { icon: <FileText size={20} />, label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: undefined },
           { icon: <Warehouse size={20} />, label: 'Склад', onClick: onWarehouseClick || (() => {}), badge: undefined },
-          { icon: <User size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
+          { icon: <UserCircle size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
         ];
       
       case 'courier':
         return [
-          { icon: <Clipboard size={20} />, label: 'Задачи', onClick: () => onDashboardClick('tasks'), badge: undefined },
-          { icon: <Map size={20} />, label: 'Маршрут', onClick: () => onDashboardClick('route'), badge: undefined },
+          { icon: <CheckSquare size={20} />, label: 'Задачи', onClick: () => onDashboardClick('tasks'), badge: undefined },
+          { icon: <MapPin size={20} />, label: 'Маршрут', onClick: () => onDashboardClick('route'), badge: undefined },
           { icon: <Truck size={20} />, label: 'Доставки', onClick: () => onDashboardClick('deliveries'), badge: undefined },
-          { icon: <Clock size={20} />, label: 'График', onClick: () => onDashboardClick('schedule'), badge: undefined },
-          { icon: <User size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
+          { icon: <Timer size={20} />, label: 'График', onClick: () => onDashboardClick('schedule'), badge: undefined },
+          { icon: <UserCircle size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
         ];
       
       case 'admin':
         return [
-          { icon: <BarChart3 size={20} />, label: 'Дашборд', onClick: () => onDashboardClick('dashboard'), badge: undefined },
+          { icon: <TrendingUp size={20} />, label: 'Дашборд', onClick: () => onDashboardClick('dashboard'), badge: undefined },
           { icon: <Users size={20} />, label: 'Пользователи', onClick: () => onDashboardClick('users'), badge: undefined },
-          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: undefined },
+          { icon: <FileText size={20} />, label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: undefined },
           { icon: <Settings size={20} />, label: 'Настройки', onClick: () => onDashboardClick('settings'), badge: undefined },
           { icon: <Shield size={20} />, label: 'Админ', onClick: () => onDashboardClick('admin'), badge: undefined }
         ];
       
       case 'manager':
         return [
-          { icon: <Clipboard size={20} />, label: 'Новые', onClick: () => onDashboardClick('orders'), badge: undefined },
-          { icon: <Clock size={20} />, label: 'В работе', onClick: () => onDashboardClick?.('in-progress'), badge: undefined },
+          { icon: <FileText size={20} />, label: 'Новые', onClick: () => onDashboardClick('orders'), badge: undefined },
+          { icon: <Timer size={20} />, label: 'В работе', onClick: () => onDashboardClick?.('in-progress'), badge: undefined },
           { icon: <Package size={20} />, label: 'Архив', onClick: () => onDashboardClick?.('archive'), badge: undefined },
-          { icon: <User size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
+          { icon: <UserCircle size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
         ];
       
       default:
