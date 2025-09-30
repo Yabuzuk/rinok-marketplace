@@ -1,0 +1,30 @@
+User-agent: *
+Allow: /
+
+# Основные страницы
+Allow: /
+Allow: /pavilion/*
+Allow: /orders
+
+# Запрещаем индексацию служебных страниц
+Disallow: /customer-dashboard
+Disallow: /seller-dashboard
+Disallow: /admin-dashboard
+Disallow: /courier-dashboard
+Disallow: /manager-dashboard
+
+# Разрешаем все статические ресурсы
+Allow: /static/
+Allow: *.css
+Allow: *.js
+Allow: *.png
+Allow: *.jpg
+Allow: *.jpeg
+Allow: *.gif
+Allow: *.svg
+
+# Указываем sitemap (если будет создан)
+# Sitemap: https://your-domain.com/sitemap.xml
+
+# Специальные инструкции для поисковых роботов
+Crawl-delay: 1
