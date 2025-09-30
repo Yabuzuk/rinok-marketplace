@@ -247,8 +247,13 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                             {new Date(order.createdAt).toLocaleDateString('ru-RU')}
                           </p>
                           <p style={{ fontSize: '14px', color: '#666' }}>
-                            Товаров: {order.items.length}
+                            Товаров: {order.items.filter(item => item.productId !== 'delivery').length}
                           </p>
+                          {order.deliveryPrice && (
+                            <p style={{ fontSize: '14px', color: '#666' }}>
+                              Доставка: {order.deliveryPrice} ₽
+                            </p>
+                          )}
                         </div>
                         
                         <div style={{ textAlign: 'right' }}>
@@ -264,7 +269,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                             {getStatusText(order.status)}
                           </div>
                           <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
-                            {order.total} ₽
+                            {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽
                           </div>
                         </div>
                       </div>
