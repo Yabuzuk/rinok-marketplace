@@ -49,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
-            Rinok
+            Азия-Сибирь
           </div>
           
 
