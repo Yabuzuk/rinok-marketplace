@@ -178,27 +178,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
           </div>
         </div>
 
-        {/* Вкладки */}
-        <div style={{ marginBottom: '24px' }}>
+        {/* Вкладки скрыты - используется нижнее меню */}
+        <div style={{ marginBottom: '24px', display: 'none' }}>
           <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-            <button
-              onClick={() => setActiveTab('orders')}
-              className={activeTab === 'orders' ? 'btn btn-primary' : 'btn btn-secondary'}
-            >
-              Заказы
-            </button>
-            <button
-              onClick={() => setActiveTab('products')}
-              className={activeTab === 'products' ? 'btn btn-primary' : 'btn btn-secondary'}
-            >
-              Товары
-            </button>
-            <button
-              onClick={() => setActiveTab('users')}
-              className={activeTab === 'users' ? 'btn btn-primary' : 'btn btn-secondary'}
-            >
-              Пользователи
-            </button>
           </div>
 
           {activeTab === 'orders' && (

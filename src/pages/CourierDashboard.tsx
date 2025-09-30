@@ -137,41 +137,8 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
           </div>
         </div>
 
-        {/* Вкладки */}
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setActiveTab('available')}
-              className={activeTab === 'available' ? 'btn btn-primary' : 'btn btn-secondary'}
-            >
-              Доступные ({availableOrders.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('active')}
-              className={activeTab === 'active' ? 'btn btn-primary' : 'btn btn-secondary'}
-            >
-              Мои доставки ({activeOrders.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('completed')}
-              className={activeTab === 'completed' ? 'btn btn-primary' : 'btn btn-secondary'}
-            >
-              Выполненные ({completedOrders.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={activeTab === 'profile' ? 'btn btn-primary' : 'btn btn-secondary'}
-            >
-              Профиль
-            </button>
-            <button
-              onClick={() => onLogout?.()}
-              className="btn btn-danger"
-              style={{ backgroundColor: '#f44336', color: 'white' }}
-            >
-              Выйти
-            </button>
-          </div>
+        {/* Вкладки скрыты - используется нижнее меню */}
+        <div style={{ marginBottom: '24px', display: 'none' }}>
         </div>
 
         {/* Доступные доставки */}
