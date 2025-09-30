@@ -86,8 +86,13 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders, onCancelOrder }) 
                       {new Date(order.createdAt).toLocaleDateString('ru-RU')}
                     </p>
                     <p style={{ fontSize: '14px', color: '#666' }}>
-                      Товаров: {order.items.length}
+                      Товаров: {order.items.filter(item => item.productId !== 'delivery').length}
                     </p>
+                    {order.deliveryPrice && (
+                      <p style={{ fontSize: '14px', color: '#666' }}>
+                        Доставка: {order.deliveryPrice} ₽
+                      </p>
+                    )}
                   </div>
                   
                   <div style={{ textAlign: 'right' }}>
@@ -103,7 +108,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders, onCancelOrder }) 
                       {getStatusText(order.status)}
                     </div>
                     <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
-                      {order.total} ₽
+                      {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽
                     </div>
                   </div>
                 </div>
@@ -155,17 +160,30 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders, onCancelOrder }) 
             <div style={{ marginBottom: '16px' }}>
               <strong>Товары:</strong>
               <div style={{ marginTop: '8px' }}>
-                {selectedOrder.items.map((item, index) => (
+                {selectedOrder.items.filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
                   <div key={index} style={{ 
                     display: 'flex', 
                     justifyContent: 'space-between', 
                     padding: '8px 0',
-                    borderBottom: index < selectedOrder.items.length - 1 ? '1px solid #eee' : 'none'
+                    borderBottom: index < filteredItems.length - 1 ? '1px solid #eee' : 'none'
                   }}>
                     <span>{item.productName} x {item.quantity}</span>
                     <span>{item.price * item.quantity} ₽</span>
                   </div>
                 ))}
+                {selectedOrder.deliveryPrice && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    padding: '8px 0',
+                    borderTop: '1px solid #eee',
+                    marginTop: '8px',
+                    fontWeight: '500'
+                  }}>
+                    <span>Доставка</span>
+                    <span>{selectedOrder.deliveryPrice} ₽</span>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -180,7 +198,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ user, orders, onCancelOrder }) 
               marginBottom: '16px'
             }}>
               <span>Итого:</span>
-              <span>{selectedOrder.total} ₽</span>
+              <span>{selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (selectedOrder.deliveryPrice || 0)} ₽</span>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
