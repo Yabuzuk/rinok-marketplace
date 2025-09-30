@@ -70,38 +70,38 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
     switch (user.role) {
       case 'customer':
         return [
-          { icon: <Store size={20} />, label: 'Павильоны', onClick: () => setShowPavilions(true) },
+          { icon: <Store size={20} />, label: 'Павильоны', onClick: () => setShowPavilions(true), badge: undefined },
           { icon: <ShoppingCart size={20} />, label: 'Корзина', onClick: onCartClick, badge: cartItemsCount },
-          { icon: <Home size={28} />, label: 'Главная', onClick: onHomeClick, isMain: true },
-          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onOrdersClick },
-          { icon: <Menu size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true) }
+          { icon: <Home size={28} />, label: 'Главная', onClick: onHomeClick, isMain: true, badge: undefined },
+          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onOrdersClick || (() => {}), badge: undefined },
+          { icon: <Menu size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
         ];
       
       case 'seller':
         return [
-          { icon: <BarChart3 size={20} />, label: 'Статистика', onClick: onDashboardClick },
-          { icon: <Package size={20} />, label: 'Товары', onClick: onDashboardClick },
-          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onDashboardClick },
-          { icon: <Warehouse size={20} />, label: 'Склад', onClick: onWarehouseClick },
-          { icon: <User size={20} />, label: 'Профиль', onClick: onDashboardClick }
+          { icon: <BarChart3 size={20} />, label: 'Статистика', onClick: onDashboardClick, badge: undefined },
+          { icon: <Package size={20} />, label: 'Товары', onClick: onDashboardClick, badge: undefined },
+          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onDashboardClick, badge: undefined },
+          { icon: <Warehouse size={20} />, label: 'Склад', onClick: onWarehouseClick || (() => {}), badge: undefined },
+          { icon: <User size={20} />, label: 'Профиль', onClick: onDashboardClick, badge: undefined }
         ];
       
       case 'courier':
         return [
-          { icon: <Clipboard size={20} />, label: 'Задачи', onClick: onDashboardClick },
-          { icon: <Map size={20} />, label: 'Маршрут', onClick: onDashboardClick },
-          { icon: <Truck size={20} />, label: 'Доставки', onClick: onDashboardClick },
-          { icon: <Clock size={20} />, label: 'График', onClick: onDashboardClick },
-          { icon: <User size={20} />, label: 'Профиль', onClick: onDashboardClick }
+          { icon: <Clipboard size={20} />, label: 'Задачи', onClick: onDashboardClick, badge: undefined },
+          { icon: <Map size={20} />, label: 'Маршрут', onClick: onDashboardClick, badge: undefined },
+          { icon: <Truck size={20} />, label: 'Доставки', onClick: onDashboardClick, badge: undefined },
+          { icon: <Clock size={20} />, label: 'График', onClick: onDashboardClick, badge: undefined },
+          { icon: <User size={20} />, label: 'Профиль', onClick: onDashboardClick, badge: undefined }
         ];
       
       case 'admin':
         return [
-          { icon: <BarChart3 size={20} />, label: 'Дашборд', onClick: onDashboardClick },
-          { icon: <Users size={20} />, label: 'Пользователи', onClick: onDashboardClick },
-          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onDashboardClick },
-          { icon: <Settings size={20} />, label: 'Настройки', onClick: onDashboardClick },
-          { icon: <Shield size={20} />, label: 'Админ', onClick: onDashboardClick }
+          { icon: <BarChart3 size={20} />, label: 'Дашборд', onClick: onDashboardClick, badge: undefined },
+          { icon: <Users size={20} />, label: 'Пользователи', onClick: onDashboardClick, badge: undefined },
+          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onDashboardClick, badge: undefined },
+          { icon: <Settings size={20} />, label: 'Настройки', onClick: onDashboardClick, badge: undefined },
+          { icon: <Shield size={20} />, label: 'Админ', onClick: onDashboardClick, badge: undefined }
         ];
       
       case 'manager':
