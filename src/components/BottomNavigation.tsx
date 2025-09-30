@@ -106,7 +106,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
       
       case 'manager':
         return [
-          { icon: <Clipboard size={20} />, label: 'Новые', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <Clipboard size={20} />, label: 'Новые', onClick: () => onDashboardClick('orders'), badge: undefined },
           { icon: <Clock size={20} />, label: 'В работе', onClick: () => onDashboardClick?.('in-progress'), badge: undefined },
           { icon: <Package size={20} />, label: 'Архив', onClick: () => onDashboardClick?.('archive'), badge: undefined },
           { icon: <User size={20} />, label: 'Профиль', onClick: () => setShowBurgerMenu(true), badge: undefined }
