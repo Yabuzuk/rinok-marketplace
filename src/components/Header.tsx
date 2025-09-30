@@ -40,16 +40,14 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
             style={{ 
               fontSize: '24px', 
               fontWeight: '700',
-              background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
               cursor: 'pointer',
               transition: 'transform 0.2s ease'
             }}
             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
-            Азия-Сибирь
+            <span style={{ color: '#f44336' }}>Азия</span>
+            <span style={{ color: '#4caf50' }}>-Сибирь</span>
           </div>
           
 
