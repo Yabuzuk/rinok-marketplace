@@ -44,7 +44,13 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
     const handleWarehouseTab = () => setActiveTab('warehouse');
     const handleSellerTab = (event: any) => {
       if (event.detail) {
-        setActiveTab(event.detail);
+        const tabMap: { [key: string]: string } = {
+          'analytics': 'analytics',
+          'products': 'products',
+          'orders': 'orders',
+          'profile': 'settings'
+        };
+        setActiveTab(tabMap[event.detail] || event.detail);
       }
     };
     
