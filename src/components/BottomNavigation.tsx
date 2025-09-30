@@ -79,34 +79,34 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
       
       case 'seller':
         return [
-          { icon: <BarChart3 size={20} />, label: 'Статистика', onClick: onDashboardClick, badge: undefined },
-          { icon: <Package size={20} />, label: 'Товары', onClick: onDashboardClick, badge: undefined },
-          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onDashboardClick, badge: undefined },
+          { icon: <BarChart3 size={20} />, label: 'Статистика', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <Package size={20} />, label: 'Товары', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: () => onDashboardClick(), badge: undefined },
           { icon: <Warehouse size={20} />, label: 'Склад', onClick: onWarehouseClick || (() => {}), badge: undefined },
-          { icon: <User size={20} />, label: 'Профиль', onClick: onDashboardClick, badge: undefined }
+          { icon: <User size={20} />, label: 'Профиль', onClick: () => onDashboardClick(), badge: undefined }
         ];
       
       case 'courier':
         return [
-          { icon: <Clipboard size={20} />, label: 'Задачи', onClick: onDashboardClick, badge: undefined },
-          { icon: <Map size={20} />, label: 'Маршрут', onClick: onDashboardClick, badge: undefined },
-          { icon: <Truck size={20} />, label: 'Доставки', onClick: onDashboardClick, badge: undefined },
-          { icon: <Clock size={20} />, label: 'График', onClick: onDashboardClick, badge: undefined },
-          { icon: <User size={20} />, label: 'Профиль', onClick: onDashboardClick, badge: undefined }
+          { icon: <Clipboard size={20} />, label: 'Задачи', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <Map size={20} />, label: 'Маршрут', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <Truck size={20} />, label: 'Доставки', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <Clock size={20} />, label: 'График', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <User size={20} />, label: 'Профиль', onClick: () => onDashboardClick(), badge: undefined }
         ];
       
       case 'admin':
         return [
-          { icon: <BarChart3 size={20} />, label: 'Дашборд', onClick: onDashboardClick, badge: undefined },
-          { icon: <Users size={20} />, label: 'Пользователи', onClick: onDashboardClick, badge: undefined },
-          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: onDashboardClick, badge: undefined },
-          { icon: <Settings size={20} />, label: 'Настройки', onClick: onDashboardClick, badge: undefined },
-          { icon: <Shield size={20} />, label: 'Админ', onClick: onDashboardClick, badge: undefined }
+          { icon: <BarChart3 size={20} />, label: 'Дашборд', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <Users size={20} />, label: 'Пользователи', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <Clipboard size={20} />, label: 'Заказы', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <Settings size={20} />, label: 'Настройки', onClick: () => onDashboardClick(), badge: undefined },
+          { icon: <Shield size={20} />, label: 'Админ', onClick: () => onDashboardClick(), badge: undefined }
         ];
       
       case 'manager':
         return [
-          { icon: <Clipboard size={20} />, label: 'Новые', onClick: onDashboardClick, badge: undefined },
+          { icon: <Clipboard size={20} />, label: 'Новые', onClick: () => onDashboardClick(), badge: undefined },
           { icon: <Clock size={20} />, label: 'В работе', onClick: () => onDashboardClick?.('in-progress'), badge: undefined },
           { icon: <Package size={20} />, label: 'Архив', onClick: () => onDashboardClick?.('archive'), badge: undefined },
           { icon: <User size={20} />, label: 'Профиль', onClick: () => setShowBurgerMenu(true), badge: undefined }
