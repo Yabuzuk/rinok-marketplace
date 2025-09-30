@@ -25,7 +25,13 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
   React.useEffect(() => {
     const handleTabSwitch = (event: any) => {
       if (event.detail) {
-        setActiveTab(event.detail);
+        const tabMap: { [key: string]: string } = {
+          'orders': 'orders',
+          'in-progress': 'in-progress',
+          'archive': 'archive', 
+          'profile': 'settings'
+        };
+        setActiveTab(tabMap[event.detail] || event.detail);
       }
     };
     window.addEventListener('switchManagerTab', handleTabSwitch);
