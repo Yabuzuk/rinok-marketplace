@@ -37,7 +37,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
           'settings': 'users',
           'admin': 'orders'
         };
-        setActiveTab(tabMap[event.detail] || 'orders');
+        setActiveTab((tabMap[event.detail] || 'orders') as 'orders' | 'products' | 'users');
       }
     };
     
