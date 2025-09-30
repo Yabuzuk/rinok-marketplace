@@ -36,7 +36,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
           'schedule': 'completed',
           'profile': 'profile'
         };
-        setActiveTab(tabMap[event.detail] || 'available');
+        setActiveTab((tabMap[event.detail] || 'available') as 'available' | 'active' | 'completed' | 'profile');
       }
     };
     
