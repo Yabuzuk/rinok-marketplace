@@ -25,6 +25,25 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
   const [activeTab, setActiveTab] = useState<'available' | 'active' | 'completed' | 'profile'>('available');
   const [isEditing, setIsEditing] = useState(false);
 
+  // Слушатель для переключения вкладок
+  React.useEffect(() => {
+    const handleCourierTab = (event: any) => {
+      if (event.detail) {
+        const tabMap: { [key: string]: string } = {
+          'tasks': 'available',
+          'route': 'active', 
+          'deliveries': 'active',
+          'schedule': 'completed',
+          'profile': 'profile'
+        };
+        setActiveTab(tabMap[event.detail] || 'available');
+      }
+    };
+    
+    window.addEventListener('switchCourierTab', handleCourierTab);
+    return () => window.removeEventListener('switchCourierTab', handleCourierTab);
+  }, []);
+
   const availableOrders = orders.filter(o => o.status === 'preparing');
   
   console.log('=== COURIER ORDERS DEBUG ===');

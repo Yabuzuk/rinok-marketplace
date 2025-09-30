@@ -26,6 +26,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [showCreateManager, setShowCreateManager] = useState(false);
 
+  // Слушатель для переключения вкладок
+  React.useEffect(() => {
+    const handleAdminTab = (event: any) => {
+      if (event.detail) {
+        const tabMap: { [key: string]: string } = {
+          'dashboard': 'orders',
+          'users': 'users',
+          'orders': 'orders',
+          'settings': 'users',
+          'admin': 'orders'
+        };
+        setActiveTab(tabMap[event.detail] || 'orders');
+      }
+    };
+    
+    window.addEventListener('switchAdminTab', handleAdminTab);
+    return () => window.removeEventListener('switchAdminTab', handleAdminTab);
+  }, []);
+
   const getStatusColor = (status: OrderWithCustomer['status']) => {
     switch (status) {
       case 'delivered': return '#4caf50';

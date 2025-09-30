@@ -400,11 +400,8 @@ const AppContent: React.FC = () => {
       // Переключаем вкладки для разных ролей
       if (tab) {
         setTimeout(() => {
-          if (currentUser.role === 'manager') {
-            window.dispatchEvent(new CustomEvent('switchManagerTab', { detail: tab }));
-          } else if (currentUser.role === 'seller') {
-            window.dispatchEvent(new CustomEvent('switchSellerTab', { detail: tab }));
-          }
+          const eventName = `switch${currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}Tab`;
+          window.dispatchEvent(new CustomEvent(eventName, { detail: tab }));
         }, 100);
       }
     }
