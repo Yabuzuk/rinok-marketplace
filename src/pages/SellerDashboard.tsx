@@ -258,7 +258,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
           {/* Sidebar */}
           <div style={{ 
             width: window.innerWidth <= 768 ? '100%' : '280px',
-            display: activeTab === 'profile' ? 'block' : 'none'
+            display: activeTab === 'settings' ? 'block' : 'none'
           }}>
             <div className="card">
               <div style={{ 
