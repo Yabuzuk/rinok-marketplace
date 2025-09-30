@@ -397,10 +397,14 @@ const AppContent: React.FC = () => {
                    '/admin-dashboard';
       navigate(path);
       
-      // Для менеджера переключаем вкладку
-      if (currentUser.role === 'manager' && tab) {
+      // Переключаем вкладки для разных ролей
+      if (tab) {
         setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('switchManagerTab', { detail: tab }));
+          if (currentUser.role === 'manager') {
+            window.dispatchEvent(new CustomEvent('switchManagerTab', { detail: tab }));
+          } else if (currentUser.role === 'seller') {
+            window.dispatchEvent(new CustomEvent('switchSellerTab', { detail: tab }));
+          }
         }, 100);
       }
     }

@@ -39,11 +39,22 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-  // Слушатель для переключения на вкладку склада
+  // Слушатель для переключения вкладок
   React.useEffect(() => {
     const handleWarehouseTab = () => setActiveTab('warehouse');
+    const handleSellerTab = (event: any) => {
+      if (event.detail) {
+        setActiveTab(event.detail);
+      }
+    };
+    
     window.addEventListener('setWarehouseTab', handleWarehouseTab);
-    return () => window.removeEventListener('setWarehouseTab', handleWarehouseTab);
+    window.addEventListener('switchSellerTab', handleSellerTab);
+    
+    return () => {
+      window.removeEventListener('setWarehouseTab', handleWarehouseTab);
+      window.removeEventListener('switchSellerTab', handleSellerTab);
+    };
   }, []);
 
   // Очищаем localStorage при загрузке
