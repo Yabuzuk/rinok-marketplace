@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
-
+import Footer from './components/Footer';
+import CookieConsent from './components/CookieConsent';
 import Cart from './components/Cart';
 import BottomNavigation from './components/BottomNavigation';
 import HomePage from './pages/HomePage';
@@ -13,6 +14,7 @@ import CourierDashboard from './pages/CourierDashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
 import PavilionPage from './pages/PavilionPage';
 import OrdersPage from './pages/OrdersPage';
+import LegalPage from './pages/LegalPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 
@@ -690,9 +692,14 @@ const AppContent: React.FC = () => {
                 )
               } 
             />
+            
+            <Route path="/legal" element={<LegalPage />} />
           </Routes>
           )}
         </main>
+
+        <Footer />
+        <CookieConsent />
 
         <Cart 
           isOpen={isCartOpen}
