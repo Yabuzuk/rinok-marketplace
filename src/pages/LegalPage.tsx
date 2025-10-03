@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, FileText, Shield, Users, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const LegalPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('terms');
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const tabs = [
     { id: 'terms', name: 'Пользовательское соглашение', icon: FileText },
@@ -352,12 +356,7 @@ const LegalPage: React.FC = () => {
             return (
               <div key={tab.id} style={{ borderBottom: '1px solid #e0e0e0' }}>
                 <button
-                  onClick={() => {
-                    setActiveTab(isActive ? '' : tab.id);
-                    if (!isActive) {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                  }}
+                  onClick={() => setActiveTab(isActive ? '' : tab.id)}
                   style={{
                     width: '100%',
                     display: 'flex',
