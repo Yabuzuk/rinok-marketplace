@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, FileText, Shield, Users, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, FileText, Shield, Users, AlertTriangle, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const LegalPage: React.FC = () => {
@@ -14,7 +14,8 @@ const LegalPage: React.FC = () => {
     { id: 'terms', name: 'Пользовательское соглашение', icon: FileText },
     { id: 'privacy', name: 'Политика конфиденциальности', icon: Shield },
     { id: 'offer', name: 'Публичная оферта', icon: Users },
-    { id: 'responsibility', name: 'Ответственность сторон', icon: AlertTriangle }
+    { id: 'responsibility', name: 'Ответственность сторон', icon: AlertTriangle },
+    { id: 'product-rules', name: 'Правила размещения товаров', icon: Package }
   ];
 
   const renderContent = () => {
@@ -364,6 +365,40 @@ const LegalPage: React.FC = () => {
               <p>Email: amixvn@gmail.com</p>
               <p>Ответственное лицо: Хохлов И.О.</p>
               <p><strong>Обновлено: 28 Октября 2025 года</strong></p>
+            </div>
+          </div>
+        );
+
+      case 'product-rules':
+        return (
+          <div style={{ maxHeight: '600px', overflowY: 'auto', padding: '20px' }}>
+            <h2 style={{ color: '#2e7d32', marginBottom: '24px' }}>ПРАВИЛА РАЗМЕЩЕНИЯ ТОВАРОВ НА ОПТБАЗАР.РФ</h2>
+            
+            <h3>1. ОБЩИЕ ПОЛОЖЕНИЯ</h3>
+            <p>1.1. Настоящие Правила регулируют процесс размещения товаров на маркетплейсе оптбазар.рф и являются неотъемлемой частью Договора-оферты.</p>
+            <p>1.2. Размещая товары на Платформе, Продавец подтверждает, что ознакомлен и согласен с настоящими Правилами.</p>
+            
+            <h3>2. ТРЕБОВАНИЯ К ПРОДАВЦАМ</h3>
+            <p>2.1. Обязательные документы:</p>
+            <ul>
+              <li>Свидетельство о государственной регистрации (ИП/ООО)</li>
+              <li>ИНН</li>
+              <li>Документы, подтверждающие право занятия торговой деятельностью</li>
+              <li>Договор аренды торгового места на рынке</li>
+              <li>Разрешительные документы на товары (при необходимости)</li>
+            </ul>
+            <p>2.2. Обязанности Продавца:</p>
+            <ul>
+              <li>Поддерживать актуальность контактных данных</li>
+              <li>Своевременно обновлять информацию о наличии товаров</li>
+              <li>Обеспечивать соответствие товаров заявленным характеристикам</li>
+            </ul>
+            
+            <div style={{ marginTop: '40px', padding: '20px', background: '#f5f5f5', borderRadius: '8px' }}>
+              <p><strong>По вопросам применения Правил обращайтесь:</strong></p>
+              <p>Email: amixvn@gmail.com</p>
+              <p>Телефон: +7 913 949 2570</p>
+              <p><strong>Дата последнего обновления: 28 октября 2024 г.</strong></p>
             </div>
           </div>
         );
