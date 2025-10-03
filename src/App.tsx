@@ -104,9 +104,11 @@ const AppContent: React.FC = () => {
         user = userData;
         console.log('Admin login successful:', user.id);
       } else if (userData.isLogin) {
-        // Логика входа - только проверка существующего пользователя
+        // Логика входа - ищем пользователя по email и роли
         try {
-          const existingUser = await supabaseApi.findUserByEmail(userData.email);
+          // Ищем пользователя с конкретной ролью
+          const existingUser = users.find(u => u.email === userData.email && u.role === userType);
+          
           if (existingUser) {
             if (existingUser.blocked) {
               alert('Ваш аккаунт заблокирован администратором');
@@ -115,7 +117,13 @@ const AppContent: React.FC = () => {
             user = existingUser;
             console.log('Login successful:', user.id);
           } else {
-            alert('Пользователь не найден. Пожалуйста, зарегистрируйтесь.');
+            // Проверяем, есть ли пользователь с таким email, но другой ролью
+            const userWithEmail = users.find(u => u.email === userData.email);
+            if (userWithEmail) {
+              alert(`Пользователь с таким email зарегистрирован как ${userWithEmail.role === 'customer' ? 'покупатель' : userWithEmail.role === 'seller' ? 'продавец' : userWithEmail.role}. Зарегистрируйтесь как ${userType === 'customer' ? 'покупатель' : userType === 'seller' ? 'продавец' : userType} или войдите с правильной ролью.`);
+            } else {
+              alert('Пользователь не найден. Пожалуйста, зарегистрируйтесь.');
+            }
             return;
           }
         } catch (error) {
@@ -124,31 +132,57 @@ const AppContent: React.FC = () => {
           return;
         }
       } else {
-        // Логика регистрации - создаем нового пользователя
+        // Логика регистрации - создаем нового пользователя или добавляем роль
         try {
           const existingUser = await supabaseApi.findUserByEmail(userData.email);
-          if (existingUser) {
-            alert('Пользователь с таким email уже существует.');
-            return;
-          }
           
-          // Проверяем уникальность номера павильона для продавцов
-          if (userType === 'seller' && userData.pavilionNumber) {
-            const existingPavilion = users.find(u => 
-              u.pavilionNumber === userData.pavilionNumber && u.role === 'seller'
-            );
-            if (existingPavilion) {
-              alert(`Павильон ${userData.pavilionNumber} уже занят другим продавцом.`);
+          if (existingUser) {
+            // Проверяем, есть ли уже такая роль у пользователя
+            if (existingUser.role === userType) {
+              alert(`Вы уже зарегистрированы как ${userType === 'customer' ? 'покупатель' : userType === 'seller' ? 'продавец' : userType}.`);
               return;
             }
+            
+            // Проверяем уникальность номера павильона для продавцов
+            if (userType === 'seller' && userData.pavilionNumber) {
+              const existingPavilion = users.find(u => 
+                u.pavilionNumber === userData.pavilionNumber && u.role === 'seller'
+              );
+              if (existingPavilion) {
+                alert(`Павильон ${userData.pavilionNumber} уже занят другим продавцом.`);
+                return;
+              }
+            }
+            
+            // Создаем новую запись с другой ролью
+            user = { 
+              ...userData, 
+              role: userType,
+              id: `${existingUser.id}_${userType}`,
+              name: existingUser.name,
+              email: existingUser.email,
+              pavilionNumber: userData.pavilionNumber || ''
+            };
+          } else {
+            // Проверяем уникальность номера павильона для продавцов
+            if (userType === 'seller' && userData.pavilionNumber) {
+              const existingPavilion = users.find(u => 
+                u.pavilionNumber === userData.pavilionNumber && u.role === 'seller'
+              );
+              if (existingPavilion) {
+                alert(`Павильон ${userData.pavilionNumber} уже занят другим продавцом.`);
+                return;
+              }
+            }
+            
+            // Создаем нового пользователя
+            user = { 
+              ...userData, 
+              role: userType,
+              id: userData.id || Date.now().toString(),
+              pavilionNumber: userData.pavilionNumber || ''
+            };
           }
-          
-          user = { 
-            ...userData, 
-            role: userType,
-            id: userData.id || Date.now().toString(),
-            pavilionNumber: userData.pavilionNumber || ''
-          };
           
           await supabaseApi.createUser(user);
           console.log('Registration successful:', user.id);
