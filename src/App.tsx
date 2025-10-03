@@ -4,6 +4,7 @@ import Header from './components/Header';
 import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
 import CookieConsent from './components/CookieConsent';
+import DisclaimerModal from './components/DisclaimerModal';
 import Cart from './components/Cart';
 import BottomNavigation from './components/BottomNavigation';
 import HomePage from './pages/HomePage';
@@ -700,6 +701,7 @@ const AppContent: React.FC = () => {
 
         <Footer />
         <CookieConsent />
+        <DisclaimerModal />
 
         <Cart 
           isOpen={isCartOpen}
