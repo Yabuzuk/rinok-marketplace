@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, User, Mail, Lock, Phone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -8,6 +9,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [userType, setUserType] = useState<'customer' | 'seller' | 'admin' | 'courier' | 'manager'>('customer');
   const [formData, setFormData] = useState({
@@ -399,11 +401,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                   <div style={{ marginBottom: '8px' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                       <input type="checkbox" required />
-                      Я принимаю условия <a href="/legal?tab=terms" style={{ color: '#4caf50' }}>Пользовательского соглашения</a>
+                      Я принимаю условия <button type="button" onClick={() => navigate('/legal?tab=terms')} style={{ background: 'none', border: 'none', color: '#4caf50', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>Пользовательского соглашения</button>
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                       <input type="checkbox" required />
-                      Я даю согласие на обработку персональных данных согласно <a href="/legal?tab=privacy" style={{ color: '#4caf50' }}>Политике конфиденциальности</a>
+                      Я даю согласие на обработку персональных данных согласно <button type="button" onClick={() => navigate('/legal?tab=privacy')} style={{ background: 'none', border: 'none', color: '#4caf50', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>Политике конфиденциальности</button>
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                       <input type="checkbox" required />
@@ -429,11 +431,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                     <div style={{ marginTop: '8px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                         <input type="checkbox" required />
-                        Принимаю <a href="/legal?tab=terms" style={{ color: '#4caf50' }}>Пользовательское соглашение</a>
+                        Принимаю <button type="button" onClick={() => navigate('/legal?tab=terms')} style={{ background: 'none', border: 'none', color: '#4caf50', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>Пользовательское соглашение</button>
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                         <input type="checkbox" required />
-                        Соглашаюсь с <a href="/legal?tab=privacy" style={{ color: '#4caf50' }}>Политикой конфиденциальности</a>
+                        Соглашаюсь с <button type="button" onClick={() => navigate('/legal?tab=privacy')} style={{ background: 'none', border: 'none', color: '#4caf50', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>Политикой конфиденциальности</button>
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                         <input type="checkbox" required />
@@ -446,11 +448,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                     <div style={{ marginTop: '8px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                         <input type="checkbox" required />
-                        Принимаю <a href="/legal?tab=offer" style={{ color: '#4caf50' }}>Договор-оферту на оказание услуг продвижения</a>
+                        Принимаю <button type="button" onClick={() => navigate('/legal?tab=offer')} style={{ background: 'none', border: 'none', color: '#4caf50', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>Договор-оферту на оказание услуг продвижения</button>
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                         <input type="checkbox" required />
-                        Обязуюсь соблюдать <a href="/legal?tab=product-rules" style={{ color: '#4caf50' }}>Правила размещения товаров</a>
+                        Обязуюсь соблюдать <button type="button" onClick={() => navigate('/legal?tab=product-rules')} style={{ background: 'none', border: 'none', color: '#4caf50', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>Правила размещения товаров</button>
                       </label>
                     </div>
                   </div>
