@@ -345,44 +345,54 @@ const LegalPage: React.FC = () => {
           overflow: 'hidden',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
-          {/* Tabs */}
-          <div style={{
-            display: 'flex',
-            borderBottom: '1px solid #e0e0e0',
-            overflowX: 'auto'
-          }}>
-            {tabs.map(tab => {
-              const Icon = tab.icon;
-              return (
+          {/* Accordion */}
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <div key={tab.id} style={{ borderBottom: '1px solid #e0e0e0' }}>
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setActiveTab(isActive ? '' : tab.id)}
                   style={{
+                    width: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '16px 20px',
+                    justifyContent: 'space-between',
+                    padding: '20px 24px',
                     border: 'none',
-                    background: activeTab === tab.id ? '#4caf50' : 'transparent',
-                    color: activeTab === tab.id ? 'white' : '#666',
+                    background: isActive ? '#f8f9fa' : 'white',
+                    color: isActive ? '#4caf50' : '#333',
                     cursor: 'pointer',
-                    fontSize: '14px',
+                    fontSize: '16px',
                     fontWeight: '500',
-                    whiteSpace: 'nowrap',
-                    minWidth: 'fit-content'
+                    textAlign: 'left',
+                    transition: 'all 0.3s ease'
                   }}
                 >
-                  <Icon size={16} />
-                  {tab.name}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Icon size={20} />
+                    {tab.name}
+                  </div>
+                  <span style={{
+                    transform: isActive ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.3s ease',
+                    fontSize: '20px'
+                  }}>
+                    ▼
+                  </span>
                 </button>
-              );
-            })}
-          </div>
-
-          {/* Content */}
-          <div style={{ padding: '32px' }}>
-            {renderContent()}
-          </div>
+                {isActive && (
+                  <div style={{
+                    padding: '0 24px 24px 24px',
+                    background: '#f8f9fa',
+                    animation: 'slideDown 0.3s ease'
+                  }}>
+                    {renderContent()}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Contact Info */}
@@ -438,6 +448,17 @@ const LegalPage: React.FC = () => {
         section {
           border-left: 3px solid #4caf50;
           padding-left: 16px;
+        }
+        
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            max-height: 0;
+          }
+          to {
+            opacity: 1;
+            max-height: 1000px;
+          }
         }
       `}</style>
     </div>
