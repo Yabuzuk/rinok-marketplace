@@ -399,11 +399,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                   <div style={{ marginBottom: '8px' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                       <input type="checkbox" required />
-                      Я принимаю условия <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Пользовательского соглашения</a>
+                      Я принимаю условия <a href="/legal?tab=terms" style={{ color: '#4caf50' }}>Пользовательского соглашения</a>
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                       <input type="checkbox" required />
-                      Я даю согласие на обработку персональных данных согласно <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Политике конфиденциальности</a>
+                      Я даю согласие на обработку персональных данных согласно <a href="/legal?tab=privacy" style={{ color: '#4caf50' }}>Политике конфиденциальности</a>
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                       <input type="checkbox" required />
@@ -429,11 +429,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                     <div style={{ marginTop: '8px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                         <input type="checkbox" required />
-                        Принимаю <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Пользовательское соглашение</a>
+                        Принимаю <a href="/legal?tab=terms" style={{ color: '#4caf50' }}>Пользовательское соглашение</a>
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                         <input type="checkbox" required />
-                        Соглашаюсь с <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Политикой конфиденциальности</a>
+                        Соглашаюсь с <a href="/legal?tab=privacy" style={{ color: '#4caf50' }}>Политикой конфиденциальности</a>
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                         <input type="checkbox" required />
@@ -446,11 +446,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                     <div style={{ marginTop: '8px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                         <input type="checkbox" required />
-                        Принимаю <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Договор-оферту на оказание услуг продвижения</a>
+                        Принимаю <a href="/legal?tab=offer" style={{ color: '#4caf50' }}>Договор-оферту на оказание услуг продвижения</a>
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
                         <input type="checkbox" required />
-                        Обязуюсь соблюдать <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Правила размещения товаров</a>
+                        Обязуюсь соблюдать <a href="/legal?tab=product-rules" style={{ color: '#4caf50' }}>Правила размещения товаров</a>
                       </label>
                     </div>
                   </div>

@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, FileText, Shield, Users, AlertTriangle, Package } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const LegalPage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('terms');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState('');
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+    
+    // Читаем параметр tab из URL
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['terms', 'privacy', 'offer', 'responsibility', 'product-rules'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    } else {
+      setActiveTab('terms'); // По умолчанию открываем пользовательское соглашение
+    }
+  }, [searchParams]);
 
   const tabs = [
     { id: 'terms', name: 'Пользовательское соглашение', icon: FileText },
