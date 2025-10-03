@@ -6,12 +6,11 @@ interface CustomerDashboardProps {
   user: UserType;
   orders: Order[];
   onUpdateProfile?: (updates: Partial<UserType>) => void;
-  onSwitchRole?: (role: 'customer' | 'seller' | 'admin' | 'courier') => void;
   onLogout?: () => void;
   onCancelOrder?: (orderId: string) => void;
 }
 
-const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile, onSwitchRole, onLogout, onCancelOrder }) => {
+const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile, onLogout, onCancelOrder }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses'>('orders');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showAddAddress, setShowAddAddress] = useState(false);
@@ -115,18 +114,9 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                   <h3 style={{ fontSize: '16px', fontWeight: '600' }}>
                     {user.name}
                   </h3>
-                  <select 
-                    className="input"
-                    style={{ fontSize: '12px', padding: '4px 8px', marginTop: '8px' }}
-                    value={user.role}
-                    onChange={(e) => {
-                      const newRole = e.target.value as 'customer' | 'seller' | 'admin' | 'courier';
-                      onSwitchRole?.(newRole);
-                    }}
-                  >
-                    <option value="customer">Покупатель</option>
-                    <option value="seller">Продавец</option>
-                  </select>
+                  <p style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                    Покупатель
+                  </p>
                 </div>
               </div>
 
