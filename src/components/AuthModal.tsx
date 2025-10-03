@@ -252,37 +252,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                 />
               </div>
               
-              {userType === 'customer' && (
-                <div style={{ marginBottom: '16px', padding: '12px', background: '#f9f9f9', borderRadius: '8px' }}>
-                  <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Для совершения покупок на оптбазар.рф необходимо принять следующие условия:</h4>
-                  
-                  <div style={{ marginBottom: '8px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Я принимаю условия <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Пользовательского соглашения</a>
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Я даю согласие на обработку персональных данных согласно <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Политике конфиденциальности</a>
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Подтверждаю, что мне исполнилось 18 лет
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Понимаю, что расчеты за товары осуществляются напрямую с продавцом
-                    </label>
-                  </div>
-                  
-                  <div style={{ fontSize: '11px', color: '#666', marginTop: '8px' }}>
-                    <strong>Важно:</strong><br/>
-                    • Платформа не несет ответственности за качество товаров<br/>
-                    • Все претензии по качеству направляются продавцу<br/>
-                    • Все предложения представленные на сайте не являются публичной офертой. Цены могут меняться в течение дня и отличаться от опубликованных на сайте
-                  </div>
-                </div>
-              )}
+
             </>
           )}
 
@@ -373,47 +343,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                 />
               </div>
               
-              <div style={{ marginBottom: '16px', padding: '12px', background: '#f9f9f9', borderRadius: '8px' }}>
-                <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Для работы на платформе необходимо принять условия сотрудничества:</h4>
-                
-                <div style={{ marginBottom: '12px' }}>
-                  <strong style={{ fontSize: '13px' }}>Основные условия:</strong>
-                  <div style={{ marginTop: '8px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Принимаю <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Пользовательское соглашение</a>
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Соглашаюсь с <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Политикой конфиденциальности</a>
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Подтверждаю совершеннолетие (18+)
-                    </label>
-                  </div>
-                </div>
-                
-                <div style={{ marginBottom: '12px' }}>
-                  <strong style={{ fontSize: '13px' }}>Условия для продавцов:</strong>
-                  <div style={{ marginTop: '8px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Принимаю <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Договор-оферту на оказание услуг продвижения</a>
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Обязуюсь соблюдать <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Правила размещения товаров</a>
-                    </label>
-                  </div>
-                </div>
-                
-                <div style={{ fontSize: '11px', color: '#666', marginTop: '8px' }}>
-                  <strong>Финансовые условия:</strong><br/>
-                  • Еженедельная оплата комиссии на основе отчетности платформы<br/>
-                  • Расчеты с покупателями - напрямую, без участия платформы
-                </div>
-              </div>
+
             </>
           )}
 
@@ -458,6 +388,79 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                 onChange={handleInputChange}
                 required
               />
+            </div>
+          )}
+
+          {mode === 'register' && (
+            <div style={{ marginBottom: '16px', padding: '12px', background: '#f9f9f9', borderRadius: '8px' }}>
+              {userType === 'customer' ? (
+                <>
+                  <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Для совершения покупок на оптбазар.рф необходимо принять следующие условия:</h4>
+                  <div style={{ marginBottom: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
+                      <input type="checkbox" required />
+                      Я принимаю условия <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Пользовательского соглашения</a>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
+                      <input type="checkbox" required />
+                      Я даю согласие на обработку персональных данных согласно <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Политике конфиденциальности</a>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
+                      <input type="checkbox" required />
+                      Подтверждаю, что мне исполнилось 18 лет
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
+                      <input type="checkbox" required />
+                      Понимаю, что расчеты за товары осуществляются напрямую с продавцом
+                    </label>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#666', marginTop: '8px' }}>
+                    <strong>Важно:</strong><br/>
+                    • Платформа не несет ответственности за качество товаров<br/>
+                    • Все претензии по качеству направляются продавцу<br/>
+                    • Все предложения представленные на сайте не являются публичной офертой. Цены могут меняться в течение дня и отличаться от опубликованных на сайте
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Для работы на платформе необходимо принять условия сотрудничества:</h4>
+                  <div style={{ marginBottom: '12px' }}>
+                    <strong style={{ fontSize: '13px' }}>Основные условия:</strong>
+                    <div style={{ marginTop: '8px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
+                        <input type="checkbox" required />
+                        Принимаю <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Пользовательское соглашение</a>
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
+                        <input type="checkbox" required />
+                        Соглашаюсь с <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Политикой конфиденциальности</a>
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
+                        <input type="checkbox" required />
+                        Подтверждаю совершеннолетие (18+)
+                      </label>
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: '12px' }}>
+                    <strong style={{ fontSize: '13px' }}>Условия для продавцов:</strong>
+                    <div style={{ marginTop: '8px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
+                        <input type="checkbox" required />
+                        Принимаю <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Договор-оферту на оказание услуг продвижения</a>
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
+                        <input type="checkbox" required />
+                        Обязуюсь соблюдать <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Правила размещения товаров</a>
+                      </label>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#666', marginTop: '8px' }}>
+                    <strong>Финансовые условия:</strong><br/>
+                    • Еженедельная оплата комиссии на основе отчетности платформы<br/>
+                    • Расчеты с покупателями - напрямую, без участия платформы
+                  </div>
+                </>
+              )}
             </div>
           )}
 
