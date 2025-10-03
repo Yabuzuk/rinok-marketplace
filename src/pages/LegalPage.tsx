@@ -352,7 +352,12 @@ const LegalPage: React.FC = () => {
             return (
               <div key={tab.id} style={{ borderBottom: '1px solid #e0e0e0' }}>
                 <button
-                  onClick={() => setActiveTab(isActive ? '' : tab.id)}
+                  onClick={() => {
+                    setActiveTab(isActive ? '' : tab.id);
+                    if (!isActive) {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
                   style={{
                     width: '100%',
                     display: 'flex',
