@@ -405,18 +405,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                       <input type="checkbox" required />
                       Обязуюсь соблюдать <a href="/legal" target="_blank" style={{ color: '#4caf50' }}>Правила размещения товаров</a>
                     </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Несу полную ответственность за качество и безопасность товаров
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Подтверждаю наличие документов для ведения торговой деятельности
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                      <input type="checkbox" required />
-                      Согласен с комиссией 5% от суммы продаж и условиями оплаты
-                    </label>
                   </div>
                 </div>
                 
