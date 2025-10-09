@@ -65,10 +65,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
             badge={cartItemsCount}
             onClick={onCartClick} 
           />
-          <NavButton icon={<Menu size={20} />} label="Меню" onClick={() => {
-          console.log('Burger menu clicked, current state:', showBurgerMenu);
-          setShowBurgerMenu(true);
-        }} />
+          <NavButton icon={<Menu size={20} />} label="Меню" onClick={() => setShowBurgerMenu(true)} />
         </div>
       );
     }
@@ -103,6 +100,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   };
 
   const getMenuItems = () => {
+    if (!user) return [];
     switch (user.role) {
       case 'customer':
         return [
@@ -110,10 +108,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           { icon: <ShoppingCart size={20} />, label: 'Корзина', onClick: onCartClick, badge: cartItemsCount },
           { icon: <Home size={28} />, label: 'Главная', onClick: onHomeClick, isMain: true, badge: undefined },
           { icon: <FileText size={20} />, label: 'Заказы', onClick: onOrdersClick || (() => {}), badge: undefined },
-          { icon: <Menu size={20} />, label: 'Меню', onClick: () => {
-            console.log('Burger menu clicked (auth user), current state:', showBurgerMenu);
-            setShowBurgerMenu(true);
-          }, badge: undefined }
+          { icon: <Menu size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
         ];
       
       case 'seller':
@@ -209,7 +204,6 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
       )}
       
       {/* Бургер меню */}
-      {console.log('Rendering burger menu, showBurgerMenu:', showBurgerMenu)}
       {showBurgerMenu && (
         <div style={{
           position: 'fixed',
