@@ -40,8 +40,37 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   const navigate = useNavigate();
   const [showPavilions, setShowPavilions] = React.useState(false);
   const [showBurgerMenu, setShowBurgerMenu] = React.useState(false);
-  if (!user) {
-    // Гостевое меню
+  const renderNavigation = () => {
+    if (!user) {
+      // Гостевое меню
+      return (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: 'white',
+          borderTop: '1px solid #d4c4b0',
+          padding: '4px 0',
+          zIndex: 100,
+          display: 'flex',
+          justifyContent: 'space-around',
+          alignItems: 'center'
+        }}>
+          <NavButton icon={<Home size={20} />} label="Главная" onClick={onHomeClick} />
+          <NavButton icon={<Search size={20} />} label="Поиск" onClick={onSearchClick} />
+          <NavButton 
+            icon={<ShoppingCart size={20} />} 
+            label="Корзина" 
+            badge={cartItemsCount}
+            onClick={onCartClick} 
+          />
+          <NavButton icon={<Menu size={20} />} label="Меню" onClick={() => setShowBurgerMenu(true)} />
+        </div>
+      );
+    }
+
+    // Меню для авторизованных пользователей
     return (
       <div style={{
         position: 'fixed',
@@ -56,18 +85,19 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         justifyContent: 'space-around',
         alignItems: 'center'
       }}>
-        <NavButton icon={<Home size={20} />} label="Главная" onClick={onHomeClick} />
-        <NavButton icon={<Search size={20} />} label="Поиск" onClick={onSearchClick} />
-        <NavButton 
-          icon={<ShoppingCart size={20} />} 
-          label="Корзина" 
-          badge={cartItemsCount}
-          onClick={onCartClick} 
-        />
-        <NavButton icon={<Menu size={20} />} label="Меню" onClick={() => setShowBurgerMenu(true)} />
+        {getMenuItems().map((item, index) => (
+          <NavButton
+            key={index}
+            icon={item.icon}
+            label={item.label}
+            badge={'badge' in item ? item.badge : undefined}
+            onClick={item.onClick}
+            isMain={'isMain' in item ? item.isMain : undefined}
+          />
+        ))}
       </div>
     );
-  }
+  };
 
   const getMenuItems = () => {
     switch (user.role) {
@@ -121,29 +151,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      background: 'white',
-      borderTop: '1px solid #d4c4b0',
-      padding: '4px 0',
-      zIndex: 100,
-      display: 'flex',
-      justifyContent: 'space-around',
-      alignItems: 'center'
-    }}>
-      {getMenuItems().map((item, index) => (
-        <NavButton
-          key={index}
-          icon={item.icon}
-          label={item.label}
-          badge={'badge' in item ? item.badge : undefined}
-          onClick={item.onClick}
-          isMain={'isMain' in item ? item.isMain : undefined}
-        />
-      ))}
+    <>
+      {renderNavigation()}
       
       {/* Модальное окно павильонов */}
       {showPavilions && (
@@ -404,7 +413,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
