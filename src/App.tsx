@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
-import Footer from './components/Footer';
+
 import CookieConsent from './components/CookieConsent';
 import DisclaimerModal from './components/DisclaimerModal';
 import Cart from './components/Cart';
@@ -702,7 +702,7 @@ const AppContent: React.FC = () => {
           )}
         </main>
 
-        <Footer />
+
         <CookieConsent />
         <DisclaimerModal />
 

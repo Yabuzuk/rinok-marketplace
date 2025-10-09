@@ -3,9 +3,10 @@ import {
   Home, Search, ShoppingCart, User, Package, 
   BarChart3, FileText, Warehouse, Truck, 
   MapPin, Timer, Users, Settings, Shield, Building2, MoreHorizontal,
-  TrendingUp, Box, CheckSquare, UserCircle
+  TrendingUp, Box, CheckSquare, UserCircle, Menu
 } from 'lucide-react';
 import { User as UserType } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 interface BottomNavigationProps {
   user: UserType | null;
@@ -36,6 +37,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onAuthClick,
   onLogout
 }) => {
+  const navigate = useNavigate();
   const [showPavilions, setShowPavilions] = React.useState(false);
   const [showBurgerMenu, setShowBurgerMenu] = React.useState(false);
   if (!user) {
@@ -62,7 +64,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           badge={cartItemsCount}
           onClick={onCartClick} 
         />
-        <NavButton icon={<User size={20} />} label="Войти" onClick={onAuthClick} />
+        <NavButton icon={<Menu size={20} />} label="Меню" onClick={() => setShowBurgerMenu(true)} />
       </div>
     );
   }
@@ -75,7 +77,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           { icon: <ShoppingCart size={20} />, label: 'Корзина', onClick: onCartClick, badge: cartItemsCount },
           { icon: <Home size={28} />, label: 'Главная', onClick: onHomeClick, isMain: true, badge: undefined },
           { icon: <FileText size={20} />, label: 'Заказы', onClick: onOrdersClick || (() => {}), badge: undefined },
-          { icon: <MoreHorizontal size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
+          { icon: <Menu size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
         ];
       
       case 'seller':
@@ -209,69 +211,175 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
             background: 'white',
             borderRadius: '16px',
             padding: '24px',
-            width: '250px'
+            width: '280px',
+            maxHeight: '80vh',
+            overflowY: 'auto'
           }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ marginBottom: '16px', textAlign: 'center' }}>Меню</h3>
-            {user.role !== 'manager' && (
-              <>
-                <button
-                  onClick={() => {
-                    onDashboardClick();
-                    setShowBurgerMenu(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    margin: '4px 0',
-                    border: '1px solid #c8e6c9',
-                    borderRadius: '8px',
-                    background: 'white',
-                    cursor: 'pointer',
-                    textAlign: 'left'
-                  }}
-                >
-                  👤 Профиль
-                </button>
-                <button
-                  onClick={() => {
-                    alert('Раздел "О нас" в разработке');
-                    setShowBurgerMenu(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    margin: '4px 0',
-                    border: '1px solid #c8e6c9',
-                    borderRadius: '8px',
-                    background: 'white',
-                    cursor: 'pointer',
-                    textAlign: 'left'
-                  }}
-                >
-                  ℹ️ О нас
-                </button>
-              </>
+            <h3 style={{ marginBottom: '16px', textAlign: 'center', color: '#2e7d32' }}>Меню</h3>
+            
+            {/* Профиль для авторизованных */}
+            {user && (
+              <button
+                onClick={() => {
+                  onDashboardClick();
+                  setShowBurgerMenu(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  margin: '4px 0',
+                  border: '1px solid #c8e6c9',
+                  borderRadius: '8px',
+                  background: 'white',
+                  cursor: 'pointer',
+                  textAlign: 'left'
+                }}
+              >
+                👤 {user.role === 'manager' ? 'Личный кабинет' : 'Профиль'}
+              </button>
             )}
-            {user.role === 'manager' && (
+            
+            {/* Вход для гостей */}
+            {!user && (
+              <button
+                onClick={() => {
+                  onAuthClick();
+                  setShowBurgerMenu(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  margin: '4px 0',
+                  border: '1px solid #4caf50',
+                  borderRadius: '8px',
+                  background: '#4caf50',
+                  color: 'white',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontWeight: '600'
+                }}
+              >
+                🔑 Войти / Регистрация
+              </button>
+            )}
+            
+            {/* Разделитель */}
+            <div style={{ height: '1px', background: '#e0e0e0', margin: '16px 0' }} />
+            
+            {/* Юридическая информация */}
+            <div style={{ marginBottom: '12px' }}>
+              <h4 style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>Правовая информация</h4>
+              <button
+                onClick={() => {
+                  navigate('/legal?tab=terms');
+                  setShowBurgerMenu(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  margin: '2px 0',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#f5f5f5',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontSize: '13px'
+                }}
+              >
+                📄 Пользовательское соглашение
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/legal?tab=privacy');
+                  setShowBurgerMenu(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  margin: '2px 0',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#f5f5f5',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontSize: '13px'
+                }}
+              >
+                🔒 Политика конфиденциальности
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/legal?tab=offer');
+                  setShowBurgerMenu(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  margin: '2px 0',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#f5f5f5',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontSize: '13px'
+                }}
+              >
+                📋 Публичная оферта
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/legal?tab=responsibility');
+                  setShowBurgerMenu(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  margin: '2px 0',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#f5f5f5',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontSize: '13px'
+                }}
+              >
+                ⚖️ Ответственность сторон
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/legal?tab=product-rules');
+                  setShowBurgerMenu(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  margin: '2px 0',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#f5f5f5',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontSize: '13px'
+                }}
+              >
+                📦 Правила размещения товаров
+              </button>
+            </div>
+            
+            {/* Контакты */}
+            <div style={{ marginBottom: '12px' }}>
+              <h4 style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>Контакты</h4>
+              <div style={{ fontSize: '12px', color: '#666', lineHeight: 1.4 }}>
+                <div>📧 amixvn@gmail.com</div>
+                <div>📞 +7 913 949 2570</div>
+                <div>📍 г. Новосибирск</div>
+              </div>
+            </div>
+            
+            {/* Выход для авторизованных */}
+            {user && (
               <>
-                <button
-                  onClick={() => {
-                    onDashboardClick();
-                    setShowBurgerMenu(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    margin: '4px 0',
-                    border: '1px solid #c8e6c9',
-                    borderRadius: '8px',
-                    background: 'white',
-                    cursor: 'pointer',
-                    textAlign: 'left'
-                  }}
-                >
-                  👤 Личный кабинет
-                </button>
+                <div style={{ height: '1px', background: '#e0e0e0', margin: '16px 0' }} />
                 <button
                   onClick={() => {
                     onLogout?.();
