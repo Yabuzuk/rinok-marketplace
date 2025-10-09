@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Package, Plus, BarChart3, Settings, Eye, Edit, Trash2, Upload } from 'lucide-react';
+import { Package, Plus, BarChart3, Settings, Eye, Edit, Trash2, Upload, FileText, Shield, Phone, Mail } from 'lucide-react';
 import { Product, Order, User as UserType } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 import { uploadImage } from '../utils/supabase';
 
@@ -29,6 +30,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   onUpdateUser,
   onLogout
 }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'analytics' | 'settings' | 'warehouse'>('products');
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -1041,6 +1043,167 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         </button>
                       </>
                     )}
+                  </div>
+                </div>
+                
+                {/* Юридическая информация */}
+                <div className="card" style={{ marginTop: '24px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#2e7d32' }}>
+                    📄 Правовая информация
+                  </h3>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px' }}>
+                    <button
+                      onClick={() => navigate('/legal?tab=terms')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 16px',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        background: 'white',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <FileText size={20} style={{ color: '#4caf50' }} />
+                      <div>
+                        <div style={{ fontWeight: '500', fontSize: '14px' }}>Пользовательское соглашение</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>Основные правила работы</div>
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={() => navigate('/legal?tab=offer')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 16px',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        background: 'white',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <FileText size={20} style={{ color: '#ff9800' }} />
+                      <div>
+                        <div style={{ fontWeight: '500', fontSize: '14px' }}>Договор-оферта</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>Условия сотрудничества</div>
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={() => navigate('/legal?tab=product-rules')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 16px',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        background: 'white',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <Package size={20} style={{ color: '#2196f3' }} />
+                      <div>
+                        <div style={{ fontWeight: '500', fontSize: '14px' }}>Правила размещения</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>Требования к товарам</div>
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={() => navigate('/legal?tab=privacy')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 16px',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        background: 'white',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <Shield size={20} style={{ color: '#9c27b0' }} />
+                      <div>
+                        <div style={{ fontWeight: '500', fontSize: '14px' }}>Политика конфиденциальности</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>Обработка данных</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Контакты поддержки */}
+                <div className="card" style={{ marginTop: '24px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#2e7d32' }}>
+                    📞 Контакты поддержки
+                  </h3>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      background: '#f8f9fa',
+                      borderRadius: '8px',
+                      border: '1px solid #e9ecef'
+                    }}>
+                      <Mail size={20} style={{ color: '#4caf50' }} />
+                      <div>
+                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '2px' }}>Email</div>
+                        <div style={{ fontWeight: '500', fontSize: '14px' }}>amixvn@gmail.com</div>
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      background: '#f8f9fa',
+                      borderRadius: '8px',
+                      border: '1px solid #e9ecef'
+                    }}>
+                      <Phone size={20} style={{ color: '#2196f3' }} />
+                      <div>
+                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '2px' }}>Телефон</div>
+                        <div style={{ fontWeight: '500', fontSize: '14px' }}>+7 913 949 2570</div>
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      background: '#f8f9fa',
+                      borderRadius: '8px',
+                      border: '1px solid #e9ecef'
+                    }}>
+                      <div style={{ fontSize: '20px' }}>📍</div>
+                      <div>
+                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '2px' }}>Адрес</div>
+                        <div style={{ fontWeight: '500', fontSize: '14px' }}>г. Новосибирск</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{
+                    marginTop: '16px',
+                    padding: '12px 16px',
+                    background: '#e8f5e8',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    color: '#2e7d32'
+                  }}>
+                    ℹ️ По вопросам работы на платформе, оплаты комиссии и технических проблем обращайтесь по указанным контактам.
                   </div>
                 </div>
               </div>
