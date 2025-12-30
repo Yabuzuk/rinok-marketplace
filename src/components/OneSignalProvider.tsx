@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 declare global {
   interface Window {
     OneSignal: any;
+    oneSignalInitialized?: boolean;
   }
 }
 
@@ -16,7 +17,7 @@ const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
   useEffect(() => {
     console.log('OneSignal initialization started...');
     
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !window.oneSignalInitialized) {
       // Ждем загрузки OneSignal SDK
       const initOneSignal = () => {
         if (window.OneSignal) {
@@ -40,16 +41,21 @@ const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
                   pageViews: 1
                 }
               }
+            }).then(() => {
+              console.log('OneSignal initialized successfully');
+              window.oneSignalInitialized = true;
+              
+              // Устанавливаем теги пользователя
+              if (userRole && userId) {
+                console.log('Setting user tags:', { userRole, userId });
+                window.OneSignal.sendTags({
+                  'user_role': userRole,
+                  'user_id': userId
+                });
+              }
+            }).catch((error: any) => {
+              console.error('OneSignal initialization error:', error);
             });
-
-            // Устанавливаем теги пользователя
-            if (userRole && userId) {
-              console.log('Setting user tags:', { userRole, userId });
-              window.OneSignal.sendTags({
-                'user_role': userRole,
-                'user_id': userId
-              });
-            }
           });
         } else {
           console.log('OneSignal SDK not loaded yet, retrying...');
@@ -59,6 +65,8 @@ const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
       
       // Начинаем инициализацию через 2 секунды
       setTimeout(initOneSignal, 2000);
+    } else if (window.oneSignalInitialized) {
+      console.log('OneSignal already initialized, skipping...');
     }
   }, [appId, userRole, userId]);
 
