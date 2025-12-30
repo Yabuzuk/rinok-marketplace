@@ -2,23 +2,49 @@ import React from 'react';
 import { Bell } from 'lucide-react';
 
 const NotificationButton: React.FC = () => {
-  const requestNotificationPermission = () => {
-    if (window.OneSignal) {
-      window.OneSignal.push(function() {
-        window.OneSignal.showSlidedownPrompt();
-      });
-    } else {
-      // Fallback для браузеров без OneSignal
-      if ('Notification' in window) {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            new Notification('ОптБазар', {
-              body: 'Уведомления включены!',
-              icon: '/icon-192x192.png'
-            });
-          }
+  const requestNotificationPermission = async () => {
+    console.log('Requesting notification permission...');
+    
+    // Проверяем поддержку уведомлений
+    if (!('Notification' in window)) {
+      alert('Ваш браузер не поддерживает уведомления');
+      return;
+    }
+
+    // Проверяем текущее разрешение
+    if (Notification.permission === 'granted') {
+      alert('Уведомления уже включены!');
+      return;
+    }
+
+    if (Notification.permission === 'denied') {
+      alert('Уведомления заблокированы. Разрешите их в настройках браузера.');
+      return;
+    }
+
+    // Запрашиваем разрешение
+    try {
+      const permission = await Notification.requestPermission();
+      
+      if (permission === 'granted') {
+        // Показываем тестовое уведомление
+        new Notification('ОптБазар', {
+          body: 'Уведомления успешно включены!',
+          icon: '/icon-192x192.png'
         });
+        
+        // Пытаемся инициализировать OneSignal
+        if (window.OneSignal) {
+          window.OneSignal.push(function() {
+            window.OneSignal.registerForPushNotifications();
+          });
+        }
+      } else {
+        alert('Разрешение на уведомления не получено');
       }
+    } catch (error) {
+      console.error('Error requesting permission:', error);
+      alert('Ошибка при запросе разрешения на уведомления');
     }
   };
 
