@@ -1,22 +1,31 @@
-// Простая функция для отправки уведомлений через OneSignal
+// Функция для отправки уведомлений через серверную функцию
 export const sendNotificationToUser = async (userId: string, title: string, message: string) => {
-  // Используем OneSignal SDK для отправки уведомления
-  if (window.OneSignal) {
-    window.OneSignal.push(function() {
-      // Отправляем уведомление пользователю с определенным тегом
-      window.OneSignal.sendTag('user_id', userId);
-      
-      // Показываем локальное уведомление всем подписанным пользователям
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, {
-          body: message,
-          icon: '/icon-192x192.png',
-          tag: userId // Уникальный тег для каждого пользователя
-        });
-      }
-      
-      console.log('Notification sent to user:', userId, title, message);
+  try {
+    const response = await fetch('/.netlify/functions/send-notification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        title,
+        message,
+        userIds: [userId]
+      })
     });
+
+    const result = await response.json();
+    console.log('Push notification sent:', result);
+    return result;
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+    
+    // Fallback - показываем локальное уведомление
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, {
+        body: message,
+        icon: '/icon-192x192.png'
+      });
+    }
   }
 };
 
