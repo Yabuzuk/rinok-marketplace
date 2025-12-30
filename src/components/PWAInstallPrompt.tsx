@@ -24,7 +24,7 @@ const PWAInstallPrompt: React.FC = () => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     
-    if (deferredPrompt) {
+    if (isInstallable) {
       installApp();
     } else if (isMobile) {
       // Мобильная инструкция
