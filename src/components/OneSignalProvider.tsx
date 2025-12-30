@@ -14,31 +14,51 @@ interface OneSignalConfig {
 
 const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
   useEffect(() => {
+    console.log('OneSignal initialization started...');
+    
     if (typeof window !== 'undefined') {
-      window.OneSignal = window.OneSignal || [];
-      
-      window.OneSignal.push(function() {
-        window.OneSignal.init({
-          appId: appId,
-          allowLocalhostAsSecureOrigin: true,
-          promptOptions: {
-            slidedown: {
-              enabled: true,
-              autoPrompt: true,
-              timeDelay: 3,
-              pageViews: 1
-            }
-          }
-        });
+      // Ждем загрузки OneSignal SDK
+      const initOneSignal = () => {
+        if (window.OneSignal) {
+          console.log('OneSignal SDK loaded, initializing...');
+          
+          window.OneSignal = window.OneSignal || [];
+          
+          window.OneSignal.push(function() {
+            console.log('OneSignal init called with appId:', appId);
+            
+            window.OneSignal.init({
+              appId: appId,
+              allowLocalhostAsSecureOrigin: true,
+              autoRegister: true,
+              autoResubscribe: true,
+              promptOptions: {
+                slidedown: {
+                  enabled: true,
+                  autoPrompt: true,
+                  timeDelay: 5,
+                  pageViews: 1
+                }
+              }
+            });
 
-        // Устанавливаем теги пользователя
-        if (userRole && userId) {
-          window.OneSignal.sendTags({
-            'user_role': userRole,
-            'user_id': userId
+            // Устанавливаем теги пользователя
+            if (userRole && userId) {
+              console.log('Setting user tags:', { userRole, userId });
+              window.OneSignal.sendTags({
+                'user_role': userRole,
+                'user_id': userId
+              });
+            }
           });
+        } else {
+          console.log('OneSignal SDK not loaded yet, retrying...');
+          setTimeout(initOneSignal, 1000);
         }
-      });
+      };
+      
+      // Начинаем инициализацию через 2 секунды
+      setTimeout(initOneSignal, 2000);
     }
   }, [appId, userRole, userId]);
 
