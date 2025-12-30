@@ -333,7 +333,43 @@ const AppContent: React.FC = () => {
     try {
       await supabaseApi.updateOrder(orderId, { status });
       
-      // Просто обновляем статус заказа - никаких отдельных доставок
+      // Отправляем push-уведомление покупателю
+      const order = orders.find(o => o.id === orderId);
+      if (order && order.customerId) {
+        const statusMessages = {
+          confirmed: 'Ваш заказ подтвержден продавцом',
+          preparing: 'Ваш заказ готовится',
+          ready: 'Ваш заказ готов к получению',
+          delivering: 'Ваш заказ в пути',
+          delivered: 'Ваш заказ доставлен'
+        };
+        
+        const message = statusMessages[status as keyof typeof statusMessages] || 'Статус заказа изменен';
+        
+        // Отправляем уведомление через OneSignal REST API
+        try {
+          const response = await fetch('https://onesignal.com/api/v1/notifications', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Basic os_v2_app_c2yethytcraqxkodrps4jrnqytezm2d2kbkue7espzfysbnacvdpxc64asntat7t4z5aaqawgj67k4dvfmg4mzcgrpxyxcoemndbhgq'
+            },
+            body: JSON.stringify({
+              app_id: '16b0499f-1314-410b-a9c3-8be5c4c5b0c4',
+              headings: { ru: 'ОптБазар - Статус заказа', en: 'ОптБазар - Order Status' },
+              contents: { ru: message, en: message },
+              include_external_user_ids: [order.customerId],
+              url: window.location.origin + '/orders',
+              chrome_web_icon: '/icon-192x192.png'
+            })
+          });
+          
+          const result = await response.json();
+          console.log('Push notification sent:', result);
+        } catch (notificationError) {
+          console.error('Failed to send push notification:', notificationError);
+        }
+      }
       
       // Перезагружаем все данные
       loadData();
@@ -375,6 +411,37 @@ const AppContent: React.FC = () => {
     try {
       const order = await supabaseApi.createOrder(orderData);
       setOrders(prev => [...prev, order]);
+      
+      // Отправляем push-уведомление продавцу
+      if (orderData.pavilionNumber) {
+        // Находим продавца по номеру павильона
+        const seller = users.find(u => u.role === 'seller' && u.pavilionNumber === orderData.pavilionNumber);
+        
+        if (seller) {
+          try {
+            const response = await fetch('https://onesignal.com/api/v1/notifications', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic os_v2_app_c2yethytcraqxkodrps4jrnqytezm2d2kbkue7espzfysbnacvdpxc64asntat7t4z5aaqawgj67k4dvfmg4mzcgrpxyxcoemndbhgq'
+              },
+              body: JSON.stringify({
+                app_id: '16b0499f-1314-410b-a9c3-8be5c4c5b0c4',
+                headings: { ru: 'ОптБазар - Новый заказ!', en: 'ОптБазар - New Order!' },
+                contents: { ru: `Поступил новый заказ на сумму ${orderData.total}₽`, en: `New order for ${orderData.total}₽` },
+                include_external_user_ids: [seller.id],
+                url: window.location.origin + '/seller-dashboard',
+                chrome_web_icon: '/icon-192x192.png'
+              })
+            });
+            
+            const result = await response.json();
+            console.log('New order notification sent to seller:', result);
+          } catch (notificationError) {
+            console.error('Failed to send new order notification:', notificationError);
+          }
+        }
+      }
       
       // Перезагружаем все данные немедленно
       loadData();
