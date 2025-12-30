@@ -23,7 +23,7 @@ import LegalPage from './pages/LegalPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 
-import { sendNotificationToUser } from '../utils/notifications';
+import { sendNotificationToUser } from './utils/notifications';
 
 import { supabaseApi } from './utils/supabaseApi';
 import './styles/globals.css';
