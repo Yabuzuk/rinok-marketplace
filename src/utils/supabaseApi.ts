@@ -58,13 +58,23 @@ export const supabaseApi = {
 
   // Товары
   async getProducts(): Promise<Product[]> {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('createdAt', { ascending: false });
-    
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('createdAt', { ascending: false });
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Products loaded:', data?.length || 0);
+      return data || [];
+    } catch (error) {
+      console.error('getProducts error:', error);
+      return [];
+    }
   },
 
   async createProduct(product: Omit<Product, 'id'>): Promise<Product> {

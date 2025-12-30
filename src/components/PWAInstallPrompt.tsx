@@ -8,9 +8,10 @@ const PWAInstallPrompt: React.FC = () => {
 
   useEffect(() => {
     const hasSeenPrompt = localStorage.getItem('pwa-install-prompt-seen');
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    if (!hasSeenPrompt && isInstallable) {
-      // Показываем через 3 секунды после загрузки
+    // Показываем промпт на мобильных даже без beforeinstallprompt
+    if (!hasSeenPrompt && (isInstallable || isMobile)) {
       const timer = setTimeout(() => {
         setIsVisible(true);
       }, 3000);
@@ -20,7 +21,20 @@ const PWAInstallPrompt: React.FC = () => {
   }, [isInstallable]);
 
   const handleInstall = () => {
-    installApp();
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    if (deferredPrompt) {
+      installApp();
+    } else if (isMobile) {
+      // Мобильная инструкция
+      if (isIOS) {
+        alert('Для установки:\n1. Нажмите кнопку "Поделиться" ↗️\n2. Выберите "На экран «Домой»"');
+      } else {
+        alert('Для установки:\n1. Откройте меню браузера (☰)\n2. Нажмите "Установить приложение"');
+      }
+    }
+    
     setIsVisible(false);
     localStorage.setItem('pwa-install-prompt-seen', 'true');
   };

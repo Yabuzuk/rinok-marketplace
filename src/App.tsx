@@ -55,14 +55,15 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     loadData();
     
-    // Периодическая перезагрузка данных каждые 5 секунд
+    // Периодическая перезагрузка данных каждые 10 секунд для мобильных
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const interval = setInterval(() => {
       if (skipNextReload) {
         setSkipNextReload(false);
         return;
       }
       loadData();
-    }, 5000);
+    }, isMobile ? 10000 : 5000);
     
     return () => clearInterval(interval);
   }, []);
@@ -79,11 +80,18 @@ const AppContent: React.FC = () => {
 
   const loadData = async () => {
     try {
+      console.log('Loading data from Supabase...');
       const [productsData, ordersData, usersData] = await Promise.all([
         supabaseApi.getProducts(),
         supabaseApi.getOrders(),
         supabaseApi.getUsers()
       ]);
+      
+      console.log('Raw data received:', {
+        products: productsData?.length || 0,
+        orders: ordersData?.length || 0,
+        users: usersData?.length || 0
+      });
       
       setProducts(productsData || []);
       setOrders(ordersData || []);
@@ -91,14 +99,17 @@ const AppContent: React.FC = () => {
       
       setDeliveries([]);
       
-      console.log('Loaded from server:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders');
-      console.log('Products data:', productsData);
+      console.log('Data loaded successfully:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders');
     } catch (error) {
       console.error('Error loading data from server:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details
+      });
       setProducts([]);
       setOrders([]);
       setUsers([]);
-      setDeliveries([]);
       setDeliveries([]);
     } finally {
       setLoading(false);
