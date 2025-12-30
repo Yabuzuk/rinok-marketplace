@@ -48,6 +48,7 @@ const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
               // Устанавливаем теги пользователя
               if (userRole && userId) {
                 console.log('Setting user tags:', { userRole, userId });
+                window.OneSignal.setExternalUserId(userId);
                 window.OneSignal.sendTags({
                   'user_role': userRole,
                   'user_id': userId

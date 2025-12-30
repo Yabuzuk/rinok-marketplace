@@ -16,6 +16,8 @@ exports.handler = async (event, context) => {
 
   try {
     const { title, message, userIds } = JSON.parse(event.body);
+    
+    console.log('Sending notification:', { title, message, userIds });
 
     const response = await fetch('https://onesignal.com/api/v1/notifications', {
       method: 'POST',
@@ -34,6 +36,7 @@ exports.handler = async (event, context) => {
     });
 
     const result = await response.json();
+    console.log('OneSignal response:', result);
     
     return {
       statusCode: 200,
