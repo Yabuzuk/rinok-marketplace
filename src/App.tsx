@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
+import InstallPWA from './components/InstallPWA';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import useOneSignal from './components/OneSignalProvider';
 
 import CookieConsent from './components/CookieConsent';
 import DisclaimerModal from './components/DisclaimerModal';
@@ -26,6 +29,11 @@ import './styles/globals.css';
 
 const AppContent: React.FC = () => {
   const navigate = useNavigate();
+  const { subscribeUser } = useOneSignal({ 
+    appId: '16b0499f-1314-410b-a9c3-8be5c4c5b0c4',
+    userRole: currentUser?.role,
+    userId: currentUser?.id
+  });
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('currentUser');
     return saved ? JSON.parse(saved) : null;
@@ -715,7 +723,8 @@ const AppContent: React.FC = () => {
           onCreateOrder={handleCreateOrder}
         />
 
-        <BottomNavigation
+        <PWAInstallPrompt />
+        <InstallPWA />
           user={currentUser}
           cartItemsCount={cartItemsCount}
           onHomeClick={handleHomeClick}
