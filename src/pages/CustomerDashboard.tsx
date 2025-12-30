@@ -473,6 +473,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                         className="input"
                         type="tel"
                         placeholder="+7 (999) 123-45-67"
+                        defaultValue={user.phone || ''}
                       />
                     </div>
 
