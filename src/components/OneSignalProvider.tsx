@@ -8,7 +8,7 @@ declare global {
 
 interface OneSignalConfig {
   appId: string;
-  userRole?: 'customer' | 'seller' | 'admin';
+  userRole?: 'customer' | 'seller' | 'admin' | 'courier' | 'manager';
   userId?: string;
 }
 
