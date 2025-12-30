@@ -745,6 +745,7 @@ const AppContent: React.FC = () => {
           onPavilionSelect={(pavilionNumber) => navigate(`/pavilion/${pavilionNumber}`)}
           pavilions={Array.from(new Set(products.filter(p => p.pavilionNumber).map(p => p.pavilionNumber))).sort()}
           onAuthClick={() => setShowAuthModal(true)}
+          onLogout={handleLogout}
         />
     </div>
   );
