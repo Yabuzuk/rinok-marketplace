@@ -4,6 +4,7 @@ import Header from './components/Header';
 import AuthModal from './components/AuthModal';
 import InstallPWA from './components/InstallPWA';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import NotificationButton from './components/NotificationButton';
 import useOneSignal from './components/OneSignalProvider';
 
 import CookieConsent from './components/CookieConsent';
@@ -737,6 +738,7 @@ const AppContent: React.FC = () => {
 
         <PWAInstallPrompt />
         <InstallPWA />
+        <NotificationButton />
         
         <BottomNavigation
           user={currentUser}

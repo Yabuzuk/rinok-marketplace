@@ -14,17 +14,21 @@ interface OneSignalConfig {
 
 const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.OneSignal) {
+    if (typeof window !== 'undefined') {
       window.OneSignal = window.OneSignal || [];
       
       window.OneSignal.push(function() {
         window.OneSignal.init({
           appId: appId,
-          safari_web_id: 'web.onesignal.auto.xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-          notifyButton: {
-            enable: true,
-          },
           allowLocalhostAsSecureOrigin: true,
+          promptOptions: {
+            slidedown: {
+              enabled: true,
+              autoPrompt: true,
+              timeDelay: 3,
+              pageViews: 1
+            }
+          }
         });
 
         // Устанавливаем теги пользователя
