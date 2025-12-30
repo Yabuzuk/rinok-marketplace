@@ -103,9 +103,9 @@ const AppContent: React.FC = () => {
     } catch (error) {
       console.error('Error loading data from server:', error);
       console.error('Error details:', {
-        message: error.message,
-        code: error.code,
-        details: error.details
+        message: error instanceof Error ? error.message : 'Unknown error',
+        code: (error as any)?.code,
+        details: (error as any)?.details
       });
       setProducts([]);
       setOrders([]);
