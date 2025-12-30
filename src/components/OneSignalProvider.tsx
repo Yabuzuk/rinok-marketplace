@@ -21,7 +21,7 @@ const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
       // Ждем загрузки OneSignal SDK
       const initOneSignal = () => {
         if (window.OneSignal) {
-          console.log('OneSignal SDK loaded, initializing...');
+          console.log('OneSignal SDK loaded, checking if already initialized...');
           
           window.OneSignal = window.OneSignal || [];
           
@@ -66,8 +66,18 @@ const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
       
       // Начинаем инициализацию через 2 секунды
       setTimeout(initOneSignal, 2000);
-    } else if (window.oneSignalInitialized) {
-      console.log('OneSignal already initialized, skipping...');
+    } else if (window.oneSignalInitialized && userRole && userId) {
+      // Если OneSignal уже инициализирован, просто обновляем теги
+      console.log('OneSignal already initialized, updating tags only');
+      if (window.OneSignal) {
+        window.OneSignal.push(function() {
+          window.OneSignal.setExternalUserId(userId);
+          window.OneSignal.sendTags({
+            'user_role': userRole,
+            'user_id': userId
+          });
+        });
+      }
     }
   }, [appId, userRole, userId]);
 
