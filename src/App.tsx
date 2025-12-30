@@ -29,14 +29,15 @@ import './styles/globals.css';
 
 const AppContent: React.FC = () => {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('currentUser');
+    return saved ? JSON.parse(saved) : null;
+  });
+  
   const { subscribeUser } = useOneSignal({ 
     appId: '16b0499f-1314-410b-a9c3-8be5c4c5b0c4',
     userRole: currentUser?.role,
     userId: currentUser?.id
-  });
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('currentUser');
-    return saved ? JSON.parse(saved) : null;
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -725,6 +726,8 @@ const AppContent: React.FC = () => {
 
         <PWAInstallPrompt />
         <InstallPWA />
+        
+        <BottomNavigation
           user={currentUser}
           cartItemsCount={cartItemsCount}
           onHomeClick={handleHomeClick}
