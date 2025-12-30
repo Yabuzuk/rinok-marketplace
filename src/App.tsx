@@ -23,6 +23,8 @@ import LegalPage from './pages/LegalPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 
+import { sendNotificationToUser } from '../utils/notifications';
+
 import { supabaseApi } from './utils/supabaseApi';
 import './styles/globals.css';
 
@@ -347,20 +349,7 @@ const AppContent: React.FC = () => {
         const message = statusMessages[status as keyof typeof statusMessages] || 'Статус заказа изменен';
         
         // Отправляем push-уведомление покупателю через OneSignal SDK
-        if (window.OneSignal) {
-          window.OneSignal.push(function() {
-            // Отправляем уведомление всем подписанным пользователям с тегом user_id
-            console.log('Sending notification to customer:', order.customerId, 'Message:', message);
-            
-            // Показываем локальное уведомление как fallback
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification('ОптБазар - Статус заказа', {
-                body: message,
-                icon: '/icon-192x192.png'
-              });
-            }
-          });
-        }
+        sendNotificationToUser(order.customerId, 'ОптБазар - Статус заказа', message);
       }
       
       // Перезагружаем все данные
@@ -411,19 +400,7 @@ const AppContent: React.FC = () => {
         
         if (seller) {
           // Отправляем push-уведомление продавцу через OneSignal SDK
-          if (window.OneSignal) {
-            window.OneSignal.push(function() {
-              console.log('Sending new order notification to seller:', seller.id);
-              
-              // Показываем локальное уведомление как fallback
-              if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('ОптБазар - Новый заказ!', {
-                  body: `Поступил новый заказ на сумму ${orderData.total}₽`,
-                  icon: '/icon-192x192.png'
-                });
-              }
-            });
-          }
+          sendNotificationToUser(seller.id, 'ОптБазар - Новый заказ!', `Поступил новый заказ на сумму ${orderData.total}₽`);
         }
       }
       
