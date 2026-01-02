@@ -93,10 +93,10 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       return String(order.pavilionNumber) === String(user.pavilionNumber);
     }
     // Иначе определяем по товарам в заказе
-    return order.items.some(item => {
+    return order.items?.some(item => {
       const product = products.find(p => p.id === item.productId);
       return product && String(product.pavilionNumber) === String(user.pavilionNumber);
-    });
+    }) || false;
   });
   
   console.log('=== SELLER ORDERS DEBUG ===');
@@ -118,7 +118,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
     })
     .reduce((sum, order) => {
-      const orderTotal = order.items
+      const orderTotal = (order.items || [])
         .filter(item => item.productId !== 'delivery')
         .reduce((itemSum, item) => itemSum + item.price * item.quantity, 0);
       return sum + orderTotal;
@@ -749,7 +749,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         </div>
 
                         <div style={{ marginBottom: '16px' }}>
-                          {order.items.filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
+                          {(order.items || []).filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
                             <div key={index} style={{ 
                               display: 'flex', 
                               justifyContent: 'space-between', 
@@ -764,7 +764,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
-                            Итого: {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽
+                            Итого: {(order.items || []).filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽
                           </div>
                           
                           {order.status === 'pending' && (

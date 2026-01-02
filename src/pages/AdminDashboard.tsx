@@ -178,6 +178,202 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
           </div>
         </div>
 
+        {/* Кнопка миграции */}
+        <div style={{ marginBottom: '24px', display: 'flex', gap: '12px' }}>
+          <button 
+            className="btn btn-primary"
+            onClick={async () => {
+              if (!window.confirm('Начать миграцию данных из Supabase в Firebase?')) return;
+              
+              try {
+                const { supabaseApi } = await import('../utils/supabaseApi');
+                const { firebaseApi } = await import('../utils/firebaseApi');
+                
+                alert('Миграция началась. Проверьте консоль браузера для отслеживания прогресса.');
+                console.log('🚀 Начинаем миграцию данных...');
+                
+                // Пользователи
+                const users = await supabaseApi.getUsers();
+                console.log(`Найдено ${users.length} пользователей`);
+                for (const user of users) {
+                  try {
+                    await firebaseApi.createUser(user);
+                    console.log(`✅ Пользователь ${user.name} перенесен`);
+                  } catch (e) {
+                    console.log(`⚠️ Пользователь ${user.name} уже существует`);
+                  }
+                }
+                
+                // Товары
+                const products = await supabaseApi.getProducts();
+                console.log(`Найдено ${products.length} товаров`);
+                for (const product of products) {
+                  try {
+                    await firebaseApi.createProduct(product);
+                    console.log(`✅ Товар ${product.name} перенесен`);
+                  } catch (e) {
+                    console.log(`⚠️ Товар ${product.name} уже существует`);
+                  }
+                }
+                
+                // Заказы
+                const orders = await supabaseApi.getOrders();
+                console.log(`Найдено ${orders.length} заказов`);
+                for (const order of orders) {
+                  try {
+                    await firebaseApi.createOrder(order);
+                    console.log(`✅ Заказ ${order.id} перенесен`);
+                  } catch (e) {
+                    console.log(`⚠️ Заказ ${order.id} уже существует`);
+                  }
+                }
+                
+                alert('🎉 Миграция завершена! Обновите страницу.');
+                window.location.reload();
+              } catch (error) {
+                console.error('Ошибка миграции:', error);
+                alert('Ошибка миграции. Проверьте консоль.');
+              }
+            }}
+            style={{
+              background: 'linear-gradient(135deg, #ff6b35, #f7931e)',
+              color: 'white',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '600'
+            }}
+          >
+            🚀 Мигрировать данные из Supabase
+          </button>
+          
+          <button 
+            className="btn btn-secondary"
+            onClick={async () => {
+              if (!window.confirm('Создать тестовые данные в Firebase?')) return;
+              
+              try {
+                const { firebaseApi } = await import('../utils/firebaseApi');
+                
+                console.log('🧪 Создаем тестовые данные...');
+                
+                // Тестовые продавцы
+                const testSellers = [
+                  { id: 'seller1', name: 'Иван Петров', email: 'ivan@test.com', role: 'seller' as const, pavilionNumber: '15A' },
+                  { id: 'seller2', name: 'Мария Сидорова', email: 'maria@test.com', role: 'seller' as const, pavilionNumber: '22B' }
+                ];
+                
+                for (const seller of testSellers) {
+                  try {
+                    await firebaseApi.createUser(seller);
+                    console.log(`✅ Продавец ${seller.name} создан`);
+                  } catch (e) {
+                    console.log(`⚠️ Продавец ${seller.name} уже существует`);
+                  }
+                }
+                
+                // Тестовые товары с изображениями из Supabase
+                const testProducts = [
+                  { name: 'Яблоки красные', price: 120, category: 'fruits', description: 'Свежие красные яблоки', stock: 50, sellerId: 'seller1', pavilionNumber: '15A', image: 'https://ezaabcngjalnnweoqyhv.supabase.co/storage/v1/object/public/product-images/apples.jpg', rating: 0, reviews: 0, minOrderQuantity: 1 },
+                  { name: 'Морковь', price: 80, category: 'vegetables', description: 'Сочная морковь', stock: 30, sellerId: 'seller1', pavilionNumber: '15A', image: 'https://ezaabcngjalnnweoqyhv.supabase.co/storage/v1/object/public/product-images/carrots.jpg', rating: 0, reviews: 0, minOrderQuantity: 1 },
+                  { name: 'Бананы', price: 150, category: 'fruits', description: 'Спелые бананы', stock: 25, sellerId: 'seller2', pavilionNumber: '22B', image: 'https://ezaabcngjalnnweoqyhv.supabase.co/storage/v1/object/public/product-images/bananas.jpg', rating: 0, reviews: 0, minOrderQuantity: 1 },
+                  { name: 'Помидоры', price: 200, category: 'vegetables', description: 'Красные помидоры', stock: 40, sellerId: 'seller2', pavilionNumber: '22B', image: 'https://ezaabcngjalnnweoqyhv.supabase.co/storage/v1/object/public/product-images/tomatoes.jpg', rating: 0, reviews: 0, minOrderQuantity: 1 },
+                  { name: 'Огурцы', price: 90, category: 'vegetables', description: 'Свежие огурцы', stock: 35, sellerId: 'seller1', pavilionNumber: '15A', image: 'https://ezaabcngjalnnweoqyhv.supabase.co/storage/v1/object/public/product-images/cucumbers.jpg', rating: 0, reviews: 0, minOrderQuantity: 1 },
+                  { name: 'Апельсины', price: 180, category: 'fruits', description: 'Сочные апельсины', stock: 20, sellerId: 'seller2', pavilionNumber: '22B', image: 'https://ezaabcngjalnnweoqyhv.supabase.co/storage/v1/object/public/product-images/oranges.jpg', rating: 0, reviews: 0, minOrderQuantity: 1 }
+                ];
+                
+                for (const product of testProducts) {
+                  try {
+                    await firebaseApi.createProduct(product);
+                    console.log(`✅ Товар ${product.name} создан`);
+                  } catch (e) {
+                    console.log(`⚠️ Товар ${product.name} уже существует`);
+                  }
+                }
+                
+                alert('🎉 Тестовые данные созданы! Обновите страницу.');
+                window.location.reload();
+              } catch (error) {
+                console.error('Ошибка создания тестовых данных:', error);
+                alert('Ошибка создания данных.');
+              }
+            }}
+            style={{
+              background: '#4caf50',
+              color: 'white',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '600'
+            }}
+          >
+            🧪 Создать тестовые данные с Supabase изображениями
+          </button>
+          
+          <button 
+            className="btn btn-secondary"
+            onClick={async () => {
+              if (!window.confirm('Удалить дубли пользователей? Это действие нельзя отменить!')) return;
+              
+              try {
+                const { firebaseApi } = await import('../utils/firebaseApi');
+                
+                console.log('🧹 Начинаем очистку дублей пользователей...');
+                
+                // Группируем пользователей по email
+                const usersByEmail = new Map();
+                users.forEach(user => {
+                  if (!usersByEmail.has(user.email)) {
+                    usersByEmail.set(user.email, []);
+                  }
+                  usersByEmail.get(user.email).push(user);
+                });
+                
+                let deletedCount = 0;
+                
+                // Удаляем дубли (оставляем только первого пользователя с каждым email)
+                const emails = Array.from(usersByEmail.keys());
+                for (const email of emails) {
+                  const userList = usersByEmail.get(email);
+                  if (userList && userList.length > 1) {
+                    console.log(`📧 Email ${email} имеет ${userList.length} дублей`);
+                    
+                    // Оставляем первого, удаляем остальных
+                    for (let i = 1; i < userList.length; i++) {
+                      try {
+                        await firebaseApi.deleteUser(userList[i].id);
+                        console.log(`🗑️ Удален дубль: ${userList[i].name} (${userList[i].id})`);
+                        deletedCount++;
+                      } catch (error) {
+                        console.error(`❌ Ошибка удаления ${userList[i].name}:`, error);
+                      }
+                    }
+                  }
+                }
+                
+                alert(`🎉 Очистка завершена! Удалено ${deletedCount} дублей. Обновите страницу.`);
+                window.location.reload();
+              } catch (error) {
+                console.error('Ошибка очистки дублей:', error);
+                alert('Ошибка очистки дублей.');
+              }
+            }}
+            style={{
+              background: '#ff9800',
+              color: 'white',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '600'
+            }}
+          >
+            🧹 Удалить дубли пользователей
+          </button>
+        </div>
+
         {/* Вкладки скрыты - используется нижнее меню */}
         <div style={{ marginBottom: '24px', display: 'none' }}>
           <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
@@ -275,10 +471,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
 
               <div style={{ marginBottom: '16px' }}>
                 <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
-                  Товары ({order.items.length}):
+                  Товары ({(order.items || []).length}):
                 </h4>
                 <div style={{ fontSize: '14px', color: '#666' }}>
-                  {order.items.map((item, index) => (
+                  {(order.items || []).map((item, index) => (
                     <div key={index} style={{ marginBottom: '4px' }}>
                       {item.productName} × {item.quantity} = {item.price * item.quantity} ₽
                     </div>

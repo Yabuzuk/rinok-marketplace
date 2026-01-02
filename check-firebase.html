@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Проверка данных Firebase</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+</head>
+<body>
+    <h1>Проверка данных Firebase</h1>
+    <button onclick="checkData()">Проверить данные</button>
+    <div id="results"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyADaZYOM7nOITKBlfn0jhtwtTBI7RbB_m8",
+            authDomain: "kalaktika-app.firebaseapp.com",
+            projectId: "kalaktika-app",
+            storageBucket: "kalaktika-app.firebasestorage.app",
+            messagingSenderId: "735114029908",
+            appId: "1:735114029908:web:8155afa0b285ce8c06f6c1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.checkData = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = 'Проверяем данные...<br>';
+
+            try {
+                // Проверяем продукты
+                const productsSnapshot = await getDocs(collection(db, 'products'));
+                results.innerHTML += `Продукты: ${productsSnapshot.size}<br>`;
+                
+                // Проверяем пользователей
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                results.innerHTML += `Пользователи: ${usersSnapshot.size}<br>`;
+                
+                // Проверяем заказы
+                const ordersSnapshot = await getDocs(collection(db, 'orders'));
+                results.innerHTML += `Заказы: ${ordersSnapshot.size}<br>`;
+
+                // Показываем первые несколько продуктов
+                results.innerHTML += '<h3>Первые продукты:</h3>';
+                productsSnapshot.forEach((doc, index) => {
+                    if (index < 3) {
+                        const data = doc.data();
+                        results.innerHTML += `${data.name} - ${data.price}₽<br>`;
+                    }
+                });
+
+            } catch (error) {
+                results.innerHTML += `Ошибка: ${error.message}<br>`;
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

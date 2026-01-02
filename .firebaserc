@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "kalaktika-app"
+  },
+  "targets": {
+    "kalaktika-app": {
+      "hosting": {
+        "rinok": [
+          "rinok-marketplace"
+        ]
+      }
+    }
+  }
+}

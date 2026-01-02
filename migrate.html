@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Миграция данных Rinok</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .button {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            display: block;
+            width: 100%;
+        }
+        .button:hover {
+            opacity: 0.9;
+        }
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Миграция данных Rinok</h1>
+        <p>Перенос данных из Supabase в Firebase</p>
+        
+        <button id="migrateBtn" class="button" onclick="startMigration()">
+            Начать миграцию
+        </button>
+        
+        <div id="log" class="log">
+            Готов к миграции данных...<br>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabaseApi } from './src/utils/supabaseApi.js';
+        import { firebaseApi } from './src/utils/firebaseApi.js';
+
+        window.supabaseApi = supabaseApi;
+        window.firebaseApi = firebaseApi;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<span class="${type}">[${timestamp}] ${message}</span><br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        window.startMigration = async function() {
+            const btn = document.getElementById('migrateBtn');
+            btn.disabled = true;
+            btn.textContent = 'Миграция в процессе...';
+            
+            log('🚀 Начинаем миграцию данных из Supabase в Firebase...', 'info');
+            
+            try {
+                // 1. Миграция пользователей
+                log('📥 Загружаем пользователей из Supabase...', 'info');
+                const supabaseUsers = await window.supabaseApi.getUsers();
+                log(`Найдено ${supabaseUsers.length} пользователей`, 'info');
+                
+                let migratedUsers = 0;
+                for (const user of supabaseUsers) {
+                    try {
+                        await window.firebaseApi.createUser(user);
+                        log(`✅ Пользователь ${user.name} (${user.role}) перенесен`, 'success');
+                        migratedUsers++;
+                    } catch (error) {
+                        if (error?.code === 'already-exists') {
+                            log(`⚠️ Пользователь ${user.name} уже существует`, 'warning');
+                        } else {
+                            log(`❌ Ошибка переноса пользователя ${user.name}: ${error?.message}`, 'error');
+                        }
+                    }
+                }
+                
+                // 2. Миграция товаров
+                log('📦 Загружаем товары из Supabase...', 'info');
+                const supabaseProducts = await window.supabaseApi.getProducts();
+                log(`Найдено ${supabaseProducts.length} товаров`, 'info');
+                
+                let migratedProducts = 0;
+                for (const product of supabaseProducts) {
+                    try {
+                        await window.firebaseApi.createProduct(product);
+                        log(`✅ Товар ${product.name} (павильон ${product.pavilionNumber}) перенесен`, 'success');
+                        migratedProducts++;
+                    } catch (error) {
+                        if (error?.code === 'already-exists') {
+                            log(`⚠️ Товар ${product.name} уже существует`, 'warning');
+                        } else {
+                            log(`❌ Ошибка переноса товара ${product.name}: ${error?.message}`, 'error');
+                        }
+                    }
+                }
+                
+                // 3. Миграция заказов
+                log('📋 Загружаем заказы из Supabase...', 'info');
+                const supabaseOrders = await window.supabaseApi.getOrders();
+                log(`Найдено ${supabaseOrders.length} заказов`, 'info');
+                
+                let migratedOrders = 0;
+                for (const order of supabaseOrders) {
+                    try {
+                        await window.firebaseApi.createOrder(order);
+                        log(`✅ Заказ ${order.id} на сумму ${order.total}₽ перенесен`, 'success');
+                        migratedOrders++;
+                    } catch (error) {
+                        if (error?.code === 'already-exists') {
+                            log(`⚠️ Заказ ${order.id} уже существует`, 'warning');
+                        } else {
+                            log(`❌ Ошибка переноса заказа ${order.id}: ${error?.message}`, 'error');
+                        }
+                    }
+                }
+                
+                log('', 'info');
+                log('🎉 Миграция завершена!', 'success');
+                log(`📊 Статистика:`, 'info');
+                log(`   Пользователи: ${migratedUsers}/${supabaseUsers.length}`, 'info');
+                log(`   Товары: ${migratedProducts}/${supabaseProducts.length}`, 'info');
+                log(`   Заказы: ${migratedOrders}/${supabaseOrders.length}`, 'info');
+                
+            } catch (error) {
+                log(`❌ Критическая ошибка миграции: ${error.message}`, 'error');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Начать миграцию';
+        }
+    </script>
+</body>
+</html>

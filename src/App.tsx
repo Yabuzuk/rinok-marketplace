@@ -25,7 +25,7 @@ import { User, Product, CartItem, Order, Delivery } from './types';
 
 import { sendNotificationToUser } from './utils/notifications';
 
-import { supabaseApi } from './utils/supabaseApi';
+import { firebaseApi } from './utils/firebaseApi';
 import './styles/globals.css';
 
 
@@ -83,11 +83,11 @@ const AppContent: React.FC = () => {
 
   const loadData = async () => {
     try {
-      console.log('Loading data from Supabase...');
+      console.log('Loading data from Firebase...');
       const [productsData, ordersData, usersData] = await Promise.all([
-        supabaseApi.getProducts(),
-        supabaseApi.getOrders(),
-        supabaseApi.getUsers()
+        firebaseApi.getProducts(),
+        firebaseApi.getOrders(),
+        firebaseApi.getUsers()
       ]);
       
       console.log('Raw data received:', {
@@ -157,7 +157,7 @@ const AppContent: React.FC = () => {
       } else {
         // Логика регистрации - создаем нового пользователя или добавляем роль
         try {
-          const existingUser = await supabaseApi.findUserByEmail(userData.email);
+          const existingUser = await firebaseApi.findUserByEmail(userData.email);
           
           if (existingUser) {
             // Проверяем, есть ли уже такая роль у пользователя
@@ -180,7 +180,7 @@ const AppContent: React.FC = () => {
             // Создаем новую запись с другой ролью
             user = { 
               ...userData, 
-              role: userType,
+              role: userType as 'admin' | 'customer' | 'seller' | 'courier' | 'manager',
               id: `${existingUser.id}_${userType}`,
               name: existingUser.name,
               email: existingUser.email,
@@ -201,13 +201,13 @@ const AppContent: React.FC = () => {
             // Создаем нового пользователя
             user = { 
               ...userData, 
-              role: userType,
+              role: userType as 'admin' | 'customer' | 'seller' | 'courier' | 'manager',
               id: userData.id || Date.now().toString(),
               pavilionNumber: userData.pavilionNumber || ''
             };
           }
           
-          await supabaseApi.createUser(user);
+          await firebaseApi.createUser(user);
           console.log('Registration successful:', user.id);
         } catch (error) {
           console.error('Registration error:', error);
@@ -222,7 +222,7 @@ const AppContent: React.FC = () => {
         name: userType === 'customer' ? 'Тестовый покупатель' : 
               userType === 'seller' ? 'Тестовый продавец' : 'Администратор',
         email: `${userType}@test.com`,
-        role: userType,
+        role: userType as 'admin' | 'customer' | 'seller' | 'courier' | 'manager',
         pavilionNumber: userType === 'seller' ? `${Math.floor(Math.random() * 50)}A` : undefined
       };
     }
@@ -262,7 +262,7 @@ const AppContent: React.FC = () => {
 
   const handleUpdateProduct = async (productId: string, updates: Partial<Product>) => {
     try {
-      const updatedProduct = await supabaseApi.updateProduct(productId, updates);
+      const updatedProduct = await firebaseApi.updateProduct(productId, updates);
       setProducts(prev => prev.map(p => 
         p.id === productId ? { ...p, ...updates, id: productId } : p
       ));
@@ -276,7 +276,7 @@ const AppContent: React.FC = () => {
 
   const handleDeleteProduct = async (productId: string) => {
     try {
-      await supabaseApi.deleteProduct(productId);
+      await firebaseApi.deleteProduct(productId);
       setProducts(prev => prev.filter(p => p.id !== productId));
       console.log('Product deleted from server:', productId);
     } catch (error) {
@@ -287,7 +287,7 @@ const AppContent: React.FC = () => {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      await supabaseApi.deleteUser(userId);
+      await firebaseApi.deleteUser(userId);
       // Перезагружаем данные чтобы обновить список пользователей
       loadData();
       console.log('User deleted from server:', userId);
@@ -312,7 +312,7 @@ const AppContent: React.FC = () => {
         }
       }
       
-      await supabaseApi.updateUser(userId, updates);
+      await firebaseApi.updateUser(userId, updates);
       
       // Обновляем текущего пользователя если это он
       if (currentUser && currentUser.id === userId) {
@@ -333,7 +333,7 @@ const AppContent: React.FC = () => {
 
   const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
     try {
-      await supabaseApi.updateOrder(orderId, { status });
+      await firebaseApi.updateOrder(orderId, { status });
       
       // Отправляем push-уведомление покупателю
       const order = orders.find(o => o.id === orderId);
@@ -378,7 +378,7 @@ const AppContent: React.FC = () => {
       
       console.log('Creating product with sellerId:', currentUser?.id, 'pavilionNumber:', currentUser?.pavilionNumber);
       
-      const product = await supabaseApi.createProduct(productWithPavilion);
+      const product = await firebaseApi.createProduct(productWithPavilion);
       setProducts(prev => [...prev, product]);
       console.log('Product saved to server:', product.id);
       
@@ -390,7 +390,7 @@ const AppContent: React.FC = () => {
 
   const handleCreateOrder = async (orderData: Omit<Order, 'id'>) => {
     try {
-      const order = await supabaseApi.createOrder(orderData);
+      const order = await firebaseApi.createOrder(orderData);
       setOrders(prev => [...prev, order]);
       
       // Отправляем push-уведомление продавцу
@@ -594,7 +594,7 @@ const AppContent: React.FC = () => {
                     orders={orders}
                     onCancelOrder={async (orderId) => {
                       try {
-                        await supabaseApi.updateOrder(orderId, { status: 'cancelled' });
+                        await firebaseApi.updateOrder(orderId, { status: 'cancelled' });
                         loadData();
                         alert('Заказ отменен');
                       } catch (error) {
@@ -618,7 +618,7 @@ const AppContent: React.FC = () => {
                     orders={orders}
                     onUpdateProfile={async (updates) => {
                       try {
-                        await supabaseApi.updateUser(currentUser.id, updates);
+                        await firebaseApi.updateUser(currentUser.id, updates);
                         const updatedUser = { ...currentUser, ...updates };
                         setCurrentUser(updatedUser);
                         localStorage.setItem('currentUser', JSON.stringify(updatedUser));
@@ -630,7 +630,7 @@ const AppContent: React.FC = () => {
                     onLogout={() => setCurrentUser(null)}
                     onCancelOrder={async (orderId) => {
                       try {
-                        await supabaseApi.updateOrder(orderId, { status: 'cancelled' });
+                        await firebaseApi.updateOrder(orderId, { status: 'cancelled' });
                         loadData();
                         alert('Заказ отменен');
                       } catch (error) {
@@ -676,7 +676,7 @@ const AppContent: React.FC = () => {
                     courier={currentUser}
                     onAcceptOrder={async (orderId) => {
                       try {
-                        await supabaseApi.updateOrder(orderId, { courierId: currentUser.id, status: 'delivering' });
+                        await firebaseApi.updateOrder(orderId, { courierId: currentUser.id, status: 'delivering' });
                         loadData();
                       } catch (error) {
                         console.error('Error accepting order:', error);
@@ -707,7 +707,7 @@ const AppContent: React.FC = () => {
                     onUpdateOrder={async (orderId, updates) => {
                       try {
                         console.log('Updating order:', orderId, 'with updates:', updates);
-                        await supabaseApi.updateOrder(orderId, updates);
+                        await firebaseApi.updateOrder(orderId, updates);
                         loadData();
                       } catch (error) {
                         console.error('Error updating order:', error);
