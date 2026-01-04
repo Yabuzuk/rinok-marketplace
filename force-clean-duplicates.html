@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Принудительная очистка дубликатов</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button { padding: 10px 20px; margin: 10px 0; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>🔥 Принудительная очистка дубликатов</h1>
+    <button onclick="forceCleanDuplicates()">ПРИНУДИТЕЛЬНО ОЧИСТИТЬ</button>
+    <div id="log"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            doc, 
+            deleteDoc
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyADaZYOM7nOITKBlfn0jhtwtTBI7RbB_m8",
+            authDomain: "kalaktika-app.firebaseapp.com",
+            projectId: "kalaktika-app",
+            storageBucket: "kalaktika-app.firebasestorage.app",
+            messagingSenderId: "735114029908",
+            appId: "1:735114029908:web:8155afa0b285ce8c06f6c1",
+            measurementId: "G-T7JLSH3WQS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const p = document.createElement('p');
+            p.className = `log ${type}`;
+            p.textContent = message;
+            logDiv.appendChild(p);
+            console.log(message);
+        }
+
+        window.forceCleanDuplicates = async function() {
+            log('🔥 Принудительная очистка дубликатов...');
+            
+            try {
+                // Получаем данные БЕЗ кэша
+                const querySnapshot = await getDocs(collection(db, 'products'));
+                const products = [];
+                
+                querySnapshot.forEach((docSnapshot) => {
+                    products.push({
+                        id: docSnapshot.id,
+                        ...docSnapshot.data()
+                    });
+                });
+                
+                log(`Найдено ${products.length} товаров в Firebase`);
+                
+                // Сортируем по времени создания (новые первыми)
+                products.sort((a, b) => {
+                    const timeA = a.createdAt || a.id;
+                    const timeB = b.createdAt || b.id;
+                    return timeB.localeCompare(timeA);
+                });
+                
+                // Группируем по точному названию
+                const seen = new Set();
+                const toDelete = [];
+                const toKeep = [];
+                
+                products.forEach(product => {
+                    const key = product.name.trim().toLowerCase();
+                    if (seen.has(key)) {
+                        toDelete.push(product);
+                        log(`🗑️ К удалению: "${product.name}" (ID: ${product.id})`, 'warning');
+                    } else {
+                        seen.add(key);
+                        toKeep.push(product);
+                        log(`✅ Оставляем: "${product.name}" (ID: ${product.id})`, 'success');
+                    }
+                });
+                
+                log(`📊 Оставляем: ${toKeep.length} товаров`, 'success');
+                log(`📊 Удаляем: ${toDelete.length} дубликатов`, 'error');
+                
+                if (toDelete.length === 0) {
+                    log('🎉 Дубликатов не найдено!', 'success');
+                    return;
+                }
+                
+                // Удаляем дубликаты по одному с задержкой
+                let deletedCount = 0;
+                for (const product of toDelete) {
+                    try {
+                        await deleteDoc(doc(db, 'products', product.id));
+                        deletedCount++;
+                        log(`✅ Удален: "${product.name}" (${deletedCount}/${toDelete.length})`, 'success');
+                        
+                        // Небольшая задержка между удалениями
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch (error) {
+                        log(`❌ Ошибка удаления "${product.name}": ${error.message}`, 'error');
+                    }
+                }
+                
+                log(`🎉 Очистка завершена! Удалено ${deletedCount} дубликатов`, 'success');
+                log(`📊 Должно остаться: ${toKeep.length} уникальных товаров`, 'success');
+                
+            } catch (error) {
+                log(`❌ Критическая ошибка: ${error.message}`, 'error');
+            }
+        };
+    </script>
+</body>
+</html>

@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#ff6b35" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icon-192x192.png" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="description" content="Азия-Сибирь - оптовая торговля овощами и фруктами. Крупный и мелкий опт, свежие продукты, быстрая доставка по Новосибирску" />
     <meta name="keywords" content="азия-сибирь, овощи оптом, фрукты оптом, крупный опт, мелкий опт, оптовая торговля, свежие овощи, свежие фрукты, доставка продуктов, новосибирск, зелень оптом, ягоды оптом, орехи оптом, специи оптом, продукты питания" />
@@ -18,7 +18,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Азия-Сибирь - Овощи и фрукты оптом | Крупный и мелкий опт</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://securepay.tinkoff.ru/html/payForm/js/tinkoff_v2.js"></script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -38,7 +37,58 @@
       "serviceType": ["Оптовая торговля", "Доставка продуктов"]
     }
     </script>
-    <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'inter': ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <script>
+      // Регистрация Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "ddd6a3d4-163c-4769-81d3-0fbe83a1c991",
+        });
+        
+        // Автоматически подписываем пользователя при входе
+        window.subscribeUserToNotifications = async function(userId, userRole) {
+          try {
+            // Запрашиваем разрешение на уведомления
+            await OneSignal.Notifications.requestPermission();
+            
+            await OneSignal.login(userId);
+            await OneSignal.User.addTags({
+              user_role: userRole,
+              user_id: userId
+            });
+            console.log('✅ OneSignal: User subscribed:', userId, userRole);
+          } catch (error) {
+            console.warn('⚠️ OneSignal: Subscription failed:', error);
+          }
+        };
+      });
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

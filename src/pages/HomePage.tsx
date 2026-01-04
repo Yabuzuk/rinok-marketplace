@@ -48,6 +48,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedPavilion, setSelectedPavilion] = useState<string>('all');
+  const [showCategories, setShowCategories] = useState(false);
   const [showPavilionFilter, setShowPavilionFilter] = useState(false);
 
   const handleProductClick = (product: Product) => {
@@ -119,240 +120,103 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
     return () => clearInterval(interval);
   }, [products]);
   return (
-    <div style={{
-      minHeight: '100vh',
-      paddingTop: '24px'
-    }}>
-      <div className="container">
-        {/* Hero Section with Latest Products */}
-        <div style={{
-          background: 'white',
-          borderRadius: '20px',
-          padding: '24px',
-          marginBottom: '32px',
-          boxShadow: '0 2px 8px rgba(46, 125, 50, 0.1)',
-          border: '1px solid #c8e6c9'
-        }}>
-
-          
-          {/* Latest Products Carousel */}
-          {products.length > 0 && (
-            <div 
-              ref={scrollRef}
-              style={{
-                display: 'flex',
-                gap: '12px',
-                overflowX: 'hidden',
-                paddingBottom: '8px'
-              }}
-            >
-              {/* Дублируем товары для бесконечной прокрутки */}
-              {[...products.slice(-5), ...products.slice(-5)].map((product, index) => (
-
-                <div 
-                  key={`${product.id}-${index}`}
-                  style={{
-                    minWidth: '130px',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => onAddToCart(product)}
-                >
-                  <div style={{
-                    width: '130px',
-                    height: '130px',
-                    background: '#f9f5f0',
-                    borderRadius: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '42px',
-                    overflow: 'hidden'
-                  }}>
-                    {product.image && (product.image.startsWith('http') || product.image.startsWith('data:')) ? (
-                      <img 
-                        src={product.image} 
-                        alt={product.name}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          borderRadius: '16px'
-                        }}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          if (e.currentTarget.parentElement) {
-                            e.currentTarget.parentElement.innerHTML = '📦';
-                          }
-                        }}
-                      />
-                    ) : (
-                      product.image || '📦'
-                    )}
-                  </div>
-
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+    <div className="min-h-screen pt-6 bg-slate-50">
+      <div className="max-w-5xl mx-auto px-4 space-y-6">
 
         {/* Categories */}
-        <div style={{ marginBottom: '32px' }}>
-
-          
-          {showPavilionFilter && (
-            <div style={{ marginBottom: '16px' }}>
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <button 
+              onClick={() => setShowCategories(!showCategories)}
+              className="flex items-center gap-2 text-sm font-semibold text-slate-900 hover:text-violet-600 transition-colors py-0"
+            >
+              Категории
+              <span className={`transform transition-transform ${showCategories ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+            {showPavilionFilter && (
               <button 
                 onClick={() => {
                   setShowPavilionFilter(false);
                   setSelectedCategory('all');
                   setSelectedPavilion('all');
                 }}
-                style={{
-                  background: 'rgba(255,255,255,0.9)',
-                  border: '1px solid rgba(76, 175, 80, 0.3)',
-                  borderRadius: '8px',
-                  padding: '4px 8px',
-                  color: '#2e7d32',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  textDecoration: 'none'
-                }}
+                className="text-xs text-violet-600 hover:text-violet-700 font-medium"
               >
-                ← Назад к категориям
+                ← Все категории
               </button>
-            </div>
-          )}
-          <div className="grid grid-6" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(50px, 1fr))',
-            gap: '8px'
-          }}>
-            {showPavilionFilter ? (
-              <>
-                <div 
-                  className="card"
-                  onClick={() => handlePavilionClick('all')}
-                  style={{
-                    textAlign: 'center',
-                    padding: '8px 4px',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s ease',
-                    background: selectedPavilion === 'all' ? '#4caf50' : 'white',
-                    color: selectedPavilion === 'all' ? 'white' : '#2e7d32'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                >
-                  <div style={{ 
-                    fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
-                    marginBottom: window.innerWidth <= 768 ? '2px' : '6px' 
-                  }}>
-                    🛒
-                  </div>
-                  <span style={{ 
-                    fontSize: window.innerWidth <= 768 ? '10px' : '12px', 
-                    fontWeight: '500' 
-                  }}>
-                    Все
-                  </span>
-                </div>
-                {pavilions.map(pavilion => (
-                  <div key={pavilion} style={{ position: 'relative' }}>
-                    <div 
-                      className="card"
-                      onClick={() => handlePavilionClick(pavilion)}
-                      style={{
-                        textAlign: 'center',
-                        padding: '8px 4px',
-                        cursor: 'pointer',
-                        transition: 'transform 0.2s ease',
-                        background: selectedPavilion === pavilion ? '#4caf50' : 'white',
-                        color: selectedPavilion === pavilion ? 'white' : '#2e7d32'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                    >
-                      <div style={{ 
-                        fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
-                        marginBottom: window.innerWidth <= 768 ? '2px' : '6px' 
-                      }}>
-                        🏢
-                      </div>
-                      <span style={{ 
-                        fontSize: window.innerWidth <= 768 ? '10px' : '12px', 
-                        fontWeight: '500' 
-                      }}>
-                        {pavilion}
-                      </span>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/pavilion/${pavilion}`);
-                      }}
-                      style={{
-                        position: 'absolute',
-                        top: '4px',
-                        right: '4px',
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        border: 'none',
-                        background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
-                        color: 'white',
-                        fontSize: '10px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      title="Открыть лавку"
-                    >
-                      🏪
-                    </button>
-                  </div>
-                ))}
-              </>
-            ) : (
-              categories.map(category => (
-                <div 
-                  key={category.id}
-                  className="card"
-                  onClick={() => handleCategoryClick(category.id)}
-                  style={{
-                    textAlign: 'center',
-                    padding: '8px 4px',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s ease',
-                    background: selectedCategory === category.id && !showPavilionFilter ? '#4caf50' : 'white',
-                    color: selectedCategory === category.id && !showPavilionFilter ? 'white' : '#2e7d32'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                >
-                  <div style={{ 
-                    fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
-                    marginBottom: window.innerWidth <= 768 ? '2px' : '6px' 
-                  }}>
-                    {category.icon}
-                  </div>
-                  <span style={{ 
-                    fontSize: window.innerWidth <= 768 ? '10px' : '12px', 
-                    fontWeight: '500' 
-                  }}>
-                    {category.name}
-                  </span>
-                </div>
-              ))
             )}
           </div>
+          
+          {showCategories && (
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+              {showPavilionFilter ? (
+                <>
+                  <button 
+                    onClick={() => handlePavilionClick('all')}
+                    className={`p-3 rounded-lg border transition-all text-center ${
+                      selectedPavilion === 'all' 
+                        ? 'bg-violet-100 border-violet-200 text-violet-700' 
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="text-lg mb-1">🛒</div>
+                    <div className="text-xs font-medium">Все</div>
+                  </button>
+                  {pavilions.map(pavilion => (
+                    <div key={pavilion} className="relative">
+                      <button 
+                        onClick={() => handlePavilionClick(pavilion)}
+                        className={`w-full p-3 rounded-lg border transition-all text-center ${
+                          selectedPavilion === pavilion 
+                            ? 'bg-violet-100 border-violet-200 text-violet-700' 
+                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        <div className="text-lg mb-1">🏢</div>
+                        <div className="text-xs font-medium">{pavilion}</div>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/pavilion/${pavilion}`);
+                        }}
+                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center hover:bg-violet-700 transition-colors"
+                        title="Открыть лавку"
+                      >
+                        →
+                      </button>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                categories.map(category => (
+                  <button 
+                    key={category.id}
+                    onClick={() => handleCategoryClick(category.id)}
+                    className={`p-3 rounded-lg border transition-all text-center ${
+                      selectedCategory === category.id && !showPavilionFilter
+                        ? 'bg-violet-100 border-violet-200 text-violet-700' 
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="text-lg mb-1">{category.icon}</div>
+                    <div className="text-xs font-medium">{category.name}</div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </div>
 
         {/* Products */}
         <div>
-
-          <div className="grid grid-4">
+          <h2 className="text-sm font-semibold text-slate-900 mb-3">
+            {showPavilionFilter 
+              ? `Товары ${selectedPavilion === 'all' ? 'всех павильонов' : `павильона ${selectedPavilion}`}` 
+              : `${selectedCategory === 'all' ? 'Все товары' : categories.find(c => c.id === selectedCategory)?.name}`} 
+            ({filteredProducts.length})
+          </h2>
+          <div className="grid grid-cols-3 gap-3">
             {filteredProducts.map(product => (
               <ProductCard 
                 key={product.id}
@@ -362,6 +226,13 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
               />
             ))}
           </div>
+          
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">📦</div>
+              <p className="text-slate-500">Товары не найдены</p>
+            </div>
+          )}
         </div>
         
         <ProductModal 

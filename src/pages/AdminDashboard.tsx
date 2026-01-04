@@ -70,7 +70,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
     ? orders 
     : orders.filter(order => order.status === filter);
 
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const totalRevenue = orders.reduce((sum, order) => {
+    console.log('Order:', order.id, 'Total:', order.total);
+    return sum + (order.total || 0);
+  }, 0);
+  
+  console.log('Total orders:', orders.length, 'Total revenue:', totalRevenue);
   const todayOrders = orders.filter(order => 
     new Date(order.createdAt).toDateString() === new Date().toDateString()
   ).length;
@@ -178,74 +183,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
           </div>
         </div>
 
-        {/* Кнопка миграции */}
-        <div style={{ marginBottom: '24px', display: 'flex', gap: '12px' }}>
+        {/* Кнопки управления скрыты */}
+        <div style={{ marginBottom: '24px', display: 'none' }}>
           <button 
             className="btn btn-primary"
             onClick={async () => {
-              if (!window.confirm('Начать миграцию данных из Supabase в Firebase?')) return;
-              
-              try {
-                const { supabaseApi } = await import('../utils/supabaseApi');
-                const { firebaseApi } = await import('../utils/firebaseApi');
-                
-                alert('Миграция началась. Проверьте консоль браузера для отслеживания прогресса.');
-                console.log('🚀 Начинаем миграцию данных...');
-                
-                // Пользователи
-                const users = await supabaseApi.getUsers();
-                console.log(`Найдено ${users.length} пользователей`);
-                for (const user of users) {
-                  try {
-                    await firebaseApi.createUser(user);
-                    console.log(`✅ Пользователь ${user.name} перенесен`);
-                  } catch (e) {
-                    console.log(`⚠️ Пользователь ${user.name} уже существует`);
-                  }
-                }
-                
-                // Товары
-                const products = await supabaseApi.getProducts();
-                console.log(`Найдено ${products.length} товаров`);
-                for (const product of products) {
-                  try {
-                    await firebaseApi.createProduct(product);
-                    console.log(`✅ Товар ${product.name} перенесен`);
-                  } catch (e) {
-                    console.log(`⚠️ Товар ${product.name} уже существует`);
-                  }
-                }
-                
-                // Заказы
-                const orders = await supabaseApi.getOrders();
-                console.log(`Найдено ${orders.length} заказов`);
-                for (const order of orders) {
-                  try {
-                    await firebaseApi.createOrder(order);
-                    console.log(`✅ Заказ ${order.id} перенесен`);
-                  } catch (e) {
-                    console.log(`⚠️ Заказ ${order.id} уже существует`);
-                  }
-                }
-                
-                alert('🎉 Миграция завершена! Обновите страницу.');
-                window.location.reload();
-              } catch (error) {
-                console.error('Ошибка миграции:', error);
-                alert('Ошибка миграции. Проверьте консоль.');
-              }
+              alert('Миграция отключена. Используется только Firebase.');
             }}
             style={{
-              background: 'linear-gradient(135deg, #ff6b35, #f7931e)',
-              color: 'white',
+              background: '#ccc',
+              color: '#666',
               border: 'none',
               padding: '12px 24px',
               borderRadius: '8px',
               fontSize: '16px',
-              fontWeight: '600'
+              fontWeight: '600',
+              cursor: 'not-allowed'
             }}
+            disabled
           >
-            🚀 Мигрировать данные из Supabase
+            🚫 Миграция отключена
           </button>
           
           <button 
@@ -1077,17 +1034,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                   name: formData.get('name') as string,
                   email: formData.get('email') as string,
                   phone: formData.get('phone') as string,
+                  password: formData.get('password') as string,
                   role: 'manager' as const
                 };
                 
                 try {
-                  const { supabaseApi } = await import('../utils/supabaseApi');
+                  const { firebaseApi } = await import('../utils/firebaseApi');
                   const managerId = `manager_${Date.now()}`;
                   const newManager = {
                     id: managerId,
                     ...managerData
                   };
-                  await supabaseApi.createUser(newManager);
+                  await firebaseApi.createUser(newManager);
                   setShowCreateManager(false);
                   alert('Менеджер успешно создан!');
                   window.location.reload();
@@ -1131,6 +1089,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                     className="input" 
                     required 
                     placeholder="+7 (999) 123-45-67"
+                  />
+                </div>
+                
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                    Пароль
+                  </label>
+                  <input 
+                    name="password" 
+                    type="password" 
+                    className="input" 
+                    required 
+                    placeholder="Введите пароль"
                   />
                 </div>
                 

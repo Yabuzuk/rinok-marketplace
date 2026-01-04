@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Package, Plus, BarChart3, Settings, Eye, Edit, Trash2, Upload, FileText, Shield, Phone, Mail } from 'lucide-react';
 import { Product, Order, User as UserType } from '../types';
 import { useNavigate } from 'react-router-dom';
-
 import { uploadImage } from '../utils/supabase';
+import { firebaseApi } from '../utils/firebaseApi';
+import EditProductModal from '../components/EditProductModal';
 
 interface SellerDashboardProps {
   user: UserType;
@@ -38,6 +39,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [uploading, setUploading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState<{ [key: string]: string }>({});
 
   // Слушатель для переключения вкладок
   React.useEffect(() => {
@@ -203,53 +205,30 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
-    setImagePreview(product.image);
   };
 
-  const handleUpdateProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingProduct) return;
-    
-    setUploading(true);
-    
+  const handleUpdateProduct = async (productId: string, updates: Partial<Product>) => {
     try {
-      const formData = new FormData(e.target as HTMLFormElement);
-      let imageUrl = formData.get('imageUrl') as string || editingProduct.image;
-      
-      if (selectedImage) {
-        console.log('Обновляем изображение через Supabase...');
-        const supabaseUrl = await uploadImage(selectedImage);
-        if (supabaseUrl) {
-          imageUrl = supabaseUrl;
-          console.log('Получена новая ссылка:', imageUrl);
-        } else {
-          alert('Ошибка загрузки изображения');
-          return;
-        }
-      }
-      
-      const updates = {
-        name: formData.get('name') as string,
-        price: Number(formData.get('price')),
-        image: imageUrl,
-        category: formData.get('category') as string,
-        description: formData.get('description') as string,
-        stock: Number(formData.get('stock')),
-        minOrderQuantity: Number(formData.get('minOrderQuantity')),
-        sellerId: editingProduct.sellerId,
-        pavilionNumber: editingProduct.pavilionNumber
-      };
-
-      console.log('Обновляем товар:', editingProduct.id, updates);
-      await onUpdateProduct?.(editingProduct.id, updates);
+      await onUpdateProduct?.(productId, updates);
       setEditingProduct(null);
-      setSelectedImage(null);
-      setImagePreview('');
     } catch (error) {
       console.error('Ошибка при обновлении товара:', error);
-      alert('Ошибка при обновлении товара');
+      setEditingProduct(null);
+    }
+  };
+
+  const handleOrderStatusUpdate = async (orderId: string, status: Order['status']) => {
+    setLoadingOrders(prev => ({ ...prev, [orderId]: status }));
+    try {
+      await onUpdateOrderStatus?.(orderId, status);
+    } catch (error) {
+      console.error('Ошибка обновления статуса заказа:', error);
     } finally {
-      setUploading(false);
+      setLoadingOrders(prev => {
+        const newState = { ...prev };
+        delete newState[orderId];
+        return newState;
+      });
     }
   };
 
@@ -509,154 +488,12 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 )}
 
                 {editingProduct && (
-                  <div className="card" style={{ marginBottom: '24px' }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
-                      Редактировать товар
-                    </h3>
-                    <form onSubmit={handleUpdateProduct}>
-                      <div className="grid grid-2" style={{ marginBottom: '16px' }}>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                            Название
-                          </label>
-                          <input name="name" className="input" defaultValue={editingProduct.name} required />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                            Цена (₽)
-                          </label>
-                          <input name="price" type="number" className="input" defaultValue={editingProduct.price} required />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-2" style={{ marginBottom: '16px' }}>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                            Категория
-                          </label>
-                          <select name="category" className="input" defaultValue={editingProduct.category} required>
-                            <option value="fruits">Фрукты</option>
-                            <option value="vegetables">Овощи</option>
-                            <option value="greens">Зелень</option>
-                            <option value="berries">Ягоды</option>
-                            <option value="nuts">Орехи</option>
-                            <option value="spices">Специи</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                            Количество
-                          </label>
-                          <input name="stock" type="number" className="input" defaultValue={editingProduct.stock} required />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-2" style={{ marginBottom: '16px' }}>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                            Мин. количество для заказа
-                          </label>
-                          <input name="minOrderQuantity" type="number" min="1" className="input" defaultValue={editingProduct.minOrderQuantity} required />
-                        </div>
-                        <div></div>
-                      </div>
-
-                      <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                          Изображение товара
-                        </label>
-                        
-                        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ marginBottom: '12px' }}>
-                              <label style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                padding: '12px 16px',
-                                background: '#f9f5f0',
-                                border: '2px dashed #d4c4b0',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                color: '#8b4513'
-                              }}>
-                                <Upload size={16} />
-                                Загрузить новый файл
-                                <input 
-                                  type="file" 
-                                  accept="image/*"
-                                  onChange={handleImageSelect}
-                                  style={{ display: 'none' }}
-                                />
-                              </label>
-                            </div>
-                            
-                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>или</div>
-                            
-                            <input 
-                              name="imageUrl" 
-                              type="url" 
-                              className="input" 
-                              placeholder="https://example.com/image.jpg"
-                            />
-                          </div>
-                          
-                          {imagePreview && (
-                            <div style={{
-                              width: '100px',
-                              height: '100px',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              border: '1px solid #d4c4b0'
-                            }}>
-                              <img 
-                                src={imagePreview} 
-                                alt="Предпросмотр"
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover'
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                          Описание
-                        </label>
-                        <textarea 
-                          name="description" 
-                          className="input" 
-                          rows={3}
-                          style={{ resize: 'vertical' }}
-                          defaultValue={editingProduct.description}
-                          required 
-                        />
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '12px' }}>
-                        <button type="submit" className="btn btn-primary" disabled={uploading}>
-                          {uploading ? 'Обновление...' : 'Обновить товар'}
-                        </button>
-                        <button 
-                          type="button" 
-                          className="btn btn-secondary"
-                          onClick={() => {
-                            setEditingProduct(null);
-                            setSelectedImage(null);
-                            setImagePreview('');
-                          }}
-                        >
-                          Отмена
-                        </button>
-                      </div>
-                    </form>
-                  </div>
+                  <EditProductModal
+                    product={editingProduct}
+                    isOpen={!!editingProduct}
+                    onClose={() => setEditingProduct(null)}
+                    onUpdate={handleUpdateProduct}
+                  />
                 )}
 
                 <div className="grid grid-3">
@@ -737,14 +574,17 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                             fontWeight: '500',
                             background: order.status === 'pending' ? '#fff3cd' : 
                                        order.status === 'confirmed' ? '#d1ecf1' : 
-                                       order.status === 'preparing' ? '#d4edda' : '#f8d7da',
+                                       order.status === 'ready' ? '#d4edda' :
+                                       order.status === 'delivering' ? '#e1f5fe' : '#f8d7da',
                             color: order.status === 'pending' ? '#856404' : 
                                   order.status === 'confirmed' ? '#0c5460' : 
-                                  order.status === 'preparing' ? '#155724' : '#721c24'
+                                  order.status === 'ready' ? '#155724' :
+                                  order.status === 'delivering' ? '#01579b' : '#721c24'
                           }}>
                             {order.status === 'pending' ? 'Ожидает подтверждения' :
                              order.status === 'confirmed' ? 'Подтвержден' :
-                             order.status === 'preparing' ? 'Готовится' : order.status}
+                             order.status === 'ready' ? 'Собран' :
+                             order.status === 'delivering' ? 'В доставке' : order.status}
                           </div>
                         </div>
 
@@ -771,17 +611,42 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                             <div style={{ display: 'flex', gap: '8px' }}>
                               <button 
                                 className="btn btn-primary"
-                                style={{ fontSize: '14px', padding: '8px 16px' }}
-                                onClick={() => onUpdateOrderStatus?.(order.id, 'confirmed')}
+                                style={{ 
+                                  fontSize: '14px', 
+                                  padding: '8px 16px',
+                                  opacity: loadingOrders[order.id] ? 0.7 : 1
+                                }}
+                                onClick={() => handleOrderStatusUpdate(order.id, 'confirmed')}
+                                disabled={!!loadingOrders[order.id]}
                               >
-                                Подтвердить
+                                {loadingOrders[order.id] === 'confirmed' ? (
+                                  <>
+                                    <span style={{ marginRight: '8px' }}>⏳</span>
+                                    Подтверждаем...
+                                  </>
+                                ) : (
+                                  'Подтвердить'
+                                )}
                               </button>
                               <button 
                                 className="btn btn-secondary"
-                                style={{ fontSize: '14px', padding: '8px 16px', color: '#f44336' }}
-                                onClick={() => onUpdateOrderStatus?.(order.id, 'cancelled')}
+                                style={{ 
+                                  fontSize: '14px', 
+                                  padding: '8px 16px', 
+                                  color: '#f44336',
+                                  opacity: loadingOrders[order.id] ? 0.7 : 1
+                                }}
+                                onClick={() => handleOrderStatusUpdate(order.id, 'cancelled')}
+                                disabled={!!loadingOrders[order.id]}
                               >
-                                Отменить
+                                {loadingOrders[order.id] === 'cancelled' ? (
+                                  <>
+                                    <span style={{ marginRight: '8px' }}>⏳</span>
+                                    Отменяем...
+                                  </>
+                                ) : (
+                                  'Отменить'
+                                )}
                               </button>
                             </div>
                           )}
@@ -789,10 +654,22 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                           {order.status === 'confirmed' && (
                             <button 
                               className="btn btn-primary"
-                              style={{ fontSize: '14px', padding: '8px 16px' }}
-                              onClick={() => onUpdateOrderStatus?.(order.id, 'preparing')}
+                              style={{ 
+                                fontSize: '14px', 
+                                padding: '8px 16px',
+                                opacity: loadingOrders[order.id] ? 0.7 : 1
+                              }}
+                              onClick={() => handleOrderStatusUpdate(order.id, 'ready')}
+                              disabled={!!loadingOrders[order.id]}
                             >
-                              Отправить в доставку
+                              {loadingOrders[order.id] === 'ready' ? (
+                                <>
+                                  <span style={{ marginRight: '8px' }}>⏳</span>
+                                  Собираем...
+                                </>
+                              ) : (
+                                'Заказ собран'
+                              )}
                             </button>
                           )}
                         </div>

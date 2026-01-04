@@ -10,55 +10,25 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProductClick }) => {
   return (
-    <div 
-      style={{ 
-        cursor: 'pointer',
-        transition: 'transform 0.2s ease'
-      }}
-      onClick={() => onProductClick(product)}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(1.02)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'scale(1)';
-      }}
-    >
-      <div style={{ 
-        width: '100%',
-        aspectRatio: '1',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        marginBottom: '4px',
-        background: '#f8f8f8',
-        position: 'relative',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-      }}>
+    <div className="w-full">
+      <div 
+        className="relative w-full aspect-square rounded-lg overflow-hidden cursor-pointer"
+        onClick={() => onProductClick(product)}
+      >
         {product.image && (product.image.startsWith('http') || product.image.startsWith('data:')) ? (
           <img 
             src={product.image} 
             alt={product.name}
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover' 
-            }}
+            className="w-full h-full object-cover"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
               if (e.currentTarget.parentElement) {
-                e.currentTarget.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 32px; background: #f0f0f0;">📦</div>';
+                e.currentTarget.parentElement.innerHTML = '<div class="flex items-center justify-center w-full h-full text-3xl">📦</div>';
               }
             }}
           />
         ) : (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            height: '100%',
-            fontSize: '32px',
-            background: '#f0f0f0'
-          }}>
+          <div className="flex items-center justify-center w-full h-full text-3xl">
             {product.image || '📦'}
           </div>
         )}
@@ -67,50 +37,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProdu
             e.stopPropagation();
             onAddToCart(product);
           }}
-          style={{
-            position: 'absolute',
-            bottom: '6px',
-            right: '6px',
-            width: window.innerWidth > 768 ? '45px' : '32px',
-            height: window.innerWidth > 768 ? '45px' : '32px',
-            borderRadius: '50%',
-            border: 'none',
-            background: 'rgba(255, 255, 255, 0.9)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'white';
-            e.currentTarget.style.transform = 'scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="absolute bottom-2 right-2 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/90 hover:bg-white hover:scale-110 transition-all flex items-center justify-center shadow-sm"
         >
-          <Plus size={window.innerWidth > 768 ? 25 : 18} color="#000000" strokeWidth={3} />
+          <Plus size={16} className="text-slate-700" strokeWidth={2.5} />
         </button>
       </div>
 
-      <div style={{ textAlign: 'left' }}>
-        <div style={{ 
-          fontSize: window.innerWidth > 768 ? '20px' : '14px', 
-          fontWeight: '500',
-          color: '#e53e3e',
-          margin: '0 0 2px 0'
-        }}>
+      <div className="mt-2">
+        <div className="text-sm font-semibold text-violet-600 mb-1">
           {product.price} ₽
         </div>
-        <h3 style={{ 
-          fontSize: window.innerWidth > 768 ? '17px' : '12px', 
-          fontWeight: '300',
-          lineHeight: '1.2',
-          margin: 0,
-          color: '#333'
-        }}>
+        <h3 className="text-sm font-medium text-slate-900 line-clamp-2">
           {product.name}
         </h3>
       </div>

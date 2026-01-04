@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Точная очистка до 43 товаров</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 5px; margin: 3px 0; border-radius: 3px; font-size: 12px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button { padding: 15px 30px; margin: 10px 0; font-size: 18px; background: #ff6b35; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        #progress { width: 100%; height: 20px; background: #f0f0f0; border-radius: 10px; margin: 10px 0; }
+        #progressBar { height: 100%; background: #4caf50; border-radius: 10px; width: 0%; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Точная очистка до 43 товаров</h1>
+    <button onclick="cleanTo43Products()">🎯 ОСТАВИТЬ ТОЛЬКО 43 ТОВАРА</button>
+    <div id="progress"><div id="progressBar"></div></div>
+    <div id="log"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            doc, 
+            deleteDoc
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyADaZYOM7nOITKBlfn0jhtwtTBI7RbB_m8",
+            authDomain: "kalaktika-app.firebaseapp.com",
+            projectId: "kalaktika-app",
+            storageBucket: "kalaktika-app.firebasestorage.app",
+            messagingSenderId: "735114029908",
+            appId: "1:735114029908:web:8155afa0b285ce8c06f6c1",
+            measurementId: "G-T7JLSH3WQS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const p = document.createElement('p');
+            p.className = `log ${type}`;
+            p.textContent = message;
+            logDiv.appendChild(p);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+
+        window.cleanTo43Products = async function() {
+            log('🎯 Очищаем до 43 уникальных товаров...');
+            updateProgress(10);
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, 'products'));
+                const allProducts = [];
+                
+                querySnapshot.forEach((doc) => {
+                    allProducts.push({
+                        id: doc.id,
+                        name: doc.data().name,
+                        ...doc.data()
+                    });
+                });
+                
+                log(`📦 Найдено ${allProducts.length} товаров`);
+                updateProgress(30);
+                
+                // Группируем по точному названию (учитываем регистр и пробелы)
+                const groups = {};
+                allProducts.forEach(product => {
+                    const key = product.name.trim();
+                    if (!groups[key]) {
+                        groups[key] = [];
+                    }
+                    groups[key].push(product);
+                });
+                
+                const uniqueNames = Object.keys(groups);
+                log(`🎯 Уникальных названий: ${uniqueNames.length}`);
+                
+                // Определяем что удалять
+                const toKeep = [];
+                const toDelete = [];
+                
+                Object.values(groups).forEach(group => {
+                    // Оставляем первый товар из группы
+                    toKeep.push(group[0]);
+                    // Остальные помечаем на удаление
+                    for (let i = 1; i < group.length; i++) {
+                        toDelete.push(group[i]);
+                    }
+                });
+                
+                log(`✅ Оставляем: ${toKeep.length} товаров`);
+                log(`🗑️ Удаляем: ${toDelete.length} дубликатов`);
+                updateProgress(50);
+                
+                if (toDelete.length === 0) {
+                    log('🎉 Дубликатов не найдено!', 'success');
+                    updateProgress(100);
+                    return;
+                }
+                
+                // Удаляем дубликаты
+                let deleted = 0;
+                for (const product of toDelete) {
+                    try {
+                        await deleteDoc(doc(db, 'products', product.id));
+                        deleted++;
+                        log(`🗑️ Удален: "${product.name}" (${deleted}/${toDelete.length})`);
+                        
+                        const progress = 50 + (deleted / toDelete.length) * 50;
+                        updateProgress(progress);
+                    } catch (error) {
+                        log(`❌ Ошибка удаления "${product.name}": ${error.message}`, 'error');
+                    }
+                }
+                
+                updateProgress(100);
+                log(`🎉 ГОТОВО!`, 'success');
+                log(`📊 Результат: ${toKeep.length} уникальных товаров`, 'success');
+                log(`🗑️ Удалено ${deleted} дубликатов`, 'success');
+                
+            } catch (error) {
+                log(`❌ Ошибка: ${error.message}`, 'error');
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Orders</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Debug Orders Status</h1>
+    <div id="orders"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+            authDomain: "rinok-marketplace.firebaseapp.com",
+            projectId: "rinok-marketplace",
+            storageBucket: "rinok-marketplace.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdefghijklmnop"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        async function debugOrders() {
+            try {
+                const ordersSnapshot = await db.collection('orders').get();
+                const orders = [];
+                
+                ordersSnapshot.forEach(doc => {
+                    orders.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                console.log('All orders:', orders);
+                
+                const ordersDiv = document.getElementById('orders');
+                ordersDiv.innerHTML = '<h2>Orders Status:</h2>';
+                
+                orders.forEach(order => {
+                    ordersDiv.innerHTML += `
+                        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                            <strong>Order #${order.id.slice(-8)}</strong><br>
+                            Status: <span style="color: ${getStatusColor(order.status)}">${order.status}</span><br>
+                            Pavilion: ${order.pavilionNumber || 'N/A'}<br>
+                            Created: ${new Date(order.createdAt).toLocaleString()}<br>
+                            Items: ${order.items ? order.items.length : 0}
+                        </div>
+                    `;
+                });
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('orders').innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'pending': return 'orange';
+                case 'confirmed': return 'blue';
+                case 'ready': return 'green';
+                case 'delivering': return 'purple';
+                case 'delivered': return 'darkgreen';
+                case 'cancelled': return 'red';
+                default: return 'black';
+            }
+        }
+
+        debugOrders();
+    </script>
+</body>
+</html>

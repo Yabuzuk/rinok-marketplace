@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Исправление пользователей Firebase</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button { padding: 10px 20px; margin: 10px 0; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>👤 Исправление пользователей Firebase</h1>
+    <button onclick="fixUsers()">Запустить исправление</button>
+    <div id="log"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            doc, 
+            updateDoc, 
+            addDoc,
+            deleteDoc
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyADaZYOM7nOITKBlfn0jhtwtTBI7RbB_m8",
+            authDomain: "kalaktika-app.firebaseapp.com",
+            projectId: "kalaktika-app",
+            storageBucket: "kalaktika-app.firebasestorage.app",
+            messagingSenderId: "735114029908",
+            appId: "1:735114029908:web:8155afa0b285ce8c06f6c1",
+            measurementId: "G-T7JLSH3WQS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const p = document.createElement('p');
+            p.className = `log ${type}`;
+            p.textContent = message;
+            logDiv.appendChild(p);
+            console.log(message);
+        }
+
+        window.fixUsers = async function() {
+            log('👤 Начинаем исправление пользователей...');
+            
+            try {
+                // Получаем всех пользователей
+                log('📋 Загружаем пользователей из Firebase...');
+                const querySnapshot = await getDocs(collection(db, 'users'));
+                const users = [];
+                
+                querySnapshot.forEach((doc) => {
+                    users.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                log(`Найдено ${users.length} пользователей`, 'success');
+                
+                // Проверяем каждого пользователя
+                const problematicUsers = [];
+                const validUsers = [];
+                
+                for (const user of users) {
+                    try {
+                        // Пытаемся обновить пользователя
+                        const docRef = doc(db, 'users', user.id);
+                        await updateDoc(docRef, { 
+                            email: user.email 
+                        });
+                        validUsers.push(user);
+                        log(`✅ Пользователь "${user.email}" (ID: ${user.id}) - валидный`, 'success');
+                    } catch (error) {
+                        if (error.code === 'not-found') {
+                            problematicUsers.push(user);
+                            log(`❌ Пользователь "${user.email}" (ID: ${user.id}) - НЕ существует`, 'error');
+                        } else {
+                            log(`⚠️ Ошибка проверки пользователя "${user.email}": ${error.message}`, 'warning');
+                        }
+                    }
+                }
+                
+                log(`📊 Валидные пользователи: ${validUsers.length}`, 'success');
+                log(`📊 Проблемные пользователи: ${problematicUsers.length}`, 'error');
+                
+                // Восстанавливаем проблемных пользователей
+                if (problematicUsers.length > 0) {
+                    log('🔄 Восстанавливаем проблемных пользователей...');
+                    
+                    for (const user of problematicUsers) {
+                        try {
+                            // Создаем пользователя заново
+                            const { id, ...userData } = user;
+                            const docRef = await addDoc(collection(db, 'users'), userData);
+                            log(`✅ Пользователь "${user.email}" восстановлен с новым ID: ${docRef.id}`, 'success');
+                        } catch (error) {
+                            log(`❌ Ошибка восстановления пользователя "${user.email}": ${error.message}`, 'error');
+                        }
+                    }
+                }
+                
+                log('🎉 Исправление завершено!', 'success');
+                
+            } catch (error) {
+                log(`❌ Критическая ошибка: ${error.message}`, 'error');
+            }
+        };
+    </script>
+</body>
+</html>

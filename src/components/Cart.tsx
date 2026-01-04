@@ -27,6 +27,7 @@ const Cart: React.FC<CartProps> = ({
   const [addressSuggestions, setAddressSuggestions] = React.useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [addressInput, setAddressInput] = React.useState('');
+  const [isCreatingOrder, setIsCreatingOrder] = React.useState(false);
 
   
   const getAddressSuggestions = React.useCallback(async (query: string) => {
@@ -138,6 +139,8 @@ const Cart: React.FC<CartProps> = ({
   const totalWithDelivery = total;
 
   const handleCheckout = async () => {
+    if (isCreatingOrder) return; // Предотвращаем повторные клики
+    
     if (!user || user.role !== 'customer') {
       alert('Войдите как покупатель для оформления заказа');
       return;
@@ -162,44 +165,53 @@ const Cart: React.FC<CartProps> = ({
       return;
     }
 
-    const itemsByPavilion = items.reduce((acc, item) => {
-      const pavilion = item.product.pavilionNumber;
-      if (!acc[pavilion]) {
-        acc[pavilion] = [];
-      }
-      acc[pavilion].push(item);
-      return acc;
-    }, {} as Record<string, typeof items>);
+    setIsCreatingOrder(true);
+    
+    try {
+      const itemsByPavilion = items.reduce((acc, item) => {
+        const pavilion = item.product.pavilionNumber;
+        if (!acc[pavilion]) {
+          acc[pavilion] = [];
+        }
+        acc[pavilion].push(item);
+        return acc;
+      }, {} as Record<string, typeof items>);
 
-    const orderPromises = Object.entries(itemsByPavilion).map(async ([pavilionNumber, pavilionItems]) => {
-      const pavilionTotal = pavilionItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-      
-      const pavilionDeliveryFee = 0; // Доставку добавляет менеджер
-      
-      const order = {
-        customerId: user.id,
-        items: [
-          ...pavilionItems.map(item => ({
-            productId: item.product.id,
-            productName: item.product.name,
-            quantity: item.quantity,
-            price: item.product.price
-          })),
-          // Доставку добавляет менеджер
-        ],
-        total: pavilionTotal + pavilionDeliveryFee,
-        status: 'pending' as const,
-        createdAt: new Date(),
-        deliveryAddress: selectedAddress || 'г. Москва, ул. Примерная, д. 123, кв. 45',
-        pavilionNumber
-      };
+      const orderPromises = Object.entries(itemsByPavilion).map(async ([pavilionNumber, pavilionItems]) => {
+        const pavilionTotal = pavilionItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+        
+        const pavilionDeliveryFee = 0; // Доставку добавляет менеджер
+        
+        const order = {
+          customerId: user.id,
+          items: [
+            ...pavilionItems.map(item => ({
+              productId: item.product.id,
+              productName: item.product.name,
+              quantity: item.quantity,
+              price: item.product.price
+            })),
+            // Доставку добавляет менеджер
+          ],
+          total: pavilionTotal + pavilionDeliveryFee,
+          status: 'pending' as const,
+          createdAt: new Date(),
+          deliveryAddress: selectedAddress || 'г. Москва, ул. Примерная, д. 123, кв. 45',
+          pavilionNumber
+        };
 
-      return await onCreateOrder(order);
-    });
+        return await onCreateOrder(order);
+      });
 
-    await Promise.all(orderPromises);
-    alert('Заказы успешно созданы!');
-    onClose();
+      await Promise.all(orderPromises);
+      alert('Заказы успешно созданы!');
+      onClose();
+    } catch (error) {
+      console.error('Ошибка создания заказа:', error);
+      alert('Ошибка при создании заказа. Попробуйте еще раз.');
+    } finally {
+      setIsCreatingOrder(false);
+    }
   };
 
   return (
@@ -472,9 +484,21 @@ const Cart: React.FC<CartProps> = ({
           <button 
             className="btn btn-primary"
             onClick={handleCheckout}
-            style={{ width: '100%' }}
+            disabled={isCreatingOrder}
+            style={{ 
+              width: '100%',
+              opacity: isCreatingOrder ? 0.7 : 1,
+              cursor: isCreatingOrder ? 'not-allowed' : 'pointer'
+            }}
           >
-            Оформить заказ
+            {isCreatingOrder ? (
+              <>
+                <span style={{ marginRight: '8px' }}>⏳</span>
+                Оформляем заказ...
+              </>
+            ) : (
+              'Оформить заказ'
+            )}
           </button>
         </div>
       )}

@@ -23,10 +23,11 @@ import LegalPage from './pages/LegalPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 
-import { sendNotificationToUser } from './utils/notifications';
+import { initOneSignal, subscribeUser, sendNotification } from './services/onesignal';
+import { sendNotification as sendNotificationUtil } from './utils/notifications';
 
 import { firebaseApi } from './utils/firebaseApi';
-import './styles/globals.css';
+import './styles/tailwind.css';
 
 
 
@@ -37,11 +38,7 @@ const AppContent: React.FC = () => {
     return saved ? JSON.parse(saved) : null;
   });
   
-  const { subscribeUser } = useOneSignal({ 
-    appId: '16b0499f-1314-410b-a9c3-8be5c4c5b0c4',
-    userRole: currentUser?.role,
-    userId: currentUser?.id
-  });
+
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('cart');
@@ -58,58 +55,58 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     loadData();
     
+    // Инициализация OneSignal
+    initOneSignal();
+    
     // Периодическая перезагрузка данных каждые 10 секунд для мобильных
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Периодическая перезагрузка данных каждые 30 секунд
     const interval = setInterval(() => {
       if (skipNextReload) {
         setSkipNextReload(false);
         return;
       }
       loadData();
-    }, isMobile ? 10000 : 5000);
+    }, 30000); // 30 секунд для экономии квоты
     
     return () => clearInterval(interval);
   }, []);
 
-  // Не перезагружаем данные при смене пользователя
-  // useEffect(() => {
-  //   if (currentUser && !loading) {
-  //     console.log('User changed, reloading data for:', currentUser.name);
-  //     loadData();
-  //   }
-  // }, [currentUser?.id]);
+  // Подписка пользователя на уведомления при входе
+  useEffect(() => {
+    if (currentUser?.id && currentUser?.role) {
+      // Автоматически запрашиваем разрешение на уведомления
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+      
+      // Подписываем пользователя на OneSignal
+      if (window.subscribeUserToNotifications) {
+        window.subscribeUserToNotifications(currentUser.id, currentUser.role);
+      }
+      
+      // Старая подписка (для совместимости)
+      subscribeUser(currentUser.id);
+    }
+  }, [currentUser]);
 
 
 
   const loadData = async () => {
     try {
-      console.log('Loading data from Firebase...');
       const [productsData, ordersData, usersData] = await Promise.all([
         firebaseApi.getProducts(),
         firebaseApi.getOrders(),
         firebaseApi.getUsers()
       ]);
       
-      console.log('Raw data received:', {
-        products: productsData?.length || 0,
-        orders: ordersData?.length || 0,
-        users: usersData?.length || 0
-      });
-      
       setProducts(productsData || []);
       setOrders(ordersData || []);
       setUsers(usersData || []);
       
       setDeliveries([]);
-      
-      console.log('Data loaded successfully:', productsData?.length || 0, 'products,', usersData?.length || 0, 'users,', ordersData?.length || 0, 'orders');
     } catch (error) {
       console.error('Error loading data from server:', error);
-      console.error('Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        code: (error as any)?.code,
-        details: (error as any)?.details
-      });
       setProducts([]);
       setOrders([]);
       setUsers([]);
@@ -262,15 +259,23 @@ const AppContent: React.FC = () => {
 
   const handleUpdateProduct = async (productId: string, updates: Partial<Product>) => {
     try {
-      const updatedProduct = await firebaseApi.updateProduct(productId, updates);
+      await firebaseApi.updateProduct(productId, updates);
       setProducts(prev => prev.map(p => 
         p.id === productId ? { ...p, ...updates, id: productId } : p
       ));
-      setSkipNextReload(true); // Пропускаем следующую автоперезагрузку
-      console.log('Product updated on server:', productId, 'Response:', updatedProduct);
-    } catch (error) {
+      setSkipNextReload(true);
+      console.log('Product updated on server:', productId, 'Response:', updates);
+    } catch (error: any) {
       console.error('Error updating product:', error);
-      alert('Ошибка обновления товара');
+      if (error.message && error.message.includes('не найден')) {
+        alert('Товар не найден в базе данных. Возможно, он был удален. Обновляем список товаров...');
+        // Удаляем товар из локального состояния
+        setProducts(prev => prev.filter(p => p.id !== productId));
+        // Перезагружаем данные для синхронизации
+        loadData();
+      } else {
+        alert('Ошибка обновления товара');
+      }
     }
   };
 
@@ -299,16 +304,22 @@ const AppContent: React.FC = () => {
 
   const handleUpdateUser = async (userId: string, updates: Partial<User>) => {
     try {
-      // Проверяем уникальность номера павильона
+      // Проверяем уникальность номера павильона только если он изменился
       if (updates.pavilionNumber) {
-        const existingPavilion = users.find(u => 
-          u.pavilionNumber === updates.pavilionNumber && 
-          u.role === 'seller' && 
-          u.id !== userId
-        );
-        if (existingPavilion) {
-          alert(`Павильон ${updates.pavilionNumber} уже занят другим продавцом.`);
-          return;
+        const currentUser = users.find(u => u.id === userId);
+        const currentPavilion = currentUser?.pavilionNumber;
+        
+        // Проверяем только если номер павильона действительно изменился
+        if (updates.pavilionNumber !== currentPavilion) {
+          const existingPavilion = users.find(u => 
+            u.pavilionNumber === updates.pavilionNumber && 
+            u.role === 'seller' && 
+            u.id !== userId
+          );
+          if (existingPavilion) {
+            alert(`Павильон ${updates.pavilionNumber} уже занят другим продавцом.`);
+            return;
+          }
         }
       }
       
@@ -323,9 +334,19 @@ const AppContent: React.FC = () => {
       
       loadData();
       console.log('User updated:', userId, updates);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating user:', error);
-      alert('Ошибка обновления пользователя');
+      if (error.message && error.message.includes('не найден')) {
+        alert('Пользователь не найден в базе данных. Возможно, он был удален. Обновляем данные...');
+        // Перезагружаем данные для синхронизации
+        loadData();
+        // Если это текущий пользователь, выходим из системы
+        if (currentUser && currentUser.id === userId) {
+          handleLogout();
+        }
+      } else {
+        alert('Ошибка обновления пользователя');
+      }
     }
   };
 
@@ -335,9 +356,8 @@ const AppContent: React.FC = () => {
     try {
       await firebaseApi.updateOrder(orderId, { status });
       
-      // Отправляем push-уведомление покупателю
       const order = orders.find(o => o.id === orderId);
-      if (order && order.customerId) {
+      if (order) {
         const statusMessages = {
           confirmed: 'Ваш заказ подтвержден продавцом',
           preparing: 'Ваш заказ готовится',
@@ -347,12 +367,28 @@ const AppContent: React.FC = () => {
         };
         
         const message = statusMessages[status as keyof typeof statusMessages] || 'Статус заказа изменен';
+        const recipients = [];
         
-        // Отправляем push-уведомление покупателю через OneSignal SDK
-        sendNotificationToUser(order.customerId, 'ОптБазар - Статус заказа', message);
+        // Покупатель всегда получает уведомления
+        if (order.customerId) {
+          recipients.push(order.customerId);
+        }
+        
+        // Менеджер получает уведомления о всех изменениях статуса
+        const managers = users.filter(u => u.role === 'manager');
+        managers.forEach(manager => recipients.push(manager.id));
+        
+        // Отправляем уведомления
+        if (recipients.length > 0) {
+          try {
+            await sendNotificationUtil(recipients, 'ОптБазар - Статус заказа', message);
+            console.log('✅ Push-уведомления отправлены:', recipients.length, 'получателей');
+          } catch (notificationError) {
+            console.error('❌ Ошибка отправки уведомлений:', notificationError);
+          }
+        }
       }
       
-      // Перезагружаем все данные
       loadData();
     } catch (error) {
       console.error('Error updating order status:', error);
@@ -395,18 +431,19 @@ const AppContent: React.FC = () => {
       
       // Отправляем push-уведомление продавцу
       if (orderData.pavilionNumber) {
-        // Находим продавца по номеру павильона
         const seller = users.find(u => u.role === 'seller' && u.pavilionNumber === orderData.pavilionNumber);
         
         if (seller) {
-          // Отправляем push-уведомление продавцу через OneSignal SDK
-          sendNotificationToUser(seller.id, 'ОптБазар - Новый заказ!', `Поступил новый заказ на сумму ${orderData.total}₽`);
+          try {
+            await sendNotificationUtil([seller.id], 'ОптБазар - Новый заказ!', `Поступил новый заказ на сумму ${orderData.total}₽`);
+            console.log('✅ Push-уведомление отправлено продавцу');
+          } catch (notificationError) {
+            console.error('❌ Ошибка отправки уведомления продавцу:', notificationError);
+          }
         }
       }
       
-      // Перезагружаем все данные немедленно
       loadData();
-      
       setCart([]);
       localStorage.removeItem('cart');
       return order;
@@ -471,7 +508,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="App" style={{ background: '#F6F9FC', minHeight: '100vh' }}>
+    <div className="App bg-slate-50 min-h-screen antialiased">
 
         <Header 
           user={currentUser}
@@ -495,7 +532,7 @@ const AppContent: React.FC = () => {
           onLogin={handleLogin}
         />
 
-        <main style={{ paddingBottom: '80px' }}>
+        <main className="pb-20">
           {loading ? (
             <div style={{
               display: 'flex',
@@ -765,8 +802,6 @@ const AppContent: React.FC = () => {
         />
 
         <PWAInstallPrompt />
-        <InstallPWA />
-        <NotificationButton />
         
         <BottomNavigation
           user={currentUser}
@@ -799,6 +834,11 @@ const AppContent: React.FC = () => {
           pavilions={Array.from(new Set(products.filter(p => p.pavilionNumber).map(p => p.pavilionNumber))).sort()}
           onAuthClick={() => setShowAuthModal(true)}
           onLogout={handleLogout}
+          products={products}
+          onProductSelect={(product) => {
+            handleAddToCart(product, 1);
+            setIsCartOpen(true);
+          }}
         />
     </div>
   );

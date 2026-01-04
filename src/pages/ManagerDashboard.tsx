@@ -40,8 +40,10 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [deliveryPrice, setDeliveryPrice] = useState<number>(0);
 
-  const confirmedOrders = orders.filter(order => order.status === 'confirmed');
-  const inProgressOrders = orders.filter(order => order.status === 'manager_confirmed');
+  const confirmedOrders = orders.filter(order => 
+    order.status === 'ready'
+  );
+  const inProgressOrders = orders.filter(order => order.status === 'delivering');
   const archivedOrders = orders.filter(order => order.status === 'delivered');
 
   const getStatusText = (status: Order['status']) => {
@@ -64,14 +66,14 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
 
     try {
       await onUpdateOrder?.(order.id, {
-        status: 'manager_confirmed',
+        status: 'delivering',
         deliveryPrice: deliveryPrice,
         managerId: user.id
       });
       
       setSelectedOrder(null);
       setDeliveryPrice(0);
-      alert('Заказ подтвержден с указанием стоимости доставки');
+      alert('Заказ отправлен в доставку');
     } catch (error) {
       console.error('Error confirming order:', error);
       alert('Ошибка подтверждения заказа');
@@ -153,13 +155,13 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
             {activeTab === 'orders' && (
               <div>
                 <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
-                  Новые заказы ({confirmedOrders.length})
+                  Собранные заказы ({confirmedOrders.length})
                 </h2>
 
                 {confirmedOrders.length === 0 ? (
                   <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
                     <Package size={48} style={{ margin: '0 auto 16px', opacity: 0.5, color: '#666' }} />
-                    <p style={{ color: '#666' }}>Нет заказов для подтверждения</p>
+                    <p style={{ color: '#666' }}>Нет собранных заказов</p>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -183,10 +185,14 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                             borderRadius: '12px',
                             fontSize: '12px',
                             fontWeight: '500',
-                            background: '#d1ecf1',
-                            color: '#0c5460'
+                            background: order.status === 'confirmed' ? '#d1ecf1' : 
+                                       order.status === 'ready' ? '#e8f5e8' : '#d1ecf1',
+                            color: order.status === 'confirmed' ? '#0c5460' : 
+                                  order.status === 'ready' ? '#2e7d32' : '#0c5460'
                           }}>
-                            {getStatusText(order.status)}
+                            {order.status === 'confirmed' ? 'Подтвержден продавцом' :
+                             order.status === 'ready' ? 'Собран продавцом' : 
+                             getStatusText(order.status)}
                           </div>
                         </div>
 
@@ -211,10 +217,13 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                           
                           <button 
                             className="btn btn-primary"
-                            style={{ fontSize: '14px', padding: '8px 16px' }}
                             onClick={() => setSelectedOrder(order)}
+                            style={{ 
+                              fontSize: '14px', 
+                              padding: '8px 16px'
+                            }}
                           >
-                            Подтвердить с доставкой
+                            Отправить в доставку
                           </button>
                         </div>
                       </div>
@@ -493,7 +502,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
         }}>
           <div className="card" style={{ maxWidth: '500px', width: '90%' }}>
             <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px' }}>
-              Подтверждение заказа #{selectedOrder.id.slice(-6)}
+              Отправка заказа #{selectedOrder.id.slice(-6)} в доставку
             </h3>
             
             <div style={{ marginBottom: '16px' }}>
@@ -524,7 +533,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                 onClick={() => handleConfirmOrder(selectedOrder)}
                 disabled={deliveryPrice <= 0}
               >
-                Подтвердить заказ
+                Отправить в доставку
               </button>
               <button 
                 className="btn btn-secondary"

@@ -1,78 +1,118 @@
-import React from 'react';
-import { Bell } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, BellRing } from 'lucide-react';
+import { sendNotification } from '../utils/notifications';
 
-const NotificationButton: React.FC = () => {
-  const requestNotificationPermission = async () => {
-    console.log('Requesting notification permission...');
-    
-    // Проверяем поддержку уведомлений
-    if (!('Notification' in window)) {
-      alert('Ваш браузер не поддерживает уведомления');
-      return;
-    }
+interface NotificationButtonProps {
+  userRole?: 'customer' | 'seller' | 'admin' | 'courier' | 'manager'
+  userId?: string
+}
 
-    // Проверяем текущее разрешение
-    if (Notification.permission === 'granted') {
-      alert('Уведомления уже включены!');
-      return;
-    }
+const NotificationButton: React.FC<NotificationButtonProps> = ({ userRole, userId }) => {
+  const [isSubscribed, setIsSubscribed] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-    if (Notification.permission === 'denied') {
-      alert('Уведомления заблокированы. Разрешите их в настройках браузера.');
-      return;
-    }
-
-    // Запрашиваем разрешение
+  const handleSubscribe = async () => {
+    setIsLoading(true)
     try {
-      const permission = await Notification.requestPermission();
-      
-      if (permission === 'granted') {
-        // Показываем тестовое уведомление
-        new Notification('ОптБазар', {
-          body: 'Уведомления успешно включены!',
-          icon: '/icon-192x192.png'
-        });
-        
-        // Пытаемся инициализировать OneSignal
-        if (window.OneSignal) {
-          window.OneSignal.push(function() {
-            window.OneSignal.registerForPushNotifications();
-          });
+      if ('Notification' in window) {
+        const permission = await Notification.requestPermission()
+        if (permission === 'granted') {
+          setIsSubscribed(true)
+          console.log('✅ Уведомления разрешены')
+          
+          if (userId) {
+            await sendNotification(
+              [userId],
+              'Добро пожаловать!',
+              'Уведомления успешно настроены'
+            )
+          }
         }
-      } else {
-        alert('Разрешение на уведомления не получено');
       }
     } catch (error) {
-      console.error('Error requesting permission:', error);
-      alert('Ошибка при запросе разрешения на уведомления');
+      console.error('Ошибка подписки:', error)
+    } finally {
+      setIsLoading(false)
     }
-  };
+  }
+
+  const sendTestNotification = async () => {
+    if (!userId) return
+    
+    setIsLoading(true)
+    try {
+      await sendNotification(
+        [userId],
+        'Тестовое уведомление',
+        `Привет, ${userRole}! Это тестовое уведомление.`
+      )
+      console.log('✅ Тестовое уведомление отправлено')
+    } catch (error) {
+      console.error('Ошибка отправки:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <button
-      onClick={requestNotificationPermission}
-      style={{
-        position: 'fixed',
-        bottom: '90px',
-        right: '20px',
-        background: 'linear-gradient(135deg, #4caf50, #45a049)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '50%',
-        width: '56px',
-        height: '56px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
-        zIndex: 1000
-      }}
-      title="Включить уведомления"
-    >
-      <Bell size={24} />
-    </button>
-  );
-};
+    <div style={{ 
+      position: 'fixed', 
+      bottom: '20px', 
+      right: '20px', 
+      zIndex: 1000,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px'
+    }}>
+      {!isSubscribed ? (
+        <button
+          onClick={handleSubscribe}
+          disabled={isLoading}
+          style={{
+            background: 'linear-gradient(135deg, #ff6b35, #f7931e)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50px',
+            padding: '12px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            fontWeight: '500',
+            boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)',
+            opacity: isLoading ? 0.7 : 1
+          }}
+        >
+          <Bell size={16} />
+          {isLoading ? 'Подключение...' : 'Включить уведомления'}
+        </button>
+      ) : (
+        <button
+          onClick={sendTestNotification}
+          disabled={isLoading}
+          style={{
+            background: 'linear-gradient(135deg, #4CAF50, #45a049)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50px',
+            padding: '12px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            fontWeight: '500',
+            boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+            opacity: isLoading ? 0.7 : 1
+          }}
+        >
+          <BellRing size={16} />
+          {isLoading ? 'Отправка...' : 'Тест уведомления'}
+        </button>
+      )}
+    </div>
+  )
+}
 
-export default NotificationButton;
+export default NotificationButton

@@ -18,45 +18,40 @@ const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
     console.log('OneSignal initialization started...');
     
     if (typeof window !== 'undefined' && !window.oneSignalInitialized) {
-      // Ждем загрузки OneSignal SDK
       const initOneSignal = () => {
         if (window.OneSignal) {
-          console.log('OneSignal SDK loaded, checking if already initialized...');
-          
-          window.OneSignal = window.OneSignal || [];
+          console.log('OneSignal SDK loaded, initializing...');
           
           window.OneSignal.push(function() {
-            console.log('OneSignal init called with appId:', appId);
-            
-            window.OneSignal.init({
-              appId: appId,
-              allowLocalhostAsSecureOrigin: true,
-              autoRegister: true,
-              autoResubscribe: true,
-              promptOptions: {
-                slidedown: {
-                  enabled: true,
-                  autoPrompt: true,
-                  timeDelay: 5,
-                  pageViews: 1
-                }
-              }
-            }).then(() => {
-              console.log('OneSignal initialized successfully');
-              window.oneSignalInitialized = true;
+            // Проверяем, не инициализирован ли уже
+            if (!window.OneSignal.initialized) {
+              console.log('OneSignal init called with appId:', appId);
               
-              // Устанавливаем теги пользователя
-              if (userRole && userId) {
-                console.log('Setting user tags:', { userRole, userId });
-                window.OneSignal.setExternalUserId(userId);
-                window.OneSignal.sendTags({
-                  'user_role': userRole,
-                  'user_id': userId
-                });
-              }
-            }).catch((error: any) => {
-              console.error('OneSignal initialization error:', error);
-            });
+              window.OneSignal.init({
+                appId: appId,
+                allowLocalhostAsSecureOrigin: true,
+                autoRegister: false, // Отключаем автоматическую регистрацию
+                autoResubscribe: true
+              }).then(() => {
+                console.log('OneSignal initialized successfully');
+                window.oneSignalInitialized = true;
+                
+                // Устанавливаем теги пользователя
+                if (userRole && userId) {
+                  console.log('Setting user tags:', { userRole, userId });
+                  window.OneSignal.setExternalUserId(userId);
+                  window.OneSignal.sendTags({
+                    'user_role': userRole,
+                    'user_id': userId
+                  });
+                }
+              }).catch((error: any) => {
+                console.error('OneSignal initialization error:', error);
+              });
+            } else {
+              console.log('OneSignal already initialized');
+              window.oneSignalInitialized = true;
+            }
           });
         } else {
           console.log('OneSignal SDK not loaded yet, retrying...');
@@ -64,20 +59,7 @@ const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
         }
       };
       
-      // Начинаем инициализацию через 2 секунды
       setTimeout(initOneSignal, 2000);
-    } else if (window.oneSignalInitialized && userRole && userId) {
-      // Если OneSignal уже инициализирован, просто обновляем теги
-      console.log('OneSignal already initialized, updating tags only');
-      if (window.OneSignal) {
-        window.OneSignal.push(function() {
-          window.OneSignal.setExternalUserId(userId);
-          window.OneSignal.sendTags({
-            'user_role': userRole,
-            'user_id': userId
-          });
-        });
-      }
     }
   }, [appId, userRole, userId]);
 
@@ -101,11 +83,22 @@ const useOneSignal = ({ appId, userRole, userId }: OneSignalConfig) => {
     }
   };
 
-  const subscribeUser = () => {
-    if (window.OneSignal) {
-      window.OneSignal.push(function() {
-        window.OneSignal.showSlidedownPrompt();
-      });
+  const subscribeUser = async () => {
+    try {
+      if (window.OneSignal && window.oneSignalInitialized) {
+        console.log('Requesting notification permission...');
+        await window.OneSignal.registerForPushNotifications();
+        console.log('Successfully subscribed to notifications');
+      } else {
+        // Fallback - используем стандартные браузерные уведомления
+        if ('Notification' in window) {
+          const permission = await Notification.requestPermission();
+          console.log('Browser notification permission:', permission);
+        }
+      }
+    } catch (error) {
+      console.error('Error subscribing to notifications:', error);
+      throw error;
     }
   };
 

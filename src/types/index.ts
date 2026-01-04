@@ -40,7 +40,7 @@ export interface Order {
   customerId: string;
   items: OrderItem[];
   total: number;
-  status: 'pending' | 'confirmed' | 'manager_confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'ready' | 'manager_confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
   deliveryPrice?: number;
   managerId?: string;
   createdAt: Date;

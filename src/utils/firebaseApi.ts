@@ -15,21 +15,17 @@ import { Product, Order, User } from '../types';
 export const firebaseApi = {
   // Продукты
   async getProducts(): Promise<Product[]> {
-    console.log('🔍 Загружаем продукты из Firebase...');
     try {
       const querySnapshot = await getDocs(collection(db, 'products'));
-      console.log('📊 Количество документов в коллекции products:', querySnapshot.size);
       
       const products = querySnapshot.docs.map(doc => {
         const data = doc.data();
-        console.log('📦 Документ продукта:', doc.id, data);
         return {
           id: doc.id,
           ...data
         } as Product;
       });
       
-      console.log(`✅ Загружено ${products.length} продуктов из Firebase:`, products);
       return products;
     } catch (error) {
       console.error('❌ Ошибка загрузки продуктов из Firebase:', error);
@@ -43,8 +39,16 @@ export const firebaseApi = {
   },
 
   async updateProduct(id: string, updates: Partial<Product>): Promise<void> {
-    const docRef = doc(db, 'products', id);
-    await updateDoc(docRef, updates);
+    try {
+      const docRef = doc(db, 'products', id);
+      await updateDoc(docRef, updates);
+    } catch (error: any) {
+      if (error.code === 'not-found') {
+        console.error(`❌ Товар с ID ${id} не найден в базе данных`);
+        throw new Error(`Товар не найден в базе данных. Возможно, он был удален.`);
+      }
+      throw error;
+    }
   },
 
   async deleteProduct(id: string): Promise<void> {
@@ -77,14 +81,12 @@ export const firebaseApi = {
 
   // Пользователи
   async getUsers(): Promise<User[]> {
-    console.log('🔍 Загружаем пользователей из Firebase...');
     try {
       const querySnapshot = await getDocs(collection(db, 'users'));
       const users = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as User));
-      console.log(`✅ Загружено ${users.length} пользователей из Firebase:`, users);
       return users;
     } catch (error) {
       console.error('❌ Ошибка загрузки пользователей из Firebase:', error);
@@ -93,13 +95,21 @@ export const firebaseApi = {
   },
 
   async createUser(user: User): Promise<User> {
-    await addDoc(collection(db, 'users'), user);
-    return user;
+    const docRef = await addDoc(collection(db, 'users'), user);
+    return { ...user, id: docRef.id };
   },
 
   async updateUser(id: string, updates: Partial<User>): Promise<void> {
-    const docRef = doc(db, 'users', id);
-    await updateDoc(docRef, updates);
+    try {
+      const docRef = doc(db, 'users', id);
+      await updateDoc(docRef, updates);
+    } catch (error: any) {
+      if (error.code === 'not-found') {
+        console.error(`❌ Пользователь с ID ${id} не найден в базе данных`);
+        throw new Error(`Пользователь не найден в базе данных. Возможно, он был удален.`);
+      }
+      throw error;
+    }
   },
 
   async deleteUser(id: string): Promise<void> {

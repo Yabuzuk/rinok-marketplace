@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Резервное копирование товаров</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button { padding: 10px 20px; margin: 10px 0; font-size: 16px; }
+        textarea { width: 100%; height: 300px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>💾 Резервное копирование товаров</h1>
+    <button onclick="backupProducts()">Создать резервную копию</button>
+    <div id="log"></div>
+    <textarea id="backup" placeholder="Здесь появится резервная копия всех товаров в JSON формате"></textarea>
+    <button onclick="downloadBackup()">Скачать резервную копию</button>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyADaZYOM7nOITKBlfn0jhtwtTBI7RbB_m8",
+            authDomain: "kalaktika-app.firebaseapp.com",
+            projectId: "kalaktika-app",
+            storageBucket: "kalaktika-app.firebasestorage.app",
+            messagingSenderId: "735114029908",
+            appId: "1:735114029908:web:8155afa0b285ce8c06f6c1",
+            measurementId: "G-T7JLSH3WQS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const p = document.createElement('p');
+            p.className = `log ${type}`;
+            p.textContent = message;
+            logDiv.appendChild(p);
+            console.log(message);
+        }
+
+        let backupData = null;
+
+        window.backupProducts = async function() {
+            log('💾 Создаем резервную копию товаров...');
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, 'products'));
+                const products = [];
+                
+                querySnapshot.forEach((doc) => {
+                    products.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                backupData = products;
+                document.getElementById('backup').value = JSON.stringify(products, null, 2);
+                
+                log(`✅ Создана резервная копия ${products.length} товаров`, 'success');
+                log('💡 Скопируйте JSON или скачайте файл для сохранения', 'warning');
+                
+            } catch (error) {
+                log(`❌ Ошибка создания резервной копии: ${error.message}`, 'error');
+            }
+        };
+
+        window.downloadBackup = function() {
+            if (!backupData) {
+                alert('Сначала создайте резервную копию!');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(backupData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `products_backup_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            log('✅ Резервная копия скачана', 'success');
+        };
+    </script>
+</body>
+</html>
