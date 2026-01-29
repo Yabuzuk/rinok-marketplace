@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { uploadImage } from '../utils/supabase';
 import { firebaseApi } from '../utils/firebaseApi';
 import EditProductModal from '../components/EditProductModal';
+import EditOrderModal from '../components/EditOrderModal';
+import ReceiptViewer from '../components/ReceiptViewer';
 
 interface SellerDashboardProps {
   user: UserType;
@@ -15,6 +17,7 @@ interface SellerDashboardProps {
   onDeleteProduct?: (productId: string) => void;
   onCreateOrder?: (order: Omit<Order, 'id'>) => void;
   onUpdateOrderStatus?: (orderId: string, status: Order['status']) => void;
+  onUpdateOrder?: (orderId: string, updates: Partial<Order>) => Promise<void>;
   onUpdateUser?: (userId: string, updates: Partial<UserType>) => void;
   onLogout?: () => void;
 }
@@ -28,6 +31,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   onDeleteProduct,
   onCreateOrder,
   onUpdateOrderStatus,
+  onUpdateOrder,
   onUpdateUser,
   onLogout
 }) => {
@@ -38,8 +42,10 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState<{ [key: string]: string }>({});
+  const [viewingReceipt, setViewingReceipt] = useState<string | null>(null);
 
   // Слушатель для переключения вкладок
   React.useEffect(() => {
@@ -79,7 +85,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   // Фильтруем товары по номеру павильона
   const sellerProducts = products.filter(p => p.pavilionNumber === user.pavilionNumber);
   
-  console.log('=== SELLER DASHBOARD DEBUG ===');
+  console.log('SellerDashboard props:', { onUpdateOrder: !!onUpdateOrder });
+  console.log('editingOrder state:', editingOrder);
+  console.log('activeTab:', activeTab);
   console.log('All products:', products.length);
   console.log('User pavilion:', user.pavilionNumber);
   console.log('Products by pavilion:', products.map(p => ({ 
@@ -496,6 +504,43 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   />
                 )}
 
+                {(() => {
+                  console.log('Rendering EditOrderModal check:', { editingOrder: !!editingOrder, onUpdateOrder: !!onUpdateOrder });
+                  return null;
+                })()}
+                {editingOrder && onUpdateOrder && (
+                  <EditOrderModal
+                    order={editingOrder}
+                    isOpen={!!editingOrder}
+                    onClose={() => {
+                      console.log('Closing EditOrderModal');
+                      setEditingOrder(null);
+                    }}
+                    onUpdate={onUpdateOrder}
+                  />
+                )}
+                
+                {editingOrder && !onUpdateOrder && (
+                  <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                  }}>
+                    <div className="card" style={{ maxWidth: '400px', width: '90%', textAlign: 'center' }}>
+                      <h3>Ошибка</h3>
+                      <p>Функция обновления заказа не передана</p>
+                      <button onClick={() => setEditingOrder(null)} className="btn btn-secondary">Закрыть</button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-3">
                   {sellerProducts.map(product => (
                     <div key={product.id} className="card">
@@ -562,10 +607,28 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                           <div>
                             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
                               Заказ #{order.id.slice(-8)}
+                              {order.isModified && (
+                                <span style={{
+                                  marginLeft: '8px',
+                                  padding: '2px 6px',
+                                  background: '#fff3cd',
+                                  color: '#856404',
+                                  fontSize: '10px',
+                                  borderRadius: '4px',
+                                  fontWeight: '500'
+                                }}>
+                                  ИЗМЕНЕН
+                                </span>
+                              )}
                             </h3>
                             <p style={{ fontSize: '14px', color: '#666' }}>
                               {new Date(order.createdAt).toLocaleDateString()}
                             </p>
+                            {order.isModified && order.modificationReason && (
+                              <p style={{ fontSize: '12px', color: '#856404', marginTop: '4px' }}>
+                                Причина: {order.modificationReason}
+                              </p>
+                            )}
                           </div>
                           <div style={{
                             padding: '4px 12px',
@@ -602,13 +665,89 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                           ))}
                         </div>
 
+                        {/* Отображение чека об оплате */}
+                        {order.payments?.[user.pavilionNumber || '']?.receiptUrl && (
+                          <div style={{
+                            marginBottom: '16px',
+                            padding: '12px',
+                            background: '#e8f5e8',
+                            borderRadius: '8px',
+                            border: '1px solid #4caf50'
+                          }}>
+                            <div style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'space-between',
+                              marginBottom: '8px'
+                            }}>
+                              <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '8px'
+                              }}>
+                                <FileText size={16} style={{ color: '#4caf50' }} />
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: '#2e7d32' }}>
+                                  Чек об оплате
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => setViewingReceipt(order.payments![user.pavilionNumber!].receiptUrl!)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#4caf50',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                  textDecoration: 'underline',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                📄 Просмотреть чек
+                              </button>
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#2e7d32' }}>
+                              Оплачено: {order.payments[user.pavilionNumber!].paidAt ? 
+                                new Date(order.payments[user.pavilionNumber!].paidAt!).toLocaleString('ru-RU') : 
+                                'Дата не указана'
+                              }
+                            </div>
+                          </div>
+                        )}
+
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
-                            Итого: {(order.items || []).filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽
+                          <div>
+                            <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
+                              Итого: {(order.items || []).filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽
+                            </div>
+                            {/* Статус оплаты */}
+                            {order.payments?.[user.pavilionNumber || ''] && (
+                              <div style={{
+                                fontSize: '12px',
+                                color: order.payments[user.pavilionNumber!].status === 'paid' ? '#4caf50' : '#ff9800',
+                                fontWeight: '500'
+                              }}>
+                                {order.payments[user.pavilionNumber!].status === 'paid' ? '✓ Оплачено' : '⏳ Ожидает оплаты'}
+                              </div>
+                            )}
                           </div>
                           
                           {order.status === 'pending' && (
                             <div style={{ display: 'flex', gap: '8px' }}>
+                              <button 
+                                className="btn btn-secondary"
+                                style={{ 
+                                  fontSize: '14px', 
+                                  padding: '8px 16px'
+                                }}
+                                onClick={() => {
+                                  console.log('Edit button clicked for order:', order.id);
+                                  console.log('Order items:', order.items);
+                                  setEditingOrder(order);
+                                }}
+                              >
+                                <Edit size={14} style={{ marginRight: '4px' }} />
+                                Редактировать
+                              </button>
                               <button 
                                 className="btn btn-primary"
                                 style={{ 
@@ -651,7 +790,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                             </div>
                           )}
                           
-                          {order.status === 'confirmed' && (
+                          {order.status === 'paid' && (
                             <button 
                               className="btn btn-primary"
                               style={{ 
@@ -736,20 +875,21 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   Настройки продавца
                 </h2>
 
+                {/* Основная информация */}
                 <div className="card">
                   <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
-                    Общая информация о компании
+                    Основная информация
                   </h3>
                   
                   <div className="grid grid-2" style={{ gap: '16px' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                        Номер склада
+                        ФИО
                       </label>
                       <input 
                         className="input" 
-                        data-field="pavilionNumber"
-                        defaultValue={user.pavilionNumber || ''}
+                        data-field="name"
+                        defaultValue={user.name || ''}
                         disabled={!isEditingProfile}
                         style={{ 
                           backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
@@ -760,28 +900,13 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                        Название (ИП или ООО)
+                        Email
                       </label>
                       <input 
                         className="input" 
-                        data-field="companyName"
-                        defaultValue={user.companyName || user.name}
-                        disabled={!isEditingProfile}
-                        style={{ 
-                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
-                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
-                        }}
-                      />
-                    </div>
-                    
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                        ИНН
-                      </label>
-                      <input 
-                        className="input" 
-                        data-field="inn"
-                        defaultValue={user.inn || ''}
+                        data-field="email"
+                        type="email"
+                        defaultValue={user.email || ''}
                         disabled={!isEditingProfile}
                         style={{ 
                           backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
@@ -798,7 +923,6 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         className="input" 
                         data-field="phone"
                         defaultValue={user.phone || ''}
-                        placeholder="+7 (999) 123-45-67"
                         disabled={!isEditingProfile}
                         style={{ 
                           backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
@@ -809,13 +933,14 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                        Номер карты / Мобильный банк
+                        ИНН
                       </label>
                       <input 
                         className="input" 
-                        data-field="paymentInfo"
-                        defaultValue={user.paymentInfo || ''}
-                        placeholder="1234 5678 9012 3456"
+                        data-field="inn"
+                        defaultValue={user.inn || ''}
+                        placeholder="123456789012"
+                        maxLength={12}
                         disabled={!isEditingProfile}
                         style={{ 
                           backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
@@ -826,13 +951,12 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                        Наименование банка
+                        Номер павильона
                       </label>
                       <input 
                         className="input" 
-                        data-field="bankName"
-                        defaultValue={user.bankName || ''}
-                        placeholder="Сбербанк"
+                        data-field="pavilionNumber"
+                        defaultValue={user.pavilionNumber || ''}
                         disabled={!isEditingProfile}
                         style={{ 
                           backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
@@ -843,7 +967,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-                        Новый пароль (оставьте пустым, чтобы не менять)
+                        Новый пароль (оставьте пустым)
                       </label>
                       <input 
                         className="input" 
@@ -858,6 +982,86 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       />
                     </div>
                   </div>
+                </div>
+                
+                {/* Платежные реквизиты */}
+                <div className="card" style={{ marginTop: '24px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                    Платежные реквизиты
+                  </h3>
+                  
+                  <div className="grid grid-2" style={{ gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        ФИО держателя карты
+                      </label>
+                      <input 
+                        className="input" 
+                        data-field="cardHolderName"
+                        defaultValue={user.cardHolderName || ''}
+                        placeholder="Иванов Иван Иванович"
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        Номер карты
+                      </label>
+                      <input 
+                        className="input" 
+                        data-field="bankCard"
+                        defaultValue={user.bankCard || ''}
+                        placeholder="2202 2020 1234 5678"
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        Телефон карты
+                      </label>
+                      <input 
+                        className="input" 
+                        data-field="cardPhone"
+                        defaultValue={user.cardPhone || ''}
+                        placeholder="+7 (999) 123-45-67"
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                        Банк
+                      </label>
+                      <input 
+                        className="input" 
+                        data-field="bankName"
+                        defaultValue={user.bankName || ''}
+                        placeholder="Сбербанк"
+                        disabled={!isEditingProfile}
+                        style={{ 
+                          backgroundColor: !isEditingProfile ? '#f5f5f5' : 'white',
+                          cursor: !isEditingProfile ? 'not-allowed' : 'text'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="card" style={{ marginTop: '24px' }}>
                   
                   <div style={{ marginTop: '16px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
@@ -880,7 +1084,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         className="btn btn-primary"
                         onClick={() => setIsEditingProfile(true)}
                       >
-                        Редактировать личные данные
+                        Редактировать профиль
                       </button>
                     ) : (
                       <>
@@ -903,7 +1107,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                             try {
                               await onUpdateUser?.(user.id, updates);
                               setIsEditingProfile(false);
-                              alert('Настройки сохранены!');
+                              alert('Профиль сохранен!');
                             } catch (error) {
                               console.error('Ошибка:', error);
                               alert('Ошибка сохранения!');
@@ -1182,6 +1386,61 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
           </div>
         </div>
       </div>
+      
+      {/* Модальные окна */}
+      {editingProduct && (
+        <EditProductModal
+          product={editingProduct}
+          isOpen={!!editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onUpdate={handleUpdateProduct}
+        />
+      )}
+      
+      {(() => {
+        console.log('Rendering EditOrderModal check:', { editingOrder: !!editingOrder, onUpdateOrder: !!onUpdateOrder });
+        return null;
+      })()}
+      {editingOrder && onUpdateOrder && (
+        <EditOrderModal
+          order={editingOrder}
+          isOpen={!!editingOrder}
+          onClose={() => {
+            console.log('Closing EditOrderModal');
+            setEditingOrder(null);
+          }}
+          onUpdate={onUpdateOrder}
+        />
+      )}
+      
+      {editingOrder && !onUpdateOrder && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div className="card" style={{ maxWidth: '400px', width: '90%', textAlign: 'center' }}>
+            <h3>Ошибка</h3>
+            <p>Функция обновления заказа не передана</p>
+            <button onClick={() => setEditingOrder(null)} className="btn btn-secondary">Закрыть</button>
+          </div>
+        </div>
+      )}
+      
+      {/* Просмотр чека */}
+      {viewingReceipt && (
+        <ReceiptViewer
+          receiptUrl={viewingReceipt}
+          onClose={() => setViewingReceipt(null)}
+        />
+      )}
     </div>
   );
 };

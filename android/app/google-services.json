@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "735114029908",
+    "project_id": "kalaktika-app",
+    "storage_bucket": "kalaktika-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:735114029908:android:8155afa0b285ce8c06f6c1",
+        "android_client_info": {
+          "package_name": "com.rinok.marketplace"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADaZYOM7nOITKBlfn0jhtwtTBI7RbB_m8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

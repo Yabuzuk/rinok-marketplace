@@ -5,11 +5,19 @@ const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Функция для загрузки изображения
+// Функция для загрузки файлов (изображения + PDF)
 export const uploadImage = async (file: File, bucket: string = 'product-images'): Promise<string | null> => {
   try {
+    console.log('📄 Начинаем загрузку файла:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;
+    
+    console.log('💾 Загружаем в Supabase:', fileName);
     
     const { data, error } = await supabase.storage
       .from(bucket)
@@ -19,20 +27,23 @@ export const uploadImage = async (file: File, bucket: string = 'product-images')
       });
 
     if (error) {
-      console.error('Upload error:', error);
-      // Fallback на старый метод если Supabase не работает
-      return null;
+      console.error('❌ Ошибка загрузки в Supabase:', error);
+      throw new Error(`Ошибка загрузки: ${error.message}`);
     }
+
+    console.log('✅ Файл загружен в Supabase:', data);
 
     // Получаем публичный URL
     const { data: { publicUrl } } = supabase.storage
       .from(bucket)
       .getPublicUrl(fileName);
 
+    console.log('🔗 Получен публичный URL:', publicUrl);
+    
     return publicUrl;
   } catch (error) {
-    console.error('Upload error:', error);
-    return null;
+    console.error('❌ Общая ошибка загрузки:', error);
+    throw error;
   }
 };
 

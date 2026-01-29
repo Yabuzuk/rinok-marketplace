@@ -5,6 +5,7 @@ import {
   addDoc, 
   updateDoc, 
   deleteDoc, 
+  setDoc,
   query, 
   where, 
   orderBy 
@@ -95,8 +96,21 @@ export const firebaseApi = {
   },
 
   async createUser(user: User): Promise<User> {
-    const docRef = await addDoc(collection(db, 'users'), user);
-    return { ...user, id: docRef.id };
+    try {
+      // Если у пользователя уже есть ID, используем setDoc
+      if (user.id) {
+        const docRef = doc(db, 'users', user.id);
+        await setDoc(docRef, user);
+        return user;
+      } else {
+        // Если ID нет, создаем с автоматическим ID
+        const docRef = await addDoc(collection(db, 'users'), user);
+        return { ...user, id: docRef.id };
+      }
+    } catch (error) {
+      console.error('❌ Ошибка создания пользователя:', error);
+      throw error;
+    }
   },
 
   async updateUser(id: string, updates: Partial<User>): Promise<void> {

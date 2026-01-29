@@ -18,6 +18,13 @@ export interface User {
   paymentInfo?: string;
   bankName?: string;
   password?: string;
+  // Новые поля для оплаты
+  cardHolderName?: string;
+  cardPhone?: string;
+  // Реквизиты для оплаты
+  bankCard?: string;
+  cardHolder?: string;
+  sbpPhone?: string;
 }
 
 export interface Product {
@@ -35,18 +42,44 @@ export interface Product {
   minOrderQuantity: number;
 }
 
+export interface PaymentInfo {
+  status: 'pending' | 'paid';
+  amount: number;
+  receiptUrl?: string;
+  receiptFileName?: string;
+  paidAt?: string;
+}
+
 export interface Order {
   id: string;
   customerId: string;
   items: OrderItem[];
   total: number;
-  status: 'pending' | 'confirmed' | 'ready' | 'manager_confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'seller_editing' | 'customer_approval' | 'manager_pricing' | 'payment_pending' | 'paid' | 'collecting' | 'ready' | 'delivering' | 'delivered' | 'cancelled';
   deliveryPrice?: number;
   managerId?: string;
   createdAt: Date;
   deliveryAddress: string;
   pavilionNumber?: string;
   courierId?: string;
+  // Новые поля для редактирования
+  isModified?: boolean;
+  modificationReason?: string;
+  originalTotal?: number;
+  customerApproved?: boolean;
+  modifiedAt?: string;
+  // Новая система оплат с чеками
+  payments?: {
+    [pavilionNumber: string]: PaymentInfo;
+  } & {
+    delivery?: PaymentInfo;
+  };
+  // Статус сборки по павильонам
+  collectingStatus?: {
+    [pavilionNumber: string]: 'pending' | 'ready';
+  };
+  // Группировка по павильонам
+  pavilionGroups?: PavilionGroup[];
 }
 
 export interface OrderItem {
@@ -58,6 +91,15 @@ export interface OrderItem {
 
 export interface ExtendedOrder extends Order {
   customerName: string;
+}
+
+export interface PavilionGroup {
+  pavilionNumber: string;
+  items: OrderItem[];
+  total: number;
+  sellerId?: string;
+  paymentStatus: 'pending' | 'paid';
+  collectionStatus: 'pending' | 'ready';
 }
 
 export interface CartItem {

@@ -18,7 +18,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import CourierDashboard from './pages/CourierDashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
 import PavilionPage from './pages/PavilionPage';
-import OrdersPage from './pages/OrdersPage';
 import LegalPage from './pages/LegalPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
@@ -358,30 +357,67 @@ const AppContent: React.FC = () => {
       
       const order = orders.find(o => o.id === orderId);
       if (order) {
-        const statusMessages = {
-          confirmed: 'Ваш заказ подтвержден продавцом',
-          preparing: 'Ваш заказ готовится',
-          ready: 'Ваш заказ готов к получению',
-          delivering: 'Ваш заказ в пути',
-          delivered: 'Ваш заказ доставлен'
-        };
-        
-        const message = statusMessages[status as keyof typeof statusMessages] || 'Статус заказа изменен';
         const recipients = [];
+        let message = '';
+        let title = 'ОптБазар';
         
-        // Покупатель всегда получает уведомления
-        if (order.customerId) {
-          recipients.push(order.customerId);
+        // Определяем получателей и сообщения по схеме
+        switch (status) {
+          case 'confirmed':
+            // 2Б: Продавец подтвердил без изменений
+            if (order.customerId) {
+              recipients.push(order.customerId);
+              message = `Заказ №${order.id.slice(-6)} подтвержден продавцом`;
+            }
+            // Менеджер получает уведомление
+            const managers = users.filter(u => u.role === 'manager');
+            managers.forEach(manager => {
+              recipients.push(manager.id);
+              if (!message) message = `Заказ №${order.id.slice(-6)} подтвержден, готов к обработке`;
+            });
+            break;
+            
+          case 'payment_pending':
+            // 3: Менеджер добавил доставку
+            if (order.customerId) {
+              recipients.push(order.customerId);
+              message = `К заказу №${order.id.slice(-6)} добавлена доставка. Требуется оплата`;
+            }
+            break;
+            
+          case 'paid':
+            // 4: Покупатель оплатил
+            const seller = users.find(u => u.role === 'seller' && u.pavilionNumber === order.pavilionNumber);
+            if (seller) {
+              recipients.push(seller.id);
+            }
+            const paidManagers = users.filter(u => u.role === 'manager');
+            paidManagers.forEach(manager => recipients.push(manager.id));
+            message = `Заказ №${order.id.slice(-6)} оплачен покупателем`;
+            break;
+            
+          case 'ready':
+            // 5: Продавец собрал заказ
+            const readyManagers = users.filter(u => u.role === 'manager');
+            readyManagers.forEach(manager => {
+              recipients.push(manager.id);
+            });
+            message = `Заказ №${order.id.slice(-6)} собран продавцом, готов к отправке`;
+            break;
+            
+          case 'delivering':
+            // 6: Менеджер отправил в доставку
+            if (order.customerId) {
+              recipients.push(order.customerId);
+              message = `Заказ №${order.id.slice(-6)} передан в доставку`;
+            }
+            break;
         }
         
-        // Менеджер получает уведомления о всех изменениях статуса
-        const managers = users.filter(u => u.role === 'manager');
-        managers.forEach(manager => recipients.push(manager.id));
-        
         // Отправляем уведомления
-        if (recipients.length > 0) {
+        if (recipients.length > 0 && message) {
           try {
-            await sendNotificationUtil(recipients, 'ОптБазар - Статус заказа', message);
+            await sendNotificationUtil(recipients, title, message);
             console.log('✅ Push-уведомления отправлены:', recipients.length, 'получателей');
           } catch (notificationError) {
             console.error('❌ Ошибка отправки уведомлений:', notificationError);
@@ -625,21 +661,8 @@ const AppContent: React.FC = () => {
             <Route 
               path="/orders" 
               element={
-                currentUser ? (
-                  <OrdersPage 
-                    user={currentUser}
-                    orders={orders}
-                    onCancelOrder={async (orderId) => {
-                      try {
-                        await firebaseApi.updateOrder(orderId, { status: 'cancelled' });
-                        loadData();
-                        alert('Заказ отменен');
-                      } catch (error) {
-                        console.error('Error cancelling order:', error);
-                        alert('Ошибка отмены заказа');
-                      }
-                    }}
-                  />
+                currentUser?.role === 'customer' ? (
+                  <Navigate to="/customer-dashboard" replace />
                 ) : (
                   <Navigate to="/" replace />
                 )
@@ -653,6 +676,7 @@ const AppContent: React.FC = () => {
                   <CustomerDashboard 
                     user={currentUser}
                     orders={orders}
+                    users={users}
                     onUpdateProfile={async (updates) => {
                       try {
                         await firebaseApi.updateUser(currentUser.id, updates);
@@ -675,6 +699,74 @@ const AppContent: React.FC = () => {
                         alert('Ошибка отмены заказа');
                       }
                     }}
+                    onApproveOrderChanges={async (orderId) => {
+                      try {
+                        await firebaseApi.updateOrder(orderId, { 
+                          customerApproved: true,
+                          status: 'confirmed'
+                        });
+                        
+                        // 2А: Покупатель подтвердил изменения
+                        const order = orders.find(o => o.id === orderId);
+                        if (order) {
+                          const recipients = [];
+                          
+                          // Продавец получает уведомление
+                          const seller = users.find(u => u.role === 'seller' && u.pavilionNumber === order.pavilionNumber);
+                          if (seller) {
+                            recipients.push(seller.id);
+                          }
+                          
+                          // Менеджер получает уведомление
+                          const managers = users.filter(u => u.role === 'manager');
+                          managers.forEach(manager => recipients.push(manager.id));
+                          
+                          if (recipients.length > 0) {
+                            try {
+                              if (seller) {
+                                await sendNotificationUtil(
+                                  [seller.id], 
+                                  'ОптБазар', 
+                                  `Покупатель подтвердил изменения заказа №${order.id.slice(-6)}`
+                                );
+                              }
+                              await sendNotificationUtil(
+                                managers.map(m => m.id), 
+                                'ОптБазар', 
+                                `Заказ №${order.id.slice(-6)} подтвержден покупателем, готов к обработке`
+                              );
+                            } catch (notificationError) {
+                              console.error('❌ Ошибка отправки уведомлений:', notificationError);
+                            }
+                          }
+                        }
+                        
+                        loadData();
+                        alert('Изменения подтверждены');
+                      } catch (error) {
+                        console.error('Error approving order changes:', error);
+                        alert('Ошибка подтверждения изменений');
+                      }
+                    }}
+                    onRejectOrderChanges={async (orderId) => {
+                      try {
+                        await firebaseApi.updateOrder(orderId, { status: 'cancelled' });
+                        loadData();
+                        alert('Изменения отклонены, заказ отменен');
+                      } catch (error) {
+                        console.error('Error rejecting order changes:', error);
+                        alert('Ошибка отклонения изменений');
+                      }
+                    }}
+                    onUpdateOrder={async (orderId, updates) => {
+                      try {
+                        await firebaseApi.updateOrder(orderId, updates);
+                        loadData();
+                      } catch (error) {
+                        console.error('Error updating order:', error);
+                        throw error;
+                      }
+                    }}
                   />
                 ) : (
                   <Navigate to="/" replace />
@@ -695,6 +787,33 @@ const AppContent: React.FC = () => {
                     onDeleteProduct={handleDeleteProduct}
                     onCreateOrder={handleCreateOrder}
                     onUpdateOrderStatus={handleUpdateOrderStatus}
+                    onUpdateOrder={async (orderId, updates) => {
+                      try {
+                        await firebaseApi.updateOrder(orderId, updates);
+                        
+                        // Если заказ был изменен, отправляем уведомление покупателю
+                        if (updates.isModified && updates.status === 'customer_approval') {
+                          const order = orders.find(o => o.id === orderId);
+                          if (order && order.customerId) {
+                            try {
+                              await sendNotificationUtil(
+                                [order.customerId], 
+                                'ОптБазар', 
+                                `Заказ №${order.id.slice(-6)} изменен продавцом. Требуется подтверждение`
+                              );
+                              console.log('✅ Уведомление о редактировании отправлено покупателю');
+                            } catch (notificationError) {
+                              console.error('❌ Ошибка отправки уведомления:', notificationError);
+                            }
+                          }
+                        }
+                        
+                        loadData();
+                      } catch (error) {
+                        console.error('Error updating order:', error);
+                        throw error;
+                      }
+                    }}
                     onUpdateUser={handleUpdateUser}
                     onLogout={() => setCurrentUser(null)}
                   />
@@ -740,6 +859,7 @@ const AppContent: React.FC = () => {
                   <ManagerDashboard 
                     user={currentUser}
                     orders={orders}
+                    users={users}
                     onUpdateOrderStatus={handleUpdateOrderStatus}
                     onUpdateOrder={async (orderId, updates) => {
                       try {
@@ -817,8 +937,8 @@ const AppContent: React.FC = () => {
           onCartClick={() => setIsCartOpen(true)}
           onDashboardClick={handleDashboardClick}
           onOrdersClick={() => {
-            if (currentUser) {
-              navigate('/orders');
+            if (currentUser?.role === 'customer') {
+              handleDashboardClick('orders');
             }
           }}
           onWarehouseClick={() => {

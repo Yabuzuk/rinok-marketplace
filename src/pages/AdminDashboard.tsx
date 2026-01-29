@@ -47,9 +47,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
 
   const getStatusColor = (status: OrderWithCustomer['status']) => {
     switch (status) {
-      case 'delivered': return '#4caf50';
+      case 'pending': return '#ff9800';
+      case 'seller_editing': return '#2196f3';
+      case 'customer_approval': return '#9c27b0';
+      case 'manager_pricing': return '#607d8b';
+      case 'payment_pending': return '#f44336';
+      case 'paid': return '#4caf50';
+      case 'collecting': return '#ff5722';
+      case 'ready': return '#795548';
       case 'delivering': return '#ff9800';
-      case 'preparing': return '#2196f3';
+      case 'delivered': return '#4caf50';
       case 'cancelled': return '#f44336';
       default: return '#666';
     }
@@ -58,8 +65,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
   const getStatusText = (status: OrderWithCustomer['status']) => {
     switch (status) {
       case 'pending': return 'Ожидает';
-      case 'confirmed': return 'Подтвержден';
-      case 'preparing': return 'Готовится';
+      case 'seller_editing': return 'Редактирует продавец';
+      case 'customer_approval': return 'Ждет подтверждения';
+      case 'manager_pricing': return 'Ценообразование';
+      case 'payment_pending': return 'Ожидает оплаты';
+      case 'paid': return 'Оплачен';
+      case 'collecting': return 'Собирается';
+      case 'ready': return 'Готов';
       case 'delivering': return 'В пути';
       case 'delivered': return 'Доставлен';
       case 'cancelled': return 'Отменен';
@@ -445,10 +457,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                     <button 
                       className="btn btn-primary" 
                       style={{ fontSize: '14px', padding: '8px 16px' }}
-                      onClick={() => onUpdateOrderStatus?.(order.id, 'confirmed')}
+                      onClick={() => onUpdateOrderStatus?.(order.id, 'seller_editing')}
                     >
                       <CheckCircle size={16} />
-                      Подтвердить
+                      К редактированию
                     </button>
                     <button 
                       className="btn btn-secondary" 
@@ -460,11 +472,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                     </button>
                   </>
                 )}
-                {order.status === 'confirmed' && (
+                {order.status === 'ready' && (
                   <button 
                     className="btn btn-primary" 
                     style={{ fontSize: '14px', padding: '8px 16px' }}
-                    onClick={() => onUpdateOrderStatus?.(order.id, 'preparing')}
+                    onClick={() => onUpdateOrderStatus?.(order.id, 'delivering')}
                   >
                     Отправить в доставку
                   </button>

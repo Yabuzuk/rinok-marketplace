@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { Package, MapPin, Clock, Settings } from 'lucide-react';
 import { Order, User as UserType } from '../types';
+import PaymentModal from '../components/PaymentModal';
 
 interface CustomerDashboardProps {
   user: UserType;
   orders: Order[];
+  users?: UserType[];
   onUpdateProfile?: (updates: Partial<UserType>) => void;
   onLogout?: () => void;
   onCancelOrder?: (orderId: string) => void;
+  onApproveOrderChanges?: (orderId: string) => Promise<void>;
+  onRejectOrderChanges?: (orderId: string) => Promise<void>;
+  onUpdateOrder?: (orderId: string, updates: Partial<Order>) => Promise<void>;
 }
 
-const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onUpdateProfile, onLogout, onCancelOrder }) => {
+const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, users, onUpdateProfile, onLogout, onCancelOrder, onApproveOrderChanges, onRejectOrderChanges, onUpdateOrder }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses'>('orders');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showAddAddress, setShowAddAddress] = useState(false);
@@ -22,6 +27,14 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
   const [editingAddress, setEditingAddress] = useState('');
   const [editingSuggestions, setEditingSuggestions] = useState<string[]>([]);
   const [showEditingSuggestions, setShowEditingSuggestions] = useState(false);
+  const [paymentModal, setPaymentModal] = useState<{
+    order: Order;
+    seller?: UserType;
+    amount: number;
+    type: 'products' | 'delivery';
+    pavilionNumber?: string;
+  } | null>(null);
+
   
   const getAddressSuggestions = async (query: string) => {
     if (query.length < 3) {
@@ -57,9 +70,16 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
-      case 'delivered': return '#4caf50';
+      case 'pending': return '#ff9800';
+      case 'seller_editing': return '#2196f3';
+      case 'customer_approval': return '#9c27b0';
+      case 'manager_pricing': return '#607d8b';
+      case 'payment_pending': return '#f44336';
+      case 'paid': return '#4caf50';
+      case 'collecting': return '#ff5722';
+      case 'ready': return '#795548';
       case 'delivering': return '#ff9800';
-      case 'preparing': return '#2196f3';
+      case 'delivered': return '#4caf50';
       case 'cancelled': return '#f44336';
       default: return '#666';
     }
@@ -68,13 +88,61 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
   const getStatusText = (status: Order['status']) => {
     switch (status) {
       case 'pending': return 'Ожидает подтверждения';
-      case 'confirmed': return 'Подтвержден продавцом';
-      case 'manager_confirmed': return 'Подтвержден менеджером';
-      case 'preparing': return 'Готовится';
+      case 'seller_editing': return 'Редактирует продавец';
+      case 'customer_approval': return 'Требуется ваше подтверждение';
+      case 'manager_pricing': return 'Менеджер добавляет стоимость доставки';
+      case 'payment_pending': return 'Ожидает оплаты';
+      case 'paid': return 'Оплачен, собирается';
+      case 'collecting': return 'Собирается';
+      case 'ready': return 'Готов к отправке';
       case 'delivering': return 'В пути';
       case 'delivered': return 'Доставлен';
       case 'cancelled': return 'Отменен';
     }
+  };
+
+  // Группировка товаров по павильонам
+  const groupItemsByPavilion = (order: Order) => {
+    const groups: { [pavilionNumber: string]: { items: any[], total: number, seller?: UserType } } = {};
+    
+    order.items.filter(item => item.productId !== 'delivery').forEach(item => {
+      // Находим продукт чтобы получить номер павильона
+      const product = users?.find(u => u.role === 'seller');
+      const pavilionNumber = order.pavilionNumber || 'unknown';
+      
+      if (!groups[pavilionNumber]) {
+        groups[pavilionNumber] = {
+          items: [],
+          total: 0,
+          seller: users?.find(u => u.role === 'seller' && u.pavilionNumber === pavilionNumber)
+        };
+      }
+      
+      groups[pavilionNumber].items.push(item);
+      groups[pavilionNumber].total += item.price * item.quantity;
+    });
+    
+    return groups;
+  };
+
+  // Проверка статуса оплаты для павильона
+  const getPaymentStatus = (order: Order, pavilionNumber: string) => {
+    return order.payments?.[pavilionNumber]?.status || 'pending';
+  };
+
+  // Проверка статуса оплаты доставки
+  const getDeliveryPaymentStatus = (order: Order) => {
+    return order.payments?.delivery?.status || 'pending';
+  };
+
+  // Проверка полной оплаты заказа
+  const isFullyPaid = (order: Order) => {
+    const pavilionGroups = groupItemsByPavilion(order);
+    const allProductsPaid = Object.keys(pavilionGroups).every(pavilion => 
+      getPaymentStatus(order, pavilion) === 'paid'
+    );
+    const deliveryPaid = !order.deliveryPrice || getDeliveryPaymentStatus(order) === 'paid';
+    return allProductsPaid && deliveryPaid;
   };
 
   return (
@@ -232,6 +300,19 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                         <div>
                           <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
                             Заказ #{order.id.slice(-6)}
+                            {order.isModified && !order.customerApproved && order.status === 'customer_approval' && (
+                              <span style={{
+                                marginLeft: '8px',
+                                padding: '2px 6px',
+                                background: '#fff3cd',
+                                color: '#856404',
+                                fontSize: '10px',
+                                borderRadius: '4px',
+                                fontWeight: '500'
+                              }}>
+                                ТРЕБУЕТ ПОДТВЕРЖДЕНИЯ
+                              </span>
+                            )}
                           </h3>
                           <p style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
                             {new Date(order.createdAt).toLocaleDateString('ru-RU')}
@@ -242,6 +323,11 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                           {order.deliveryPrice && (
                             <p style={{ fontSize: '14px', color: '#666' }}>
                               Доставка: {order.deliveryPrice} ₽
+                            </p>
+                          )}
+                          {order.isModified && order.modificationReason && (
+                            <p style={{ fontSize: '12px', color: '#856404', marginTop: '4px' }}>
+                              Причина изменения: {order.modificationReason}
                             </p>
                           )}
                         </div>
@@ -258,9 +344,129 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
                           }}>
                             {getStatusText(order.status)}
                           </div>
-                          <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
-                            {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽
+                          <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50', marginBottom: '8px' }}>
+                            {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽
                           </div>
+                          {order.deliveryPrice && order.deliveryPrice > 0 && (
+                            <div style={{ fontSize: '14px', color: '#ff9800', marginBottom: '8px' }}>
+                              + доставка {order.deliveryPrice} ₽
+                            </div>
+                          )}
+                          
+                          {/* Кнопки действий */}
+                          {order.isModified && !order.customerApproved && order.status === 'customer_approval' && (
+                            <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
+                              <button 
+                                className="btn btn-primary"
+                                style={{ fontSize: '11px', padding: '4px 8px' }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onApproveOrderChanges?.(order.id).catch(() => alert('Ошибка подтверждения'));
+                                }}
+                              >
+                                ✅ Подтвердить
+                              </button>
+                              <button 
+                                className="btn btn-secondary"
+                                style={{ 
+                                  fontSize: '11px', 
+                                  padding: '4px 8px',
+                                  backgroundColor: '#f44336',
+                                  color: 'white',
+                                  border: 'none'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm('Отклонить изменения? Заказ будет отменен.')) {
+                                    onRejectOrderChanges?.(order.id).catch(() => alert('Ошибка отклонения'));
+                                  }
+                                }}
+                              >
+                                ❌ Отклонить
+                              </button>
+                            </div>
+                          )}
+                          
+                          {order.status === 'payment_pending' && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                              {(() => {
+                                const pavilionGroups = groupItemsByPavilion(order);
+                                return Object.entries(pavilionGroups).map(([pavilionNumber, group]) => {
+                                  const paymentStatus = getPaymentStatus(order, pavilionNumber);
+                                  if (paymentStatus === 'paid') {
+                                    return (
+                                      <div key={pavilionNumber} style={{
+                                        fontSize: '11px',
+                                        padding: '4px 8px',
+                                        background: '#e8f5e8',
+                                        color: '#2e7d32',
+                                        borderRadius: '4px',
+                                        textAlign: 'center'
+                                      }}>
+                                        Павильон {pavilionNumber}: Оплачено ✓
+                                      </div>
+                                    );
+                                  }
+                                  return (
+                                    <button 
+                                      key={pavilionNumber}
+                                      className="btn btn-primary"
+                                      style={{ fontSize: '11px', padding: '4px 8px' }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPaymentModal({ 
+                                          order, 
+                                          seller: group.seller, 
+                                          amount: group.total, 
+                                          type: 'products',
+                                          pavilionNumber 
+                                        });
+                                      }}
+                                    >
+                                      💳 Оплатить пав. {pavilionNumber} ({group.total} ₽)
+                                    </button>
+                                  );
+                                });
+                              })()}
+                              {order.deliveryPrice && order.deliveryPrice > 0 && (() => {
+                                const deliveryStatus = getDeliveryPaymentStatus(order);
+                                if (deliveryStatus === 'paid') {
+                                  return (
+                                    <div style={{
+                                      fontSize: '11px',
+                                      padding: '4px 8px',
+                                      background: '#fff3e0',
+                                      color: '#ef6c00',
+                                      borderRadius: '4px',
+                                      textAlign: 'center'
+                                    }}>
+                                      Доставка: Оплачено ✓
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <button 
+                                    className="btn btn-secondary"
+                                    style={{ 
+                                      fontSize: '11px', 
+                                      padding: '4px 8px',
+                                      backgroundColor: '#ff9800',
+                                      color: 'white',
+                                      border: 'none'
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setPaymentModal({ order, amount: order.deliveryPrice!, type: 'delivery' });
+                                    }}
+                                  >
+                                    🚚 Оплатить доставку ({order.deliveryPrice} ₽)
+                                  </button>
+                                );
+                              })()}
+                            </div>
+                          )}
+                          
+
                         </div>
                       </div>
                     </div>
@@ -560,6 +766,28 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
               <strong>Статус:</strong> {getStatusText(selectedOrder.status)}
             </div>
             
+            {selectedOrder.isModified && (
+              <div style={{
+                marginBottom: '16px',
+                padding: '12px',
+                background: '#fff3cd',
+                borderRadius: '8px',
+                border: '1px solid #ffeaa7'
+              }}>
+                <div style={{ fontWeight: '600', color: '#856404', marginBottom: '8px' }}>
+                  ⚠️ Заказ был изменен продавцом
+                </div>
+                <div style={{ fontSize: '14px', color: '#856404', marginBottom: '8px' }}>
+                  Причина: {selectedOrder.modificationReason}
+                </div>
+                {selectedOrder.originalTotal && (
+                  <div style={{ fontSize: '14px', color: '#856404' }}>
+                    Первоначальная сумма: {selectedOrder.originalTotal} ₽
+                  </div>
+                )}
+              </div>
+            )}
+            
             <div style={{ marginBottom: '16px' }}>
               <strong>Дата заказа:</strong> {new Date(selectedOrder.createdAt).toLocaleDateString('ru-RU')}
             </div>
@@ -598,14 +826,43 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
               </div>
             </div>
             
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingTop: '16px',
+              borderTop: '2px solid #eee',
+              fontSize: '16px',
+              fontWeight: '600',
+              marginBottom: '16px'
+            }}>
+              <span>Товары:</span>
+              <span>{selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽</span>
+            </div>
+            
+            {selectedOrder.deliveryPrice && selectedOrder.deliveryPrice > 0 && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '16px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                color: '#ff9800'
+              }}>
+                <span>Доставка:</span>
+                <span>{selectedOrder.deliveryPrice} ₽</span>
+              </div>
+            )}
+            
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               paddingTop: '16px',
               borderTop: '2px solid #eee',
               fontSize: '18px',
-              fontWeight: '600',
+              fontWeight: '700',
               marginBottom: '16px'
             }}>
               <span>Итого:</span>
@@ -613,27 +870,80 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {selectedOrder.status === 'manager_confirmed' && (
-                <form 
-                  action="https://securepay.tinkoff.ru/html/payForm/initialize" 
-                  method="POST"
-                  style={{ width: '100%' }}
-                >
-                  <input type="hidden" name="TerminalKey" value="ВАШ_TERMINAL_KEY" />
-                  <input type="hidden" name="Amount" value={(selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (selectedOrder.deliveryPrice || 0)) * 100} />
-                  <input type="hidden" name="OrderId" value={selectedOrder.id} />
-                  <input type="hidden" name="Description" value={`Оплата заказа #${selectedOrder.id.slice(-6)}`} />
+              {selectedOrder.isModified && !selectedOrder.customerApproved && (
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
                   <button 
-                    type="submit"
+                    className="btn btn-primary"
+                    style={{ flex: 1 }}
+                    onClick={async () => {
+                      try {
+                        await onApproveOrderChanges?.(selectedOrder.id);
+                        setSelectedOrder(null);
+                      } catch (error) {
+                        alert('Ошибка подтверждения изменений');
+                      }
+                    }}
+                  >
+                    ✅ Подтвердить изменения
+                  </button>
+                  <button 
+                    className="btn btn-secondary"
+                    style={{ 
+                      flex: 1,
+                      backgroundColor: '#f44336',
+                      color: 'white',
+                      border: 'none'
+                    }}
+                    onClick={async () => {
+                      if (window.confirm('Вы уверены, что хотите отклонить изменения? Заказ будет отменен.')) {
+                        try {
+                          await onRejectOrderChanges?.(selectedOrder.id);
+                          setSelectedOrder(null);
+                        } catch (error) {
+                          alert('Ошибка отклонения изменений');
+                        }
+                      }
+                    }}
+                  >
+                    ❌ Отклонить изменения
+                  </button>
+                </div>
+              )}
+              {selectedOrder.status === 'payment_pending' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                  <button 
                     className="btn btn-primary"
                     style={{ width: '100%' }}
+                    onClick={() => {
+                      // Оплата товаров
+                      const seller = users?.find(u => u.role === 'seller' && u.pavilionNumber === selectedOrder.pavilionNumber);
+                      const amount = selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0);
+                      setPaymentModal({ order: selectedOrder, seller, amount, type: 'products' });
+                    }}
                   >
-                    Оплатить картой ({selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (selectedOrder.deliveryPrice || 0)} ₽)
+                    💳 Оплатить товары ({selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽)
                   </button>
-                </form>
+                  {selectedOrder.deliveryPrice && selectedOrder.deliveryPrice > 0 && (
+                    <button 
+                      className="btn btn-secondary"
+                      style={{ 
+                        width: '100%',
+                        backgroundColor: '#ff9800',
+                        color: 'white',
+                        border: 'none'
+                      }}
+                      onClick={() => {
+                        // Оплата доставки
+                        setPaymentModal({ order: selectedOrder, amount: selectedOrder.deliveryPrice!, type: 'delivery' });
+                      }}
+                    >
+                      🚚 Оплатить доставку ({selectedOrder.deliveryPrice} ₽)
+                    </button>
+                  )}
+                </div>
               )}
               
-              {(selectedOrder.status === 'pending' || selectedOrder.status === 'confirmed' || selectedOrder.status === 'manager_confirmed') && (
+              {(selectedOrder.status === 'pending' || selectedOrder.status === 'seller_editing' || selectedOrder.status === 'customer_approval' || selectedOrder.status === 'manager_pricing') && (
                 <button 
                   className="btn btn-secondary"
                   style={{ 
@@ -810,6 +1120,66 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, onU
           </div>
         </div>
       )}
+      
+      {/* Модальное окно оплаты */}
+      {paymentModal && (
+        <PaymentModal
+          isOpen={true}
+          onClose={() => setPaymentModal(null)}
+          order={paymentModal.order}
+          seller={paymentModal.seller}
+          amount={paymentModal.amount}
+          type={paymentModal.type}
+          pavilionNumber={paymentModal.pavilionNumber}
+          onPaymentConfirmed={async (receiptUrl) => {
+            try {
+              const order = paymentModal.order;
+              const { type, pavilionNumber } = paymentModal;
+              
+              // Обновляем статус оплаты
+              const payments = { ...order.payments };
+              
+              if (type === 'delivery') {
+                payments.delivery = {
+                  status: 'paid',
+                  amount: paymentModal.amount,
+                  receiptUrl,
+                  paidAt: new Date().toISOString()
+                };
+              } else if (pavilionNumber) {
+                payments[pavilionNumber] = {
+                  status: 'paid',
+                  amount: paymentModal.amount,
+                  receiptUrl,
+                  paidAt: new Date().toISOString()
+                };
+              }
+              
+              // Проверяем, все ли оплачено
+              const pavilionGroups = groupItemsByPavilion(order);
+              const allProductsPaid = Object.keys(pavilionGroups).every(pavilion => 
+                payments[pavilion]?.status === 'paid'
+              );
+              const deliveryPaid = !order.deliveryPrice || payments.delivery?.status === 'paid';
+              
+              const updates: Partial<Order> = {
+                payments,
+                status: (allProductsPaid && deliveryPaid) ? 'paid' : 'payment_pending'
+              };
+              
+              await onUpdateOrder?.(order.id, updates);
+              
+              alert(`Оплата ${type === 'products' ? `товаров павильона ${pavilionNumber}` : 'доставки'} подтверждена!`);
+              setPaymentModal(null);
+            } catch (error) {
+              console.error('Ошибка обновления оплаты:', error);
+              alert('Ошибка обновления статуса оплаты');
+            }
+          }}
+        />
+      )}
+      
+
     </div>
   );
 };

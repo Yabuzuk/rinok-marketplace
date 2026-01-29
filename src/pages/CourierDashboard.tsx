@@ -42,7 +42,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
     return () => window.removeEventListener('switchCourierTab', handleCourierTab);
   }, []);
 
-  const availableOrders = orders.filter(o => o.status === 'preparing');
+  const availableOrders = orders.filter(o => o.status === 'ready');
   
   console.log('=== COURIER ORDERS DEBUG ===');
   console.log('All orders:', orders.length);
