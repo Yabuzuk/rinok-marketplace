@@ -104,12 +104,12 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
     
     // Собираем все чеки из группы
     if (order.payments) {
-      Object.entries(order.payments).forEach(([key, payment]) => {
+      Object.entries(order.payments).forEach(([paymentKey, payment]) => {
         if (payment.receiptUrl) {
           groups[key].allReceipts.push({
             ...payment,
             pavilion: order.pavilionNumber,
-            type: key === 'delivery' ? 'Доставка' : `Павильон ${order.pavilionNumber}`
+            type: paymentKey === 'delivery' ? 'Доставка' : `Павильон ${order.pavilionNumber}`
           });
         }
       });
