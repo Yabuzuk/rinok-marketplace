@@ -422,6 +422,9 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                                   );
                                   
                                   if (response.Success && response.PaymentURL) {
+                                    // Сохраняем PaymentId для возможности отмены
+                                    localStorage.setItem('lastPaymentId', response.PaymentId);
+                                    localStorage.setItem('lastOrderId', order.id);
                                     window.location.href = response.PaymentURL;
                                   }
                                 } catch (error) {
@@ -895,6 +898,9 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                       );
                       
                       if (response.Success && response.PaymentURL) {
+                        // Сохраняем PaymentId для возможности отмены
+                        localStorage.setItem('lastPaymentId', response.PaymentId);
+                        localStorage.setItem('lastOrderId', selectedOrder.id);
                         window.location.href = response.PaymentURL;
                       }
                     } catch (error) {

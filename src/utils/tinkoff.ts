@@ -65,12 +65,6 @@ export const initPayment = async (
       SuccessURL: `${window.location.origin}/customer-dashboard?payment=success&orderId=${orderId}&closeIframe=true`,
       FailURL: `${window.location.origin}/customer-dashboard?payment=fail&orderId=${orderId}`
     };
-
-    if (payType === 'T') {
-      params.DATA = {
-        QR: 'true'
-      };
-    }
     
     const token = await generateToken(params);
     
@@ -78,11 +72,12 @@ export const initPayment = async (
       ...params,
       Receipt: {
         Email: customerEmail || 'noreply@rinok.ru',
+        Phone: '+79139492570',
         Taxation: 'usn_income',
         Items: [{
           Name: description,
           Price: amount * 100,
-          Quantity: 1,
+          Quantity: 1.00,
           Amount: amount * 100,
           Tax: 'none',
           PaymentMethod: 'full_payment',

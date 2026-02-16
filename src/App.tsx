@@ -19,6 +19,7 @@ import CourierDashboard from './pages/CourierDashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
 import PavilionPage from './pages/PavilionPage';
 import LegalPage from './pages/LegalPage';
+import TestCancelPayment from './pages/TestCancelPayment';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 
@@ -904,6 +905,7 @@ const AppContent: React.FC = () => {
             />
             
             <Route path="/legal" element={<LegalPage />} />
+            <Route path="/test-cancel" element={<TestCancelPayment />} />
           </Routes>
           )}
         </main>
