@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Order, User } from '../types';
+import { PAYMENT_DETAILS } from '../utils/tinkoff';
 
 interface SBPPaymentProps {
   order: Order;
@@ -20,7 +21,11 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
 }) => {
   const [showBankList, setShowBankList] = useState(false);
   
-  if (!isOpen || !seller) return null;
+  if (!isOpen) return null;
+
+  const amount = order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0);
+  const phone = PAYMENT_DETAILS.phoneRaw;
+  const purpose = `Заказ #${order.id.slice(-6)}`;
 
   const banks = [
     { name: 'Сбербанк' },
@@ -35,7 +40,6 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
 
   const copyToClipboard = (text: string, message: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      // Создаем временное уведомление
       const notification = document.createElement('div');
       notification.textContent = message;
       notification.style.cssText = `
@@ -56,36 +60,9 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
   };
 
   const openBank = (bankName: string) => {
-    const amount = order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0);
-    const phone = seller.cardPhone?.replace(/\D/g, '') || '';
-    const purpose = `Заказ #${order.id.slice(-6)}`;
-    
-    // Создаем СБП ссылку
-    const sbpLink = `https://qr.nspk.ru/proxyapp/v1/sbp/c2b/${phone}/${amount}?comment=${encodeURIComponent(purpose)}`;
-    
-    // Открываем СБП ссылку - система сама предложит банки
+    // Используем bank.100000000111 для универсальной СБП ссылки
+    const sbpLink = `https://qr.nspk.ru/AS1A00614GGQVVVVVVVVVVVVVVVV?type=02&bank=100000000111&sum=${amount}&cur=RUB&crc=AB75`;
     window.open(sbpLink, '_blank');
-  };
-
-  const generateSBPLink = () => {
-    const amount = order.total + (order.deliveryPrice || 0);
-    const phone = seller.cardPhone?.replace(/\D/g, '') || '';
-    const purpose = `Заказ #${order.id.slice(-6)}`;
-    
-    // Универсальная ссылка для СБП через банковские приложения
-    return `https://qr.nspk.ru/proxyapp/v1/sbp/c2b/${phone}/${amount}?comment=${encodeURIComponent(purpose)}`;
-  };
-
-  const handleSBPPayment = () => {
-    const amount = order.total + (order.deliveryPrice || 0);
-    const phone = seller.cardPhone?.replace(/\D/g, '') || '';
-    const purpose = `Заказ #${order.id.slice(-6)}`;
-    
-    // Стандартная ссылка СБП
-    const sbpLink = `https://qr.nspk.ru/proxyapp/v1/sbp/c2b/${phone}/${amount}?comment=${encodeURIComponent(purpose)}`;
-    
-    // Прямой переход по ссылке
-    window.location.href = sbpLink;
   };
 
   return (
@@ -111,7 +88,6 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
         boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
         position: 'relative'
       }}>
-        {/* Кнопка закрытия */}
         <button
           onClick={onClose}
           style={{
@@ -134,7 +110,6 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
           ×
         </button>
         
-        {/* Заголовок */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{
             width: '64px',
@@ -166,7 +141,6 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
           </p>
         </div>
         
-        {/* Сумма */}
         <div style={{
           textAlign: 'center',
           padding: '20px',
@@ -185,9 +159,9 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
             justifyContent: 'center',
             gap: '8px'
           }}>
-            {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽
+            {amount} ₽
             <button
-              onClick={() => copyToClipboard((order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)).toString(), 'Сумма скопирована')}
+              onClick={() => copyToClipboard(amount.toString(), 'Сумма скопирована')}
               style={{
                 background: 'none',
                 border: 'none',
@@ -208,7 +182,6 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
           </div>
         </div>
 
-        {/* Информация о получателе */}
         <div style={{
           backgroundColor: '#f8f9fa',
           borderRadius: '12px',
@@ -239,141 +212,48 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
           </div>
           <div style={{ fontSize: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
             <span style={{ color: '#666' }}>Получатель:</span>
-            <span style={{ fontWeight: '500' }}>{seller.cardHolderName || 'Не указано'}</span>
+            <span style={{ fontWeight: '500' }}>{PAYMENT_DETAILS.cardHolderName}</span>
           </div>
           <div style={{ fontSize: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
             <span style={{ color: '#666' }}>Банк:</span>
-            <span style={{ fontWeight: '500' }}>{seller.bankName || 'Не указан'}</span>
+            <span style={{ fontWeight: '500' }}>{PAYMENT_DETAILS.bankName}</span>
           </div>
           <div style={{ fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: '#666' }}>Телефон:</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontWeight: '500' }}>{seller.cardPhone || 'Не указан'}</span>
-              {seller.cardPhone && (
-                <button
-                  onClick={() => copyToClipboard(seller.cardPhone?.replace(/\D/g, '') || '', 'Номер телефона скопирован')}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    padding: '4px',
-                    borderRadius: '4px',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  📋
-                </button>
-              )}
+              <span style={{ fontWeight: '500' }}>{PAYMENT_DETAILS.phone}</span>
+              <button
+                onClick={() => copyToClipboard(phone, 'Номер телефона скопирован')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  padding: '4px',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                📋
+              </button>
             </div>
           </div>
-          
-          {(!seller.cardHolderName || !seller.bankName || !seller.cardPhone) && (
-            <div style={{
-              marginTop: '12px',
-              padding: '12px',
-              backgroundColor: '#fff3cd',
-              borderRadius: '8px',
-              fontSize: '14px',
-              color: '#856404'
-            }}>
-              ⚠️ Продавец не заполнил все реквизиты для оплаты. Обратитесь к продавцу.
-              <div style={{ fontSize: '12px', marginTop: '4px' }}>
-                Отсутствует: {[!seller.cardHolderName && 'ФИО', !seller.bankName && 'Банк', !seller.cardPhone && 'Телефон'].filter(Boolean).join(', ')}
-              </div>
-              <div style={{ fontSize: '10px', marginTop: '4px', opacity: 0.7 }}>
-                Debug: cardHolderName='{seller.cardHolderName}', bankName='{seller.bankName}', cardPhone='{seller.cardPhone}'
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Кнопки оплаты */}
         <div style={{ marginBottom: '20px' }}>
           {!showBankList ? (
             <>
               <button
                 onClick={() => {
-                  const amount = order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0);
-                  const phone = seller.cardPhone?.replace(/\D/g, '') || '';
-                  const purpose = `Заказ #${order.id.slice(-6)}`;
-                  const sbpLink = `https://qr.nspk.ru/proxyapp/v1/sbp/c2b/${phone}/${amount}?comment=${encodeURIComponent(purpose)}`;
-                  
-                  // Проверяем устройство
                   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                  const sbpLink = `https://qr.nspk.ru/proverkacheka.com/order/${order.id.slice(-6)}?type=01&bank=100000000111&sum=${amount * 100}&cur=RUB&payeeId=${phone}`;
                   
                   if (isMobile) {
-                    // На мобильном показываем инструкцию
-                    const modal = document.createElement('div');
-                    modal.style.cssText = `
-                      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                      background: rgba(0,0,0,0.8); display: flex; align-items: center;
-                      justify-content: center; z-index: 10000; padding: 20px;
-                    `;
-                    modal.innerHTML = `
-                      <div style="background: white; padding: 30px; border-radius: 16px; text-align: left; max-width: 400px;">
-                        <h3 style="margin: 0 0 20px 0; font-size: 20px; text-align: center;">Оплата через СБП</h3>
-                        
-                        <div style="background: #f8f9fa; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
-                          <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #666; font-size: 14px;">Сумма:</span>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                              <span style="font-weight: 600; font-size: 16px;">${amount} ₽</span>
-                              <button onclick="navigator.clipboard.writeText('${amount}'); this.textContent='✓';" 
-                                style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px;">📋</button>
-                            </div>
-                          </div>
-                          <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #666; font-size: 14px;">Телефон:</span>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                              <span style="font-weight: 600;">${phone}</span>
-                              <button onclick="navigator.clipboard.writeText('${phone}'); this.textContent='✓';" 
-                                style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px;">📋</button>
-                            </div>
-                          </div>
-                          <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #666; font-size: 14px;">Получатель:</span>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                              <span style="font-weight: 600; font-size: 13px;">${seller.cardHolderName || 'Не указан'}</span>
-                              ${seller.cardHolderName ? `<button onclick="navigator.clipboard.writeText('${seller.cardHolderName}'); this.textContent='✓';" 
-                                style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px;">📋</button>` : ''}
-                            </div>
-                          </div>
-                          <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #666; font-size: 14px;">Комментарий:</span>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                              <span style="font-weight: 600;">${purpose}</span>
-                              <button onclick="navigator.clipboard.writeText('${purpose}'); this.textContent='✓';" 
-                                style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px;">📋</button>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <p style="margin: 15px 0; color: #666; font-size: 14px; line-height: 1.5; text-align: center;">
-                          1. Нажмите "Открыть СБП"<br>
-                          2. Выберите ваш банк<br>
-                          3. Подтвердите платеж
-                        </p>
-                        <button onclick="window.location.href='${sbpLink}'; document.body.removeChild(this.parentElement.parentElement);" 
-                          style="width: 100%; padding: 16px; background: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-bottom: 10px;">
-                          💳 Открыть СБП
-                        </button>
-                        <button onclick="navigator.clipboard.writeText('${sbpLink}'); this.textContent='✓ Скопировано';" 
-                          style="width: 100%; padding: 12px; background: #f8f9fa; color: #666; border: 1px solid #e9ecef; border-radius: 8px; cursor: pointer; font-size: 14px; margin-bottom: 10px;">
-                          📋 Скопировать ссылку
-                        </button>
-                        <button onclick="document.body.removeChild(this.parentElement.parentElement)" 
-                          style="width: 100%; padding: 12px; background: none; color: #999; border: none; cursor: pointer; font-size: 14px;">
-                          Отмена
-                        </button>
-                      </div>
-                    `;
-                    document.body.appendChild(modal);
+                    window.location.href = sbpLink;
                   } else {
-                    // На десктопе копируем ссылку
-                    copyToClipboard(sbpLink, 'Ссылка СБП скопирована. Откройте её на телефоне.');
+                    window.open(sbpLink, '_blank');
                   }
                 }}
                 style={{
@@ -401,10 +281,7 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
               
               <button
                 onClick={() => {
-                  const amount = order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0);
-                  const phone = seller.cardPhone?.replace(/\D/g, '') || '';
-                  const purpose = `Заказ #${order.id.slice(-6)}`;
-                  const sbpLink = `https://qr.nspk.ru/proxyapp/v1/sbp/c2b/${phone}/${amount}?comment=${encodeURIComponent(purpose)}`;
+                  const sbpLink = `https://qr.nspk.ru/proverkacheka.com/order/${order.id.slice(-6)}?type=01&bank=100000000111&sum=${amount * 100}&cur=RUB&payeeId=${phone}`;
                   copyToClipboard(sbpLink, 'Ссылка СБП скопирована');
                 }}
                 style={{
@@ -488,7 +365,6 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
           )}
         </div>
 
-        {/* Подсказка */}
         <div style={{ 
           padding: '16px',
           backgroundColor: '#fff3cd',
@@ -501,7 +377,6 @@ const SBPPayment: React.FC<SBPPaymentProps> = ({
           ⚠️ После оплаты нажмите кнопку "Заказ оплачен"
         </div>
 
-        {/* Кнопки действий */}
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
             onClick={() => {

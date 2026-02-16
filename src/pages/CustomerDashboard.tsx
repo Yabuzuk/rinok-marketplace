@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Package, MapPin, Clock, Settings } from 'lucide-react';
 import { Order, User as UserType } from '../types';
-import PaymentModal from '../components/PaymentModal';
 
 interface CustomerDashboardProps {
   user: UserType;
@@ -27,13 +26,29 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
   const [editingAddress, setEditingAddress] = useState('');
   const [editingSuggestions, setEditingSuggestions] = useState<string[]>([]);
   const [showEditingSuggestions, setShowEditingSuggestions] = useState(false);
-  const [paymentModal, setPaymentModal] = useState<{
-    order: Order;
-    seller?: UserType;
-    amount: number;
-    type: 'products' | 'delivery';
-    pavilionNumber?: string;
-  } | null>(null);
+
+  // Обработка результата платежа из URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+    const orderId = params.get('orderId');
+    
+    if (paymentStatus && orderId) {
+      // Очищаем URL
+      window.history.replaceState({}, '', window.location.pathname);
+      
+      if (paymentStatus === 'success') {
+        alert('✅ Платеж успешно выполнен!');
+        // Обновляем статус заказа
+        onUpdateOrder?.(orderId, { 
+          status: 'paid',
+          paidAt: new Date().toISOString()
+        } as any);
+      } else if (paymentStatus === 'fail') {
+        alert('❌ Не получилось оплатить. Попробуйте еще раз.');
+      }
+    }
+  }, [onUpdateOrder]);
 
   
   const getAddressSuggestions = async (query: string) => {
@@ -388,82 +403,34 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                           )}
                           
                           {order.status === 'payment_pending' && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
-                              {(() => {
-                                const pavilionGroups = groupItemsByPavilion(order);
-                                return Object.entries(pavilionGroups).map(([pavilionNumber, group]) => {
-                                  const paymentStatus = getPaymentStatus(order, pavilionNumber);
-                                  if (paymentStatus === 'paid') {
-                                    return (
-                                      <div key={pavilionNumber} style={{
-                                        fontSize: '11px',
-                                        padding: '4px 8px',
-                                        background: '#e8f5e8',
-                                        color: '#2e7d32',
-                                        borderRadius: '4px',
-                                        textAlign: 'center'
-                                      }}>
-                                        Павильон {pavilionNumber}: Оплачено ✓
-                                      </div>
-                                    );
+                            <button 
+                              className="btn btn-primary"
+                              style={{ fontSize: '12px', padding: '6px 12px', marginTop: '8px' }}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                const totalAmount = order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0);
+                                
+                                try {
+                                  const { initPayment } = await import('../utils/tinkoff');
+                                  const uniqueOrderId = `${order.id}_${Date.now()}`;
+                                  const response = await initPayment(
+                                    uniqueOrderId,
+                                    totalAmount,
+                                    `Оплата заказа №${order.id.slice(-6)}`,
+                                    undefined,
+                                    'O'
+                                  );
+                                  
+                                  if (response.Success && response.PaymentURL) {
+                                    window.location.href = response.PaymentURL;
                                   }
-                                  return (
-                                    <button 
-                                      key={pavilionNumber}
-                                      className="btn btn-primary"
-                                      style={{ fontSize: '11px', padding: '4px 8px' }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setPaymentModal({ 
-                                          order, 
-                                          seller: group.seller, 
-                                          amount: group.total, 
-                                          type: 'products',
-                                          pavilionNumber 
-                                        });
-                                      }}
-                                    >
-                                      💳 Оплатить пав. {pavilionNumber} ({group.total} ₽)
-                                    </button>
-                                  );
-                                });
-                              })()}
-                              {order.deliveryPrice && order.deliveryPrice > 0 && (() => {
-                                const deliveryStatus = getDeliveryPaymentStatus(order);
-                                if (deliveryStatus === 'paid') {
-                                  return (
-                                    <div style={{
-                                      fontSize: '11px',
-                                      padding: '4px 8px',
-                                      background: '#fff3e0',
-                                      color: '#ef6c00',
-                                      borderRadius: '4px',
-                                      textAlign: 'center'
-                                    }}>
-                                      Доставка: Оплачено ✓
-                                    </div>
-                                  );
+                                } catch (error) {
+                                  alert('Ошибка инициализации платежа');
                                 }
-                                return (
-                                  <button 
-                                    className="btn btn-secondary"
-                                    style={{ 
-                                      fontSize: '11px', 
-                                      padding: '4px 8px',
-                                      backgroundColor: '#ff9800',
-                                      color: 'white',
-                                      border: 'none'
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setPaymentModal({ order, amount: order.deliveryPrice!, type: 'delivery' });
-                                    }}
-                                  >
-                                    🚚 Оплатить доставку ({order.deliveryPrice} ₽)
-                                  </button>
-                                );
-                              })()}
-                            </div>
+                              }}
+                            >
+                              💳 Оплатить заказ ({order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽)
+                            </button>
                           )}
                           
 
@@ -910,37 +877,33 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                 </div>
               )}
               {selectedOrder.status === 'payment_pending' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
-                  <button 
-                    className="btn btn-primary"
-                    style={{ width: '100%' }}
-                    onClick={() => {
-                      // Оплата товаров
-                      const seller = users?.find(u => u.role === 'seller' && u.pavilionNumber === selectedOrder.pavilionNumber);
-                      const amount = selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0);
-                      setPaymentModal({ order: selectedOrder, seller, amount, type: 'products' });
-                    }}
-                  >
-                    💳 Оплатить товары ({selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽)
-                  </button>
-                  {selectedOrder.deliveryPrice && selectedOrder.deliveryPrice > 0 && (
-                    <button 
-                      className="btn btn-secondary"
-                      style={{ 
-                        width: '100%',
-                        backgroundColor: '#ff9800',
-                        color: 'white',
-                        border: 'none'
-                      }}
-                      onClick={() => {
-                        // Оплата доставки
-                        setPaymentModal({ order: selectedOrder, amount: selectedOrder.deliveryPrice!, type: 'delivery' });
-                      }}
-                    >
-                      🚚 Оплатить доставку ({selectedOrder.deliveryPrice} ₽)
-                    </button>
-                  )}
-                </div>
+                <button 
+                  className="btn btn-primary"
+                  style={{ width: '100%', marginBottom: '12px' }}
+                  onClick={async () => {
+                    const totalAmount = selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (selectedOrder.deliveryPrice || 0);
+                    
+                    try {
+                      const { initPayment } = await import('../utils/tinkoff');
+                      const uniqueOrderId = `${selectedOrder.id}_${Date.now()}`;
+                      const response = await initPayment(
+                        uniqueOrderId,
+                        totalAmount,
+                        `Оплата заказа №${selectedOrder.id.slice(-6)}`,
+                        undefined,
+                        'O'
+                      );
+                      
+                      if (response.Success && response.PaymentURL) {
+                        window.location.href = response.PaymentURL;
+                      }
+                    } catch (error) {
+                      alert('Ошибка инициализации платежа');
+                    }
+                  }}
+                >
+                  💳 Оплатить заказ ({selectedOrder.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (selectedOrder.deliveryPrice || 0)} ₽)
+                </button>
               )}
               
               {(selectedOrder.status === 'pending' || selectedOrder.status === 'seller_editing' || selectedOrder.status === 'customer_approval' || selectedOrder.status === 'manager_pricing') && (
@@ -1119,64 +1082,6 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
             </div>
           </div>
         </div>
-      )}
-      
-      {/* Модальное окно оплаты */}
-      {paymentModal && (
-        <PaymentModal
-          isOpen={true}
-          onClose={() => setPaymentModal(null)}
-          order={paymentModal.order}
-          seller={paymentModal.seller}
-          amount={paymentModal.amount}
-          type={paymentModal.type}
-          pavilionNumber={paymentModal.pavilionNumber}
-          onPaymentConfirmed={async (receiptUrl) => {
-            try {
-              const order = paymentModal.order;
-              const { type, pavilionNumber } = paymentModal;
-              
-              // Обновляем статус оплаты
-              const payments = { ...order.payments };
-              
-              if (type === 'delivery') {
-                payments.delivery = {
-                  status: 'paid',
-                  amount: paymentModal.amount,
-                  receiptUrl,
-                  paidAt: new Date().toISOString()
-                };
-              } else if (pavilionNumber) {
-                payments[pavilionNumber] = {
-                  status: 'paid',
-                  amount: paymentModal.amount,
-                  receiptUrl,
-                  paidAt: new Date().toISOString()
-                };
-              }
-              
-              // Проверяем, все ли оплачено
-              const pavilionGroups = groupItemsByPavilion(order);
-              const allProductsPaid = Object.keys(pavilionGroups).every(pavilion => 
-                payments[pavilion]?.status === 'paid'
-              );
-              const deliveryPaid = !order.deliveryPrice || payments.delivery?.status === 'paid';
-              
-              const updates: Partial<Order> = {
-                payments,
-                status: (allProductsPaid && deliveryPaid) ? 'paid' : 'payment_pending'
-              };
-              
-              await onUpdateOrder?.(order.id, updates);
-              
-              alert(`Оплата ${type === 'products' ? `товаров павильона ${pavilionNumber}` : 'доставки'} подтверждена!`);
-              setPaymentModal(null);
-            } catch (error) {
-              console.error('Ошибка обновления оплаты:', error);
-              alert('Ошибка обновления статуса оплаты');
-            }
-          }}
-        />
       )}
       
 

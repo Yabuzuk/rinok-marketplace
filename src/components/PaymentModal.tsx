@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Order, User } from '../types';
 import ReceiptUpload from './ReceiptUpload';
 import { uploadImage } from '../utils/supabase';
+import { initPayment, PAYMENT_DETAILS } from '../utils/tinkoff';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -9,8 +10,7 @@ interface PaymentModalProps {
   order: Order;
   seller?: User;
   amount: number;
-  type: 'products' | 'delivery';
-  pavilionNumber?: string;
+  type: 'full';
   onPaymentConfirmed: (receiptUrl?: string) => void;
 }
 
@@ -21,11 +21,30 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   seller,
   amount,
   type,
-  pavilionNumber,
   onPaymentConfirmed
 }) => {
   const [receiptUrl, setReceiptUrl] = useState<string>('');
   const [showReceiptUpload, setShowReceiptUpload] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string>('');
+
+  // Слушаем сообщения от iframe для закрытия после оплаты
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Проверяем, что сообщение от Тинькофф
+      if (event.origin.includes('tinkoff') || event.origin.includes('tbank')) {
+        // Если в URL есть payment=success, закрываем iframe
+        if (event.data && typeof event.data === 'string' && event.data.includes('payment=success')) {
+          setPaymentUrl('');
+          onPaymentConfirmed();
+          onClose();
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onPaymentConfirmed, onClose]);
 
   if (!isOpen) return null;
 
@@ -64,20 +83,126 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     }
   };
 
-  // Данные для доставки (фиксированные)
-  const deliveryData = {
-    cardHolderName: 'Баулин Александр Валерьевич',
-    cardPhone: '+79142528674',
-    bankName: 'Сбербанк',
-    bankCard: '2202 2063 7884 1234'
+  const handleTinkoffPayment = async (method: 'card' | 'sbp') => {
+    console.log('Payment method selected:', method);
+    
+    setIsProcessing(true);
+    try {
+      const uniqueOrderId = `${order.id}_${Date.now()}`;
+      const payTypeParam = method === 'sbp' ? 'T' : 'O';
+      console.log('Calling initPayment with payType:', payTypeParam);
+      
+      const response = await initPayment(
+        uniqueOrderId,
+        amount,
+        `Оплата заказа №${order.id.slice(-6)}`,
+        undefined,
+        payTypeParam
+      );
+
+      if (response.Success && response.PaymentURL) {
+        if (method === 'sbp') {
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          if (isMobile) {
+            window.location.href = response.PaymentURL;
+          } else {
+            window.open(response.PaymentURL, '_blank');
+          }
+          setIsProcessing(false);
+        } else {
+          setPaymentUrl(response.PaymentURL);
+          setIsProcessing(false);
+        }
+      }
+    } catch (error) {
+      alert('Ошибка инициализации платежа. Попробуйте позже.');
+      setIsProcessing(false);
+    }
   };
 
-  const paymentData = type === 'delivery' ? deliveryData : seller;
-  const title = type === 'delivery' ? 'Оплата доставки' : `Оплата товаров${pavilionNumber ? ` (павильон ${pavilionNumber})` : ''}`;
-  const icon = type === 'delivery' ? '🚚' : '💳';
+  const paymentData = seller;
+  const title = 'Оплата заказа';
+  const icon = '💳';
+
+  // Если есть URL платежной формы, показываем iframe
+  if (paymentUrl) {
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: '20px'
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '16px',
+          padding: '20px',
+          maxWidth: '500px',
+          width: '100%',
+          height: '80vh',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px'
+        }}>
+          <button
+            onClick={() => {
+              setPaymentUrl('');
+              setIsProcessing(false);
+              onClose();
+            }}
+            style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: '#999',
+              zIndex: 1
+            }}
+          >
+            ×
+          </button>
+          
+          <h3 style={{ 
+            fontSize: '20px', 
+            fontWeight: '600', 
+            margin: '0',
+            color: '#333',
+            textAlign: 'center'
+          }}>
+            Оплата заказа #{order.id.slice(-6)}
+          </h3>
+          
+          <iframe
+            src={paymentUrl}
+            style={{
+              width: '100%',
+              flex: 1,
+              border: 'none',
+              borderRadius: '8px'
+            }}
+            title="Форма оплаты"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{
+    <>
+      {!paymentUrl && (
+      <div style={{
       position: 'fixed',
       top: 0,
       left: 0,
@@ -154,7 +279,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           <div style={{ 
             fontSize: '32px', 
             fontWeight: '700', 
-            color: type === 'delivery' ? '#ff9800' : '#4caf50',
+            color: '#4caf50',
             marginBottom: '4px',
             display: 'flex',
             alignItems: 'center',
@@ -212,75 +337,68 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
             </div>
 
-            {/* ФИО получателя */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>Получатель:</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontWeight: '600', fontSize: '13px' }}>
-                  {paymentData?.cardHolderName || (paymentData as any)?.name || 'Не указан'}
+                  {PAYMENT_DETAILS.cardHolderName}
                 </span>
-                {paymentData?.cardHolderName && (
-                  <button
-                    onClick={() => copyToClipboard(paymentData.cardHolderName!, 'ФИО скопировано')}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      padding: '4px'
-                    }}
-                  >
-                    📋
-                  </button>
-                )}
+                <button
+                  onClick={() => copyToClipboard(PAYMENT_DETAILS.cardHolderName, 'ФИО скопировано')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    padding: '4px'
+                  }}
+                >
+                  📋
+                </button>
               </div>
             </div>
 
             {/* Номер карты */}
-            {paymentData?.bankCard && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#666', fontSize: '14px' }}>Номер карты:</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontWeight: '600', fontFamily: 'monospace' }}>
-                    {paymentData.bankCard}
-                  </span>
-                  <button
-                    onClick={() => copyToClipboard(paymentData.bankCard!.replace(/\s/g, ''), 'Номер карты скопирован')}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      padding: '4px'
-                    }}
-                  >
-                    📋
-                  </button>
-                </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: '#666', fontSize: '14px' }}>Номер карты:</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontWeight: '600', fontFamily: 'monospace' }}>
+                  {PAYMENT_DETAILS.cardNumber}
+                </span>
+                <button
+                  onClick={() => copyToClipboard(PAYMENT_DETAILS.cardNumber.replace(/\s/g, ''), 'Номер карты скопирован')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    padding: '4px'
+                  }}
+                >
+                  📋
+                </button>
               </div>
-            )}
+            </div>
 
             {/* Телефон */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>Телефон:</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontWeight: '600', fontFamily: 'monospace' }}>
-                  {paymentData?.cardPhone || 'Не указан'}
+                  {PAYMENT_DETAILS.phone}
                 </span>
-                {paymentData?.cardPhone && (
-                  <button
-                    onClick={() => copyToClipboard(paymentData.cardPhone!, 'Телефон скопирован')}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      padding: '4px'
-                    }}
-                  >
-                    📋
-                  </button>
-                )}
+                <button
+                  onClick={() => copyToClipboard(PAYMENT_DETAILS.phone, 'Телефон скопирован')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    padding: '4px'
+                  }}
+                >
+                  📋
+                </button>
               </div>
             </div>
 
@@ -288,7 +406,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>Банк:</span>
               <span style={{ fontWeight: '600' }}>
-                {paymentData?.bankName || 'Не указан'}
+                {PAYMENT_DETAILS.bankName}
               </span>
             </div>
           </div>
@@ -323,6 +441,63 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
         {/* Кнопки действий */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <button
+            onClick={() => handleTinkoffPayment('card')}
+            disabled={isProcessing}
+            style={{
+              width: '100%',
+              padding: '16px',
+              background: isProcessing ? '#ccc' : 'linear-gradient(135deg, #FFDD2D 0%, #FFA800 100%)',
+              color: '#333',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(255, 168, 0, 0.4)'
+            }}
+          >
+            {isProcessing ? '⏳ Обработка...' : '💳 Оплатить картой'}
+          </button>
+          
+          <button
+            onClick={() => handleTinkoffPayment('sbp')}
+            disabled={isProcessing}
+            style={{
+              width: '100%',
+              padding: '16px',
+              background: isProcessing ? '#ccc' : '#4caf50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.4)'
+            }}
+          >
+            {isProcessing ? '⏳ Обработка...' : '🏦 Оплатить через СБП'}
+          </button>
+          
+          <div style={{
+            padding: '12px',
+            background: '#f0f7ff',
+            borderRadius: '8px',
+            fontSize: '12px',
+            color: '#0066cc',
+            textAlign: 'center'
+          }}>
+            ℹ️ Оплата через Тинькофф: картой или СБП
+          </div>
+          
           {!showReceiptUpload ? (
             <button
               onClick={() => setShowReceiptUpload(true)}
@@ -338,7 +513,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 cursor: 'pointer'
               }}
             >
-              ✓ Оплачено
+              ✓ Оплатил другим способом
             </button>
           ) : (
             <button
@@ -382,6 +557,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         </div>
       </div>
     </div>
+      )}
+    </>
   );
 };
 
