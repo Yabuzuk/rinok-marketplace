@@ -12,6 +12,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [userType, setUserType] = useState<'customer' | 'seller' | 'admin' | 'courier' | 'manager'>('customer');
+  const [clickCount, setClickCount] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -116,7 +117,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
           <X size={20} />
         </button>
 
-        <h2 className="text-xl font-bold mb-4 text-center text-slate-900">
+        <h2 
+          className="text-xl font-bold mb-4 text-center text-slate-900 cursor-pointer select-none"
+          onClick={() => setClickCount(prev => prev + 1)}
+        >
           {mode === 'login' ? 'Вход' : 'Регистрация'}
         </h2>
 
@@ -129,16 +133,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
           >
             Покупатель
           </button>
-          <button
-            onClick={() => setUserType('seller')}
-            className={`flex-1 py-2 px-3 border-none rounded-md text-sm cursor-pointer transition-colors ${
-              userType === 'seller' ? 'bg-green-500 text-white' : 'bg-transparent text-slate-600'
-            }`}
-          >
-            Продавец
-          </button>
-          {mode === 'login' && (
+          {(mode === 'login' && clickCount >= 5) && (
             <>
+              <button
+                onClick={() => setUserType('seller')}
+                className={`flex-1 py-2 px-3 border-none rounded-md text-sm cursor-pointer transition-colors ${
+                  userType === 'seller' ? 'bg-green-500 text-white' : 'bg-transparent text-slate-600'
+                }`}
+              >
+                Продавец
+              </button>
               <button
                 onClick={() => setUserType('admin')}
                 className={`flex-1 py-2 px-2 border-none rounded-md text-xs cursor-pointer transition-colors ${
@@ -334,10 +338,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                       <label className="flex items-center gap-2 text-xs mb-1">
                         <input type="checkbox" required className="w-3 h-3" />
                         Принимаю <button type="button" onClick={() => navigate('/legal?tab=offer')} className="bg-transparent border-none text-green-500 underline cursor-pointer p-0 text-xs">Договор-оферту на оказание услуг продвижения</button>
-                      </label>
-                      <label className="flex items-center gap-2 text-xs mb-1">
-                        <input type="checkbox" required className="w-3 h-3" />
-                        Обязуюсь соблюдать <button type="button" onClick={() => navigate('/legal?tab=product-rules')} className="bg-transparent border-none text-green-500 underline cursor-pointer p-0 text-xs">Правила размещения товаров</button>
                       </label>
                     </div>
                   </div>

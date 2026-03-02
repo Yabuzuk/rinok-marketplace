@@ -35,7 +35,23 @@ export const firebaseApi = {
   },
 
   async createProduct(product: Omit<Product, 'id'>): Promise<Product> {
-    const docRef = await addDoc(collection(db, 'products'), product);
+    // Рекурсивная функция для удаления undefined
+    const removeUndefined = (obj: any): any => {
+      if (Array.isArray(obj)) {
+        return obj.map(item => removeUndefined(item));
+      }
+      if (obj !== null && typeof obj === 'object') {
+        return Object.fromEntries(
+          Object.entries(obj)
+            .filter(([_, v]) => v !== undefined)
+            .map(([k, v]) => [k, removeUndefined(v)])
+        );
+      }
+      return obj;
+    };
+    
+    const cleanProduct = removeUndefined(product);
+    const docRef = await addDoc(collection(db, 'products'), cleanProduct);
     return { id: docRef.id, ...product };
   },
 
@@ -68,11 +84,38 @@ export const firebaseApi = {
   },
 
   async createOrder(order: Omit<Order, 'id'>): Promise<Order> {
-    const docRef = await addDoc(collection(db, 'orders'), {
-      ...order,
-      createdAt: new Date().toISOString()
-    });
-    return { id: docRef.id, ...order };
+    console.log('firebaseApi.createOrder called with:', order);
+    try {
+      // Рекурсивная функция для удаления undefined
+      const removeUndefined = (obj: any): any => {
+        if (Array.isArray(obj)) {
+          return obj.map(item => removeUndefined(item));
+        }
+        if (obj !== null && typeof obj === 'object') {
+          return Object.fromEntries(
+            Object.entries(obj)
+              .filter(([_, v]) => v !== undefined)
+              .map(([k, v]) => [k, removeUndefined(v)])
+          );
+        }
+        return obj;
+      };
+      
+      const cleanOrder = removeUndefined({
+        ...order,
+        createdAt: new Date().toISOString()
+      });
+      
+      console.log('Clean order data:', cleanOrder);
+      const docRef = await addDoc(collection(db, 'orders'), cleanOrder);
+      console.log('Order created in Firebase with ID:', docRef.id);
+      const createdOrder = { id: docRef.id, ...order };
+      console.log('Returning order:', createdOrder);
+      return createdOrder;
+    } catch (error) {
+      console.error('❌ Error creating order in Firebase:', error);
+      throw error;
+    }
   },
 
   async updateOrder(id: string, updates: Partial<Order>): Promise<void> {

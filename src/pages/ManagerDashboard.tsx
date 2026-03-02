@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Package, Settings, FileText } from 'lucide-react';
+import { Package, Settings, FileText, Calculator } from 'lucide-react';
 import { Order, User as UserType } from '../types';
 import ReceiptViewer from '../components/ReceiptViewer';
+import { calculateDeliveryPrice } from '../utils/yandexDelivery';
 
 interface ManagerDashboardProps {
   user: UserType;
@@ -44,6 +45,8 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
   const [deliveryPrices, setDeliveryPrices] = useState<Record<string, number>>({});
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
   const [viewingReceipt, setViewingReceipt] = useState<string | null>(null);
+  const [calculatingPrices, setCalculatingPrices] = useState<Record<string, boolean>>({});
+  const [warehouseAddress] = useState('Москва, ул. Примерная, 1'); // Адрес склада/павильона
 
   // Заказы для добавления доставки (confirmed) и готовые к отправке (ready)
   const confirmedOrders = orders.filter(order => order.status === 'confirmed');
@@ -144,6 +147,32 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
       case 'delivering': return 'В пути';
       case 'delivered': return 'Доставлен';
       case 'cancelled': return 'Отменен';
+    }
+  };
+
+  const handleCalculateDelivery = async (group: any) => {
+    const token = process.env.REACT_APP_YANDEX_DELIVERY_TOKEN;
+    
+    if (!token) {
+      alert('Токен Яндекс Доставки не настроен');
+      return;
+    }
+
+    setCalculatingPrices(prev => ({ ...prev, [group.id]: true }));
+
+    try {
+      const price = await calculateDeliveryPrice(
+        warehouseAddress,
+        group.deliveryAddress,
+        token
+      );
+      
+      setDeliveryPrices(prev => ({ ...prev, [group.id]: price }));
+    } catch (error) {
+      console.error('Error calculating delivery:', error);
+      alert('Ошибка расчета доставки. Введите вручную.');
+    } finally {
+      setCalculatingPrices(prev => ({ ...prev, [group.id]: false }));
     }
   };
 
@@ -322,7 +351,26 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                             Товары: {group.totalAmount} ₽
                           </div>
                           
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button
+                              onClick={() => handleCalculateDelivery(group)}
+                              disabled={calculatingPrices[group.id]}
+                              style={{
+                                padding: '8px',
+                                border: '1px solid #ff6b35',
+                                borderRadius: '4px',
+                                background: 'white',
+                                cursor: calculatingPrices[group.id] ? 'wait' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '12px',
+                                color: '#ff6b35'
+                              }}
+                            >
+                              <Calculator size={14} />
+                              {calculatingPrices[group.id] ? '...' : 'Авто'}
+                            </button>
                             <input
                               type="number"
                               min="0"

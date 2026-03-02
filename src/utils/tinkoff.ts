@@ -62,6 +62,7 @@ export const initPayment = async (
       Amount: amount * 100,
       OrderId: orderId,
       Description: description,
+      NotificationURL: 'https://rinok.vercel.app/api/tinkoff-webhook',
       SuccessURL: `${window.location.origin}/customer-dashboard?payment=success&orderId=${orderId}&closeIframe=true`,
       FailURL: `${window.location.origin}/customer-dashboard?payment=fail&orderId=${orderId}`
     };

@@ -72,6 +72,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
         description: formData.get('description') as string,
         stock: Number(formData.get('stock')),
         minOrderQuantity: Number(formData.get('minOrderQuantity')),
+        internalCode: formData.get('internalCode') as string || undefined,
         sellerId: product.sellerId,
         pavilionNumber: product.pavilionNumber
       };
@@ -187,7 +188,12 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
               </label>
               <input name="minOrderQuantity" type="number" min="1" className="input" defaultValue={product.minOrderQuantity} required />
             </div>
-            <div></div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                Служебный номер (необязательно)
+              </label>
+              <input name="internalCode" className="input" defaultValue={product.internalCode || ''} placeholder="Например: A-123" />
+            </div>
           </div>
 
           <div style={{ marginBottom: '16px' }}>

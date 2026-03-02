@@ -20,6 +20,7 @@ import ManagerDashboard from './pages/ManagerDashboard';
 import PavilionPage from './pages/PavilionPage';
 import LegalPage from './pages/LegalPage';
 import TestCancelPayment from './pages/TestCancelPayment';
+import LandingPage from './pages/LandingPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 
@@ -51,6 +52,38 @@ const AppContent: React.FC = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [skipNextReload, setSkipNextReload] = useState(false);
+
+  // Глобальный счетчик новых заказов для продавца
+  React.useEffect(() => {
+    if (currentUser?.role === 'seller' && currentUser.pavilionNumber) {
+      const storageKey = `seller_${currentUser.pavilionNumber}_orders`;
+      const savedOrders = localStorage.getItem(storageKey);
+      const savedOrdersData = savedOrders ? JSON.parse(savedOrders) : {};
+      
+      const sellerOrders = orders.filter(order => {
+        if (order.pavilionNumber) {
+          return String(order.pavilionNumber) === String(currentUser.pavilionNumber);
+        }
+        return order.items?.some(item => {
+          const product = products.find(p => p.id === item.productId);
+          return product && String(product.pavilionNumber) === String(currentUser.pavilionNumber);
+        }) || false;
+      });
+      
+      let newCount = 0;
+      sellerOrders.forEach(order => {
+        const savedOrder = savedOrdersData[order.id];
+        if (!savedOrder) {
+          newCount++;
+        } else if (savedOrder.status !== order.status) {
+          newCount++;
+        }
+      });
+      
+      (window as any).sellerNewOrdersCount = newCount;
+      console.log('🌍 Global counter updated:', newCount);
+    }
+  }, [orders, products, currentUser]);
 
   useEffect(() => {
     loadData();
@@ -354,9 +387,10 @@ const AppContent: React.FC = () => {
 
   const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
     try {
+      const order = orders.find(o => o.id === orderId);
+      
       await firebaseApi.updateOrder(orderId, { status });
       
-      const order = orders.find(o => o.id === orderId);
       if (order) {
         const recipients = [];
         let message = '';
@@ -365,24 +399,20 @@ const AppContent: React.FC = () => {
         // Определяем получателей и сообщения по схеме
         switch (status) {
           case 'confirmed':
-            // 2Б: Продавец подтвердил без изменений
-            if (order.customerId) {
-              recipients.push(order.customerId);
-              message = `Заказ №${order.id.slice(-6)} подтвержден продавцом`;
-            }
-            // Менеджер получает уведомление
-            const managers = users.filter(u => u.role === 'manager');
-            managers.forEach(manager => {
-              recipients.push(manager.id);
-              if (!message) message = `Заказ №${order.id.slice(-6)} подтвержден, готов к обработке`;
-            });
+            // 2: Продавец подтвердил заказ → Менеджер получает уведомление
+            const confirmedManagers = users.filter(u => u.role === 'manager');
+            confirmedManagers.forEach(manager => recipients.push(manager.id));
+            message = `Заказ №${order.id.slice(-6)} подтвержден продавцом, требуется добавить доставку`;
             break;
             
           case 'payment_pending':
-            // 3: Менеджер добавил доставку
+            // 3: Менеджер добавил доставку → Покупатель получает уведомление
             if (order.customerId) {
               recipients.push(order.customerId);
               message = `К заказу №${order.id.slice(-6)} добавлена доставка. Требуется оплата`;
+              console.log('📱 Отправка уведомления покупателю:', order.customerId, message);
+            } else {
+              console.warn('⚠️ customerId отсутствует в заказе:', order.id);
             }
             break;
             
@@ -462,8 +492,10 @@ const AppContent: React.FC = () => {
   };
 
   const handleCreateOrder = async (orderData: Omit<Order, 'id'>) => {
+    console.log('handleCreateOrder called with:', orderData);
     try {
       const order = await firebaseApi.createOrder(orderData);
+      console.log('Order created, adding to state:', order);
       setOrders(prev => [...prev, order]);
       
       // Отправляем push-уведомление продавцу
@@ -477,15 +509,21 @@ const AppContent: React.FC = () => {
           } catch (notificationError) {
             console.error('❌ Ошибка отправки уведомления продавцу:', notificationError);
           }
+        } else {
+          console.warn('⚠️ Seller not found for pavilion:', orderData.pavilionNumber);
         }
       }
       
-      loadData();
+      console.log('Calling loadData to refresh orders...');
+      await loadData();
+      console.log('Clearing cart...');
       setCart([]);
       localStorage.removeItem('cart');
+      console.log('Order creation complete, returning order');
       return order;
     } catch (error) {
-      console.error('Error creating order:', error);
+      console.error('❌ Error in handleCreateOrder:', error);
+      throw error;
     }
   };
 
@@ -647,6 +685,7 @@ const AppContent: React.FC = () => {
                 />
               } 
             />
+            <Route path="/landing" element={<LandingPage />} />
             
             <Route 
               path="/pavilion/:pavilionNumber" 
@@ -866,6 +905,27 @@ const AppContent: React.FC = () => {
                       try {
                         console.log('Updating order:', orderId, 'with updates:', updates);
                         await firebaseApi.updateOrder(orderId, updates);
+                        
+                        // Отправляем уведомления при изменении статуса
+                        if (updates.status === 'payment_pending') {
+                          const order = orders.find(o => o.id === orderId);
+                          if (order && order.customerId) {
+                            console.log('📱 Отправка уведомления покупателю:', order.customerId);
+                            try {
+                              await sendNotificationUtil(
+                                [order.customerId],
+                                'ОптБазар',
+                                `К заказу №${order.id.slice(-6)} добавлена доставка. Требуется оплата`
+                              );
+                              console.log('✅ Уведомление отправлено покупателю');
+                            } catch (notificationError) {
+                              console.error('❌ Ошибка отправки уведомления:', notificationError);
+                            }
+                          } else {
+                            console.warn('⚠️ customerId отсутствует в заказе:', orderId);
+                          }
+                        }
+                        
                         loadData();
                       } catch (error) {
                         console.error('Error updating order:', error);

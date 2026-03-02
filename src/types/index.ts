@@ -40,6 +40,7 @@ export interface Product {
   rating: number;
   reviews: number;
   minOrderQuantity: number;
+  internalCode?: string; // Служебный номер для продавца
 }
 
 export interface PaymentInfo {
@@ -87,6 +88,7 @@ export interface OrderItem {
   productName: string;
   quantity: number;
   price: number;
+  internalCode?: string; // Служебный номер товара
 }
 
 export interface ExtendedOrder extends Order {

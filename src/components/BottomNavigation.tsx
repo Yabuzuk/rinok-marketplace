@@ -47,6 +47,23 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   const [showSearch, setShowSearch] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [searchResults, setSearchResults] = React.useState<any[]>([]);
+  const [newOrdersCount, setNewOrdersCount] = React.useState(0);
+  
+  // Отслеживаем счетчик новых заказов для продавца
+  React.useEffect(() => {
+    if (user?.role === 'seller' && user.pavilionNumber) {
+      const updateCount = () => {
+        const count = (window as any).sellerNewOrdersCount || 0;
+        console.log('🔄 BottomNav reading counter:', count);
+        setNewOrdersCount(count);
+      };
+      
+      updateCount();
+      const interval = setInterval(updateCount, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [user]);
   const renderNavigation = () => {
     if (!user) {
       // Гостевое меню
@@ -98,7 +115,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         return [
           { icon: <TrendingUp size={20} />, label: 'Статистика', onClick: () => onDashboardClick('analytics'), badge: undefined },
           { icon: <Box size={20} />, label: 'Товары', onClick: () => onDashboardClick('products'), badge: undefined },
-          { icon: <FileText size={20} />, label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: undefined },
+          { icon: <FileText size={20} />, label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: newOrdersCount > 0 ? newOrdersCount : undefined },
           { icon: <Warehouse size={20} />, label: 'Склад', onClick: onWarehouseClick || (() => {}), badge: undefined },
           { icon: <UserCircle size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
         ];
@@ -114,11 +131,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
       
       case 'admin':
         return [
-          { icon: <TrendingUp size={20} />, label: 'Дашборд', onClick: () => onDashboardClick('dashboard'), badge: undefined },
+          { icon: <Box size={20} />, label: 'Товары', onClick: () => onDashboardClick('products'), badge: undefined },
           { icon: <Users size={20} />, label: 'Пользователи', onClick: () => onDashboardClick('users'), badge: undefined },
           { icon: <FileText size={20} />, label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: undefined },
-          { icon: <Settings size={20} />, label: 'Настройки', onClick: () => onDashboardClick('settings'), badge: undefined },
-          { icon: <Shield size={20} />, label: 'Админ', onClick: () => onDashboardClick('admin'), badge: undefined }
+          { icon: <TrendingUp size={20} />, label: 'Статистика', onClick: () => onDashboardClick('dashboard'), badge: undefined },
+          { icon: <Menu size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
         ];
       
       case 'manager':
@@ -316,23 +333,17 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
               >
                 ⚖️ Ответственность сторон
               </button>
-              <button
-                onClick={() => {
-                  navigate('/legal?tab=product-rules');
-                  setShowBurgerMenu(false);
-                }}
-                className="w-full px-3 py-2 my-0.5 border-none rounded-md bg-slate-100 hover:bg-slate-200 cursor-pointer text-left text-xs transition-colors"
-              >
-                📦 Правила размещения товаров
-              </button>
             </div>
             
             {/* Контакты */}
             <div className="mb-3">
               <h4 className="text-sm text-slate-600 mb-2">Контакты</h4>
               <div className="text-xs text-slate-600 leading-relaxed">
-                <div>📧 amixvn@gmail.com</div>
-                <div>📞 +7 913 949 2570</div>
+                <div>📧 vietnam.amix@gmail.com</div>
+                <div className="flex items-center gap-1">
+                  📞 +7 913 949 2570
+                  <img src="/Логотип_MAX.svg" alt="MAX" className="w-4 h-4 ml-1" />
+                </div>
                 <div>📍 г. Новосибирск</div>
               </div>
             </div>

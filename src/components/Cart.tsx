@@ -189,7 +189,8 @@ const Cart: React.FC<CartProps> = ({
               productId: item.product.id,
               productName: item.product.name,
               quantity: item.quantity,
-              price: item.product.price
+              price: item.product.price,
+              internalCode: item.product.internalCode
             })),
             // Доставку добавляет менеджер
           ],
@@ -200,10 +201,14 @@ const Cart: React.FC<CartProps> = ({
           pavilionNumber
         };
 
-        return await onCreateOrder(order);
+        console.log('Creating order for pavilion:', pavilionNumber, order);
+        const result = await onCreateOrder(order);
+        console.log('Order created:', result);
+        return result;
       });
 
-      await Promise.all(orderPromises);
+      const results = await Promise.all(orderPromises);
+      console.log('All orders created:', results);
       alert('Заказы успешно созданы!');
       onClose();
     } catch (error) {

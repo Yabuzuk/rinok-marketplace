@@ -34,6 +34,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
           'dashboard': 'orders',
           'users': 'users',
           'orders': 'orders',
+          'products': 'products',
           'settings': 'users',
           'admin': 'orders'
         };
@@ -112,7 +113,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
       price: Number(formData.get('price')),
       category: formData.get('category') as string,
       description: formData.get('description') as string,
-      stock: Number(formData.get('stock'))
+      stock: Number(formData.get('stock')),
+      pavilionNumber: formData.get('pavilionNumber') as string,
+      internalCode: formData.get('internalCode') as string || undefined
     };
 
     onUpdateProduct?.(editingProduct.id, updates);
@@ -501,7 +504,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
         {activeTab === 'products' && (
           <div>
             {editingProduct && (
-              <div className="card" style={{ marginBottom: '24px' }}>
+              <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                padding: '20px'
+              }}>
+                <div className="card" style={{ 
+                  maxWidth: '600px', 
+                  width: '100%',
+                  maxHeight: '90vh',
+                  overflowY: 'auto'
+                }}>
                 <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
                   Редактировать товар
                 </h3>
@@ -542,6 +563,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                       <input name="stock" type="number" className="input" defaultValue={editingProduct.stock} required />
                     </div>
                   </div>
+                  
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                      Номер павильона
+                    </label>
+                    <input name="pavilionNumber" className="input" defaultValue={editingProduct.pavilionNumber} required placeholder="Например: 15A" />
+                  </div>
+                  
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                      Служебный номер (необязательно)
+                    </label>
+                    <input name="internalCode" className="input" defaultValue={editingProduct.internalCode || ''} placeholder="Например: A-123" />
+                  </div>
 
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
@@ -571,6 +606,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
                   </div>
                 </form>
               </div>
+            </div>
             )}
 
             <div className="grid grid-3">

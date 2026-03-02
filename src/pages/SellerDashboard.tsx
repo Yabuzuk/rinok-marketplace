@@ -46,6 +46,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState<{ [key: string]: string }>({});
   const [viewingReceipt, setViewingReceipt] = useState<string | null>(null);
+  const [newOrdersCount, setNewOrdersCount] = useState(0);
 
   // Слушатель для переключения вкладок
   React.useEffect(() => {
@@ -58,7 +59,14 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
           'orders': 'orders',
           'profile': 'settings'
         };
-        setActiveTab(tabMap[event.detail] || event.detail);
+        const newTab = tabMap[event.detail] || event.detail;
+        setActiveTab(newTab);
+        
+        // Обнуляем счетчик при открытии вкладки заказов
+        if (newTab === 'orders') {
+          localStorage.setItem(`seller_${user.pavilionNumber}_newOrders`, '0');
+          setNewOrdersCount(0);
+        }
       }
     };
     
@@ -69,15 +77,13 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       window.removeEventListener('setWarehouseTab', handleWarehouseTab);
       window.removeEventListener('switchSellerTab', handleSellerTab);
     };
-  }, []);
+  }, [user.pavilionNumber]);
 
   // Очищаем localStorage при загрузке
   React.useEffect(() => {
-    // Удаляем все товары из localStorage
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('sellerProducts_')) {
         localStorage.removeItem(key);
-        console.log('Removed from localStorage:', key);
       }
     });
   }, []);
@@ -85,18 +91,6 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
   // Фильтруем товары по номеру павильона
   const sellerProducts = products.filter(p => p.pavilionNumber === user.pavilionNumber);
   
-  console.log('SellerDashboard props:', { onUpdateOrder: !!onUpdateOrder });
-  console.log('editingOrder state:', editingOrder);
-  console.log('activeTab:', activeTab);
-  console.log('All products:', products.length);
-  console.log('User pavilion:', user.pavilionNumber);
-  console.log('Products by pavilion:', products.map(p => ({ 
-    name: p.name, 
-    pavilionNumber: p.pavilionNumber,
-    match: p.pavilionNumber === user.pavilionNumber
-  })));
-  console.log('Seller products:', sellerProducts.length);
-  console.log('==============================');
   const sellerOrders = orders.filter(order => {
     // Если pavilionNumber есть в заказе, используем его
     if (order.pavilionNumber) {
@@ -108,15 +102,72 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       return product && String(product.pavilionNumber) === String(user.pavilionNumber);
     }) || false;
   });
-  
-  console.log('=== SELLER ORDERS DEBUG ===');
-  console.log('All orders:', orders.length);
-  console.log('User pavilion:', user.pavilionNumber);
-  console.log('User pavilion type:', typeof user.pavilionNumber);
-  console.log('Orders with pavilions:', orders.map(o => ({ id: o.id, pavilion: o.pavilionNumber, type: typeof o.pavilionNumber })));
-  console.log('Filtered seller orders:', sellerOrders.length);
-  console.log('============================');
 
+  // Отслеживаем новые и обновленные заказы
+  React.useEffect(() => {
+    const storageKey = `seller_${user.pavilionNumber}_orders`;
+    const countKey = `seller_${user.pavilionNumber}_newOrders`;
+    
+    const savedOrders = localStorage.getItem(storageKey);
+    const savedOrdersData = savedOrders ? JSON.parse(savedOrders) : {};
+    
+    let newCount = 0;
+    
+    sellerOrders.forEach(order => {
+      const savedOrder = savedOrdersData[order.id];
+      
+      if (!savedOrder) {
+        // Новый заказ
+        newCount++;
+      } else if (savedOrder.status !== order.status) {
+        // Статус изменился
+        newCount++;
+      }
+    });
+    
+    console.log('🔔 Счетчик заказов:', { 
+      pavilion: user.pavilionNumber, 
+      newCount, 
+      totalOrders: sellerOrders.length,
+      activeTab 
+    });
+    
+    // Обновляем счетчик только если не на вкладке заказов
+    if (activeTab !== 'orders') {
+      localStorage.setItem(countKey, newCount.toString());
+      setNewOrdersCount(newCount);
+      (window as any).sellerNewOrdersCount = newCount;
+    } else {
+      // Если на вкладке заказов, обнуляем и сохраняем текущее состояние
+      localStorage.setItem(countKey, '0');
+      setNewOrdersCount(0);
+      (window as any).sellerNewOrdersCount = 0;
+      
+      // Сохраняем текущее состояние заказов
+      const currentOrdersData: any = {};
+      sellerOrders.forEach(order => {
+        currentOrdersData[order.id] = {
+          status: order.status,
+          createdAt: order.createdAt
+        };
+      });
+      localStorage.setItem(storageKey, JSON.stringify(currentOrdersData));
+    }
+  }, [sellerOrders, user.pavilionNumber, activeTab]);
+
+  // Загружаем счетчик при монтировании
+  React.useEffect(() => {
+    const countKey = `seller_${user.pavilionNumber}_newOrders`;
+    const savedCount = localStorage.getItem(countKey);
+    if (savedCount && activeTab !== 'orders') {
+      setNewOrdersCount(parseInt(savedCount, 10));
+    }
+  }, [user.pavilionNumber, activeTab]);
+
+  // Передаем счетчик в window для BottomNavigation
+  React.useEffect(() => {
+    (window as any).sellerNewOrdersCount = newOrdersCount;
+  }, [newOrdersCount]);
   // Расчет выручки за текущий месяц
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
@@ -159,11 +210,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       let imageUrl = formData.get('imageUrl') as string;
       
       if (selectedImage) {
-        console.log('Загружаем изображение в Supabase...');
         const supabaseUrl = await uploadImage(selectedImage);
         if (supabaseUrl) {
           imageUrl = supabaseUrl;
-          console.log('Получена ссылка:', imageUrl);
         } else {
           alert('Ошибка загрузки изображения');
           return;
@@ -178,6 +227,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
         description: formData.get('description') as string,
         stock: Number(formData.get('stock')),
         minOrderQuantity: Number(formData.get('minOrderQuantity')),
+        internalCode: formData.get('internalCode') as string || undefined,
         sellerId: user.id,
         pavilionNumber: user.pavilionNumber || '',
         rating: 0,
@@ -326,10 +376,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <button 
                       className="btn btn-secondary"
-                      onClick={() => {
-                        console.log('Force reload clicked');
-                        window.location.reload();
-                      }}
+                      onClick={() => window.location.reload()}
                       style={{ fontSize: '14px' }}
                     >
                       🔄 Обновить
@@ -395,7 +442,12 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                           </label>
                           <input name="minOrderQuantity" type="number" min="1" className="input" defaultValue="1" required />
                         </div>
-                        <div></div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                            Служебный номер (необязательно)
+                          </label>
+                          <input name="internalCode" className="input" placeholder="Например: A-123" />
+                        </div>
                       </div>
 
                       <div style={{ marginBottom: '16px' }}>
@@ -504,18 +556,12 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   />
                 )}
 
-                {(() => {
-                  console.log('Rendering EditOrderModal check:', { editingOrder: !!editingOrder, onUpdateOrder: !!onUpdateOrder });
-                  return null;
-                })()}
+                {(() => null)()}
                 {editingOrder && onUpdateOrder && (
                   <EditOrderModal
                     order={editingOrder}
                     isOpen={!!editingOrder}
-                    onClose={() => {
-                      console.log('Closing EditOrderModal');
-                      setEditingOrder(null);
-                    }}
+                    onClose={() => setEditingOrder(null)}
                     onUpdate={onUpdateOrder}
                   />
                 )}
@@ -544,17 +590,35 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 <div className="grid grid-3">
                   {sellerProducts.map(product => (
                     <div key={product.id} className="card">
-                      <img 
-                        src={product.image} 
-                        alt={product.name}
-                        style={{ 
-                          width: '100%', 
-                          height: '120px', 
-                          objectFit: 'cover',
-                          borderRadius: '8px',
-                          marginBottom: '12px'
-                        }}
-                      />
+                      <div style={{ position: 'relative' }}>
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          style={{ 
+                            width: '100%', 
+                            height: '120px', 
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            marginBottom: '12px'
+                          }}
+                        />
+                        {product.internalCode && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            color: 'white',
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            backdropFilter: 'blur(4px)'
+                          }}>
+                            {product.internalCode}
+                          </div>
+                        )}
+                      </div>
                       <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
                         {product.name}
                       </h3>
@@ -637,17 +701,27 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                             fontWeight: '500',
                             background: order.status === 'pending' ? '#fff3cd' : 
                                        order.status === 'confirmed' ? '#d1ecf1' : 
+                                       order.status === 'payment_pending' ? '#ffe0e0' :
+                                       order.status === 'paid' ? '#d4edda' :
                                        order.status === 'ready' ? '#d4edda' :
-                                       order.status === 'delivering' ? '#e1f5fe' : '#f8d7da',
+                                       order.status === 'delivering' ? '#e1f5fe' : 
+                                       order.status === 'delivered' ? '#d4edda' : '#f8d7da',
                             color: order.status === 'pending' ? '#856404' : 
                                   order.status === 'confirmed' ? '#0c5460' : 
+                                  order.status === 'payment_pending' ? '#c62828' :
+                                  order.status === 'paid' ? '#155724' :
                                   order.status === 'ready' ? '#155724' :
-                                  order.status === 'delivering' ? '#01579b' : '#721c24'
+                                  order.status === 'delivering' ? '#01579b' : 
+                                  order.status === 'delivered' ? '#155724' : '#721c24'
                           }}>
                             {order.status === 'pending' ? 'Ожидает подтверждения' :
                              order.status === 'confirmed' ? 'Подтвержден' :
+                             order.status === 'payment_pending' ? 'Ожидает оплаты' :
+                             order.status === 'paid' ? 'Оплачен' :
                              order.status === 'ready' ? 'Собран' :
-                             order.status === 'delivering' ? 'В доставке' : order.status}
+                             order.status === 'delivering' ? 'В доставке' : 
+                             order.status === 'delivered' ? 'Доставлен' : 
+                             order.status === 'cancelled' ? 'Отменен' : 'Неизвестный статус'}
                           </div>
                         </div>
 
@@ -659,7 +733,19 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                               padding: '8px 0',
                               borderBottom: index < filteredItems.length - 1 ? '1px solid #f0f0f0' : 'none'
                             }}>
-                              <span>{item.productName} x {item.quantity}</span>
+                              <div style={{ flex: 1 }}>
+                                <div>{item.productName} x {item.quantity}</div>
+                                {item.internalCode && (
+                                  <div style={{ 
+                                    fontSize: '24px', 
+                                    color: '#666',
+                                    marginTop: '2px',
+                                    fontWeight: '600'
+                                  }}>
+                                    № {item.internalCode}
+                                  </div>
+                                )}
+                              </div>
                               <span style={{ fontWeight: '600' }}>{item.price * item.quantity} ₽</span>
                             </div>
                           ))}
@@ -722,9 +808,9 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                             {/* Статус оплаты */}
                             {order.payments?.[user.pavilionNumber || ''] && (
                               <div style={{
-                                fontSize: '12px',
+                                fontSize: '14px',
                                 color: order.payments[user.pavilionNumber!].status === 'paid' ? '#4caf50' : '#ff9800',
-                                fontWeight: '500'
+                                fontWeight: '600'
                               }}>
                                 {order.payments[user.pavilionNumber!].status === 'paid' ? '✓ Оплачено' : '⏳ Ожидает оплаты'}
                               </div>
@@ -739,11 +825,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                                   fontSize: '14px', 
                                   padding: '8px 16px'
                                 }}
-                                onClick={() => {
-                                  console.log('Edit button clicked for order:', order.id);
-                                  console.log('Order items:', order.items);
-                                  setEditingOrder(order);
-                                }}
+                                onClick={() => setEditingOrder(order)}
                               >
                                 <Edit size={14} style={{ marginRight: '4px' }} />
                                 Редактировать

@@ -31,9 +31,12 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const paymentStatus = params.get('payment');
-    const orderId = params.get('orderId');
+    const orderIdWithTimestamp = params.get('orderId');
     
-    if (paymentStatus && orderId) {
+    if (paymentStatus && orderIdWithTimestamp) {
+      // Извлекаем оригинальный ID (убираем timestamp)
+      const orderId = orderIdWithTimestamp.split('_')[0];
+      
       // Очищаем URL
       window.history.replaceState({}, '', window.location.pathname);
       
