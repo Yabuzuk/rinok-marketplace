@@ -183,5 +183,75 @@ export const firebaseApi = {
     
     const doc = querySnapshot.docs[0];
     return { id: doc.id, ...doc.data() } as User;
+  },
+
+  // Групповые заказы
+  async getGroupOrders(): Promise<any[]> {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'groupOrders'));
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('❌ Ошибка загрузки групповых заказов:', error);
+      return [];
+    }
+  },
+
+  async createGroupOrder(groupOrder: any): Promise<any> {
+    try {
+      // Рекурсивная функция для удаления undefined
+      const removeUndefined = (obj: any): any => {
+        if (Array.isArray(obj)) {
+          return obj.map(item => removeUndefined(item));
+        }
+        if (obj !== null && typeof obj === 'object') {
+          return Object.fromEntries(
+            Object.entries(obj)
+              .filter(([_, v]) => v !== undefined)
+              .map(([k, v]) => [k, removeUndefined(v)])
+          );
+        }
+        return obj;
+      };
+      
+      const cleanGroupOrder = removeUndefined(groupOrder);
+      console.log('Creating group order:', cleanGroupOrder);
+      
+      const docRef = await addDoc(collection(db, 'groupOrders'), cleanGroupOrder);
+      console.log('Group order created with ID:', docRef.id);
+      return { id: docRef.id, ...groupOrder };
+    } catch (error) {
+      console.error('❌ Ошибка создания группового заказа:', error);
+      throw error;
+    }
+  },
+
+  async updateGroupOrder(id: string, updates: any): Promise<void> {
+    try {
+      const docRef = doc(db, 'groupOrders', id);
+      await updateDoc(docRef, updates);
+    } catch (error) {
+      console.error('❌ Ошибка обновления группового заказа:', error);
+      throw error;
+    }
+  },
+
+  async getGroupOrderByCode(code: string): Promise<any | null> {
+    try {
+      const q = query(collection(db, 'groupOrders'), where('code', '==', code));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        return null;
+      }
+      
+      const doc = querySnapshot.docs[0];
+      return { id: doc.id, ...doc.data() };
+    } catch (error) {
+      console.error('❌ Ошибка поиска группового заказа:', error);
+      return null;
+    }
   }
 };

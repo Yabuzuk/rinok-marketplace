@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Package, MapPin, Clock, Settings } from 'lucide-react';
 import { Order, User as UserType } from '../types';
+import { CountdownTimer } from '../components/CountdownTimer';
 
 interface CustomerDashboardProps {
   user: UserType;
   orders: Order[];
   users?: UserType[];
+  groupOrders?: any[];
   onUpdateProfile?: (updates: Partial<UserType>) => void;
   onLogout?: () => void;
   onCancelOrder?: (orderId: string) => void;
@@ -14,8 +16,8 @@ interface CustomerDashboardProps {
   onUpdateOrder?: (orderId: string, updates: Partial<Order>) => Promise<void>;
 }
 
-const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, users, onUpdateProfile, onLogout, onCancelOrder, onApproveOrderChanges, onRejectOrderChanges, onUpdateOrder }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses'>('orders');
+const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, users, groupOrders = [], onUpdateProfile, onLogout, onCancelOrder, onApproveOrderChanges, onRejectOrderChanges, onUpdateOrder }) => {
+  const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'addresses' | 'groupOrders'>('orders');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
@@ -32,6 +34,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
     const params = new URLSearchParams(window.location.search);
     const paymentStatus = params.get('payment');
     const orderIdWithTimestamp = params.get('orderId');
+    const paymentType = localStorage.getItem('lastPaymentType');
     
     if (paymentStatus && orderIdWithTimestamp) {
       // Извлекаем оригинальный ID (убираем timestamp)
@@ -41,12 +44,30 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
       window.history.replaceState({}, '', window.location.pathname);
       
       if (paymentStatus === 'success') {
-        alert('✅ Платеж успешно выполнен!');
-        // Обновляем статус заказа
-        onUpdateOrder?.(orderId, { 
-          status: 'paid',
-          paidAt: new Date().toISOString()
-        } as any);
+        if (paymentType === 'auto_group_products') {
+          // Для групповой доставки - товары оплачены, статус products_paid
+          alert('✅ Товары успешно оплачены! Доставка будет рассчитана после закрытия пула.');
+          onUpdateOrder?.(orderId, { 
+            status: 'products_paid',
+            paidAt: new Date().toISOString()
+          } as any);
+          localStorage.removeItem('lastPaymentType');
+        } else if (paymentType === 'delivery') {
+          // Оплата доставки
+          alert('✅ Доставка успешно оплачена!');
+          onUpdateOrder?.(orderId, { 
+            status: 'paid',
+            paidAt: new Date().toISOString()
+          } as any);
+          localStorage.removeItem('lastPaymentType');
+        } else {
+          // Обычная оплата
+          alert('✅ Платеж успешно выполнен!');
+          onUpdateOrder?.(orderId, { 
+            status: 'paid',
+            paidAt: new Date().toISOString()
+          } as any);
+        }
       } else if (paymentStatus === 'fail') {
         alert('❌ Не получилось оплатить. Попробуйте еще раз.');
       }
@@ -105,14 +126,17 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
 
   const getStatusText = (status: Order['status']) => {
     switch (status) {
-      case 'pending': return 'Ожидает подтверждения';
+      case 'pending': return 'Ожидает подтверждения менеджера';
       case 'seller_editing': return 'Редактирует продавец';
       case 'customer_approval': return 'Требуется ваше подтверждение';
       case 'manager_pricing': return 'Менеджер добавляет стоимость доставки';
       case 'payment_pending': return 'Ожидает оплаты';
       case 'paid': return 'Оплачен, собирается';
+      case 'products_paid': return 'Товары оплачены, ожидает расчета доставки';
+      case 'delivery_pending': return 'Ожидает оплаты доставки';
       case 'collecting': return 'Собирается';
       case 'ready': return 'Готов к отправке';
+      case 'in_delivery': return 'В пути';
       case 'delivering': return 'В пути';
       case 'delivered': return 'Доставлен';
       case 'cancelled': return 'Отменен';
@@ -228,6 +252,31 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                 </button>
 
                 <button
+                  onClick={() => setActiveTab('groupOrders')}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: 'none',
+                    background: activeTab === 'groupOrders' ? '#f5f5f5' : 'transparent',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    cursor: 'pointer',
+                    marginBottom: '8px',
+                    fontSize: '14px'
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                  Совместные заказы
+                </button>
+
+                <button
                   onClick={() => setActiveTab('addresses')}
                   style={{
                     width: '100%',
@@ -307,8 +356,16 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                 </h2>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {orders.filter(order => order.customerId === user.id).map(order => (
-                    <div key={order.id} className="card" style={{ cursor: 'pointer' }} onClick={() => setSelectedOrder(order)}>
+                  {orders.filter(order => order.customerId === user.id).map((order, index) => (
+                    <div 
+                      key={order.id} 
+                      className="card fade-in" 
+                      style={{ 
+                        cursor: 'pointer',
+                        animationDelay: `${index * 0.1}s`
+                      }} 
+                      onClick={() => setSelectedOrder(order)}
+                    >
                       <div style={{ 
                         display: 'flex', 
                         justifyContent: 'space-between',
@@ -317,6 +374,9 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                       }}>
                         <div>
                           <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
+                            {order.deliveryType === 'individual' && '👤 '}
+                            {order.deliveryType === 'auto_group' && '🔄 '}
+                            {order.deliveryType === 'neighbor_group' && '👥 '}
                             Заказ #{order.id.slice(-6)}
                             {order.isModified && !order.customerApproved && order.status === 'customer_approval' && (
                               <span style={{
@@ -343,6 +403,11 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                               Доставка: {order.deliveryPrice} ₽
                             </p>
                           )}
+                          {order.deliveryPaymentDeadline && order.status === 'payment_pending' && (
+                            <div style={{ fontSize: '12px', color: '#f44336', marginTop: '4px' }}>
+                              <CountdownTimer targetTime={order.deliveryPaymentDeadline} showIcon={true} />
+                            </div>
+                          )}
                           {order.isModified && order.modificationReason && (
                             <p style={{ fontSize: '12px', color: '#856404', marginTop: '4px' }}>
                               Причина изменения: {order.modificationReason}
@@ -358,7 +423,8 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                             fontWeight: '500',
                             color: getStatusColor(order.status),
                             background: `${getStatusColor(order.status)}20`,
-                            marginBottom: '8px'
+                            marginBottom: '8px',
+                            transition: 'all 0.3s ease'
                           }}>
                             {getStatusText(order.status)}
                           </div>
@@ -405,13 +471,31 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                             </div>
                           )}
                           
-                          {order.status === 'payment_pending' && (
+                          {(order.status === 'payment_pending' || order.status === 'delivery_pending') && (
                             <button 
                               className="btn btn-primary"
                               style={{ fontSize: '12px', padding: '6px 12px', marginTop: '8px' }}
                               onClick={async (e) => {
                                 e.stopPropagation();
-                                const totalAmount = order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0);
+                                
+                                // Проверяем тип оплаты
+                                const isDeliveryPayment = order.status === 'delivery_pending';
+                                const isGroupOrder = order.deliveryType === 'auto_group' || order.deliveryType === 'neighbor_group';
+                                
+                                // Для delivery_pending - только доставка
+                                // Для payment_pending групповых - только товары
+                                // Для payment_pending индивидуальных - товары + доставка
+                                const totalAmount = isDeliveryPayment
+                                  ? (order.deliveryPrice || 0)
+                                  : isGroupOrder 
+                                    ? order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)
+                                    : order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0);
+                                
+                                const description = isDeliveryPayment
+                                  ? `Оплата доставки заказа №${order.id.slice(-6)}`
+                                  : isGroupOrder
+                                    ? `Оплата товаров в заказе №${order.id.slice(-6)}`
+                                    : `Оплата заказа №${order.id.slice(-6)}`;
                                 
                                 try {
                                   const { initPayment } = await import('../utils/tinkoff');
@@ -419,15 +503,19 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                                   const response = await initPayment(
                                     uniqueOrderId,
                                     totalAmount,
-                                    `Оплата заказа №${order.id.slice(-6)}`,
+                                    description,
                                     undefined,
                                     'O'
                                   );
                                   
                                   if (response.Success && response.PaymentURL) {
-                                    // Сохраняем PaymentId для возможности отмены
                                     localStorage.setItem('lastPaymentId', response.PaymentId);
                                     localStorage.setItem('lastOrderId', order.id);
+                                    if (isDeliveryPayment) {
+                                      localStorage.setItem('lastPaymentType', 'delivery');
+                                    } else if (isGroupOrder) {
+                                      localStorage.setItem('lastPaymentType', 'auto_group_products');
+                                    }
                                     window.location.href = response.PaymentURL;
                                   }
                                 } catch (error) {
@@ -435,7 +523,12 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                                 }
                               }}
                             >
-                              💳 Оплатить заказ ({order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽)
+                              💳 {order.status === 'delivery_pending'
+                                ? `Оплатить доставку (${order.deliveryPrice || 0} ₽)`
+                                : (order.deliveryType === 'auto_group' || order.deliveryType === 'neighbor_group')
+                                  ? `Оплатить товары (${order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽)`
+                                  : `Оплатить заказ (${order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽)`
+                              }
                             </button>
                           )}
                           
@@ -459,6 +552,96 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
               </div>
             )}
 
+
+            {activeTab === 'groupOrders' && (
+              <div>
+                <h2 style={{ 
+                  fontSize: '24px', 
+                  fontWeight: '600',
+                  marginBottom: '24px'
+                }}>
+                  Совместные заказы
+                </h2>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {groupOrders
+                    .filter(g => g.participants.some((p: any) => p.userId === user.id))
+                    .map((groupOrder, index) => (
+                    <div 
+                      key={groupOrder.id} 
+                      className="card fade-in" 
+                      style={{ 
+                        cursor: 'pointer',
+                        animationDelay: `${index * 0.1}s`
+                      }} 
+                      onClick={() => window.location.href = `/group-order/${groupOrder.code}`}
+                    >
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '12px'
+                      }}>
+                        <div>
+                          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
+                            👥 {groupOrder.code}
+                            {groupOrder.organizerId === user.id && (
+                              <span style={{
+                                marginLeft: '8px',
+                                padding: '2px 6px',
+                                background: '#e3f2fd',
+                                color: '#1976d2',
+                                fontSize: '10px',
+                                borderRadius: '4px',
+                                fontWeight: '500'
+                              }}>
+                                ОРГАНИЗАТОР
+                              </span>
+                            )}
+                          </h3>
+                          <p style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+                            {groupOrder.address}
+                          </p>
+                          <p style={{ fontSize: '14px', color: '#666' }}>
+                            Участников: {groupOrder.participants.length}
+                          </p>
+                        </div>
+                        
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            color: groupOrder.status === 'open' ? '#4caf50' : '#666',
+                            background: groupOrder.status === 'open' ? '#e8f5e9' : '#f5f5f5',
+                            marginBottom: '8px'
+                          }}>
+                            {groupOrder.status === 'open' ? 'Открыт' : 'Закрыт'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {groupOrders.filter(g => g.participants.some((p: any) => p.userId === user.id)).length === 0 && (
+                    <div style={{
+                      textAlign: 'center',
+                      padding: '48px',
+                      color: '#666'
+                    }}>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ margin: '0 auto 16px', opacity: 0.5 }}>
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                      </svg>
+                      <p>У вас пока нет совместных заказов</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {activeTab === 'addresses' && (
               <div>

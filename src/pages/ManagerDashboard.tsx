@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { Package, Settings, FileText, Calculator } from 'lucide-react';
 import { Order, User as UserType } from '../types';
 import ReceiptViewer from '../components/ReceiptViewer';
+import EditOrderModal from '../components/EditOrderModal';
+import { DeliveryPoolsTab } from '../components/DeliveryPoolsTab';
 import { calculateDeliveryPrice } from '../utils/yandexDelivery';
 
 interface ManagerDashboardProps {
   user: UserType;
   orders: Order[];
   users?: UserType[];
+  deliveryPools?: any[];
   onUpdateOrderStatus?: (orderId: string, status: Order['status']) => void;
-  onUpdateOrder?: (orderId: string, updates: Partial<Order>) => void;
+  onUpdateOrder?: (orderId: string, updates: Partial<Order>) => Promise<void>;
   onSwitchRole?: (role: 'customer' | 'seller' | 'admin' | 'courier' | 'manager') => void;
   onLogout?: () => void;
 }
@@ -18,12 +21,13 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
   user, 
   orders, 
   users = [],
+  deliveryPools = [],
   onUpdateOrderStatus,
   onUpdateOrder,
   onSwitchRole,
   onLogout
 }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'in-progress' | 'archive' | 'settings'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'pools' | 'in-progress' | 'archive' | 'settings'>('orders');
 
   // Слушатель для переключения вкладок
   React.useEffect(() => {
@@ -41,19 +45,25 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
     window.addEventListener('switchManagerTab', handleTabSwitch);
     return () => window.removeEventListener('switchManagerTab', handleTabSwitch);
   }, []);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [deliveryPrices, setDeliveryPrices] = useState<Record<string, number>>({});
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
   const [viewingReceipt, setViewingReceipt] = useState<string | null>(null);
   const [calculatingPrices, setCalculatingPrices] = useState<Record<string, boolean>>({});
   const [warehouseAddress] = useState('Москва, ул. Примерная, 1'); // Адрес склада/павильона
 
-  // Заказы для добавления доставки (confirmed) и готовые к отправке (ready)
+  // Новые заказы для подтверждения (pending)
+  const pendingOrders = orders.filter(order => order.status === 'pending');
+  
+  // Подтвержденные заказы для отправки на оплату (confirmed)
+  // Только индивидуальные - добавляем доставку
   const confirmedOrders = orders.filter(order => order.status === 'confirmed');
+  const confirmedIndividual = confirmedOrders.filter(order => order.deliveryType !== 'auto_group' && order.deliveryType !== 'neighbor_group');
+  
   const readyOrders = orders.filter(order => order.status === 'ready');
   
-  // Группировка confirmed заказов для добавления доставки
-  const groupedConfirmedOrders = confirmedOrders.reduce((groups, order) => {
+  // Группировка confirmed индивидуальных заказов для добавления доставки
+  const groupedConfirmedOrders = confirmedIndividual.reduce((groups, order) => {
     const key = `${order.customerId}-${order.deliveryAddress}`;
     if (!groups[key]) {
       const customer = users.find(u => u.id === order.customerId);
@@ -293,15 +303,168 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
           <div style={{ flex: 1 }}>
             {activeTab === 'orders' && (
               <div>
-                {/* Раздел 1: Подтвержденные заказы для добавления доставки */}
+                {/* Раздел 0: Новые заказы для подтверждения */}
                 <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
-                  Добавить доставку ({groupedConfirmedOrdersList.length})
+                  Новые заказы ({pendingOrders.length})
+                </h2>
+
+                {pendingOrders.length === 0 ? (
+                  <div className="card" style={{ textAlign: 'center', padding: '48px', marginBottom: '32px' }}>
+                    <Package size={48} style={{ margin: '0 auto 16px', opacity: 0.5, color: '#666' }} />
+                    <p style={{ color: '#666' }}>Нет новых заказов</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '48px' }}>
+                    {pendingOrders.map(order => {
+                      const customer = users.find(u => u.id === order.customerId);
+                      return (
+                        <div key={order.id} className="card">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                            <div>
+                              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
+                                {customer?.name || 'Неизвестный покупатель'} - {customer?.phone || ''}
+                              </h3>
+                              <p style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+                                Адрес: {order.deliveryAddress}
+                              </p>
+                              <p style={{ fontSize: '14px', color: '#666' }}>
+                                Павильон: {order.pavilionNumber}
+                              </p>
+                            </div>
+                            
+                            <div style={{
+                              padding: '4px 12px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              background: '#fff3e0',
+                              color: '#e65100'
+                            }}>
+                              Новый заказ
+                            </div>
+                          </div>
+
+                          <div style={{ marginBottom: '16px' }}>
+                            {order.items.map((item, index) => (
+                              <div key={index} style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                padding: '8px 0',
+                                borderBottom: index < order.items.length - 1 ? '1px solid #f0f0f0' : 'none'
+                              }}>
+                                <span>{item.productName} x {item.quantity}</span>
+                                <span style={{ fontWeight: '600' }}>{item.price * item.quantity} ₽</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ fontSize: '18px', fontWeight: '700', color: '#ff6b35' }}>
+                              Товары: {order.total} ₽
+                            </div>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <button 
+                                className="btn btn-secondary"
+                                style={{ 
+                                  fontSize: '14px', 
+                                  padding: '8px 16px'
+                                }}
+                                onClick={() => setEditingOrder(order)}
+                              >
+                                ✏️ Редактировать
+                              </button>
+                              
+                              {/* Для групповых заказов - подтверждение БЕЗ доставки */}
+                              {(order.deliveryType === 'auto_group' || order.deliveryType === 'neighbor_group') && (
+                                <button 
+                                  className="btn btn-primary"
+                                  onClick={async () => {
+                                    try {
+                                      await onUpdateOrder?.(order.id, {
+                                        status: 'payment_pending',
+                                        managerId: user.id
+                                      });
+                                      alert('Заказ отправлен на оплату товаров.');
+                                    } catch (error) {
+                                      alert('Ошибка отправки на оплату');
+                                    }
+                                  }}
+                                  style={{ 
+                                    fontSize: '14px', 
+                                    padding: '8px 16px',
+                                    background: '#4CAF50'
+                                  }}
+                                >
+                                  ✅ Подтвердить и отправить на оплату товаров
+                                </button>
+                              )}
+                              
+                              {/* Для индивидуальных заказов - подтверждение С доставкой */}
+                              {order.deliveryType !== 'auto_group' && order.deliveryType !== 'neighbor_group' && (
+                                <>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    placeholder="Доставка"
+                                    value={deliveryPrices[order.id] || ''}
+                                    onChange={(e) => setDeliveryPrices(prev => ({
+                                      ...prev,
+                                      [order.id]: Number(e.target.value)
+                                    }))}
+                                    style={{
+                                      width: '100px',
+                                      padding: '8px',
+                                      border: '1px solid #ddd',
+                                      borderRadius: '4px',
+                                      fontSize: '14px'
+                                    }}
+                                  />
+                                  <button 
+                                    className="btn btn-primary"
+                                    onClick={async () => {
+                                      const deliveryPrice = deliveryPrices[order.id] || 0;
+                                      if (deliveryPrice <= 0) {
+                                        alert('Укажите стоимость доставки');
+                                        return;
+                                      }
+                                      try {
+                                        await onUpdateOrder?.(order.id, {
+                                          status: 'payment_pending',
+                                          deliveryPrice: deliveryPrice,
+                                          managerId: user.id
+                                        });
+                                        alert('Заказ подтвержден и отправлен на оплату');
+                                      } catch (error) {
+                                        alert('Ошибка подтверждения заказа');
+                                      }
+                                    }}
+                                    style={{ 
+                                      fontSize: '14px', 
+                                      padding: '8px 16px'
+                                    }}
+                                  >
+                                    Подтвердить + Доставка
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Раздел 1: Подтвержденные индивидуальные заказы для добавления доставки */}
+                <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
+                  Добавить доставку - индивидуальные ({groupedConfirmedOrdersList.length})
                 </h2>
 
                 {groupedConfirmedOrdersList.length === 0 ? (
                   <div className="card" style={{ textAlign: 'center', padding: '48px', marginBottom: '32px' }}>
                     <Package size={48} style={{ margin: '0 auto 16px', opacity: 0.5, color: '#666' }} />
-                    <p style={{ color: '#666' }}>Нет подтвержденных заказов</p>
+                    <p style={{ color: '#666' }}>Нет индивидуальных заказов для добавления доставки</p>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '48px' }}>
@@ -532,6 +695,15 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                   </div>
                 )}
               </div>
+            )}
+
+            {activeTab === 'pools' && (
+              <DeliveryPoolsTab 
+                pools={deliveryPools}
+                orders={orders}
+                users={users}
+                onUpdateOrder={onUpdateOrder}
+              />
             )}
 
             {activeTab === 'in-progress' && (
@@ -854,6 +1026,16 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
         <ReceiptViewer
           receiptUrl={viewingReceipt}
           onClose={() => setViewingReceipt(null)}
+        />
+      )}
+      
+      {/* Модальное окно редактирования заказа */}
+      {editingOrder && onUpdateOrder && (
+        <EditOrderModal
+          order={editingOrder}
+          isOpen={!!editingOrder}
+          onClose={() => setEditingOrder(null)}
+          onUpdate={onUpdateOrder}
         />
       )}
     </div>

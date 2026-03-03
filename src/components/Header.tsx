@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ShoppingCart, User, Search, MapPin } from 'lucide-react';
+import { ShoppingCart, User, Search, MapPin, Users } from 'lucide-react';
 import { User as UserType } from '../types';
+import JoinGroupOrderModal from './JoinGroupOrderModal';
 
 interface HeaderProps {
   user: UserType | null;
@@ -13,12 +14,14 @@ interface HeaderProps {
   onHomeClick: () => void;
   products?: any[];
   onProductSelect?: (product: any) => void;
+  onJoinGroupOrder?: (code: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCartClick, onLogin, onShowAuthModal, onDashboardClick, onHomeClick, products = [], onProductSelect }) => {
+const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCartClick, onLogin, onShowAuthModal, onDashboardClick, onHomeClick, products = [], onProductSelect, onJoinGroupOrder }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
@@ -38,6 +41,15 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
         </div>
 
         <div className="flex items-center gap-2">
+          {user?.role === 'customer' && onJoinGroupOrder && (
+            <button
+              onClick={() => setShowJoinModal(true)}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors flex items-center gap-1"
+            >
+              <Users size={16} />
+              Присоединиться
+            </button>
+          )}
           {user ? (
             <>
               <button 
@@ -63,6 +75,17 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
           )}
         </div>
       </div>
+      
+      <JoinGroupOrderModal
+        isOpen={showJoinModal}
+        onClose={() => setShowJoinModal(false)}
+        onJoin={(code) => {
+          if (onJoinGroupOrder) {
+            onJoinGroupOrder(code);
+          }
+          setShowJoinModal(false);
+        }}
+      />
     </header>
   );
 };

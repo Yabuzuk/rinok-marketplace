@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
-import { X, Plus, Minus } from 'lucide-react';
-import { CartItem, User, Order } from '../types';
+import { X, Plus, Minus, User, Users, RefreshCw } from 'lucide-react';
+import { CartItem, User as UserType, Order, DeliveryType } from '../types';
+import { DeliveryDateSelector } from './DeliveryDateSelector';
 
 interface CartProps {
   isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
-  user: User | null;
+  user: UserType | null;
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onCreateOrder: (order: Omit<Order, 'id'>) => void;
+  onCreateGroupOrder?: (data: any) => any;
 }
 
 const Cart: React.FC<CartProps> = ({ 
@@ -17,7 +19,8 @@ const Cart: React.FC<CartProps> = ({
   items, 
   user,
   onUpdateQuantity,
-  onCreateOrder 
+  onCreateOrder,
+  onCreateGroupOrder
 }) => {
   const [selectedAddress, setSelectedAddress] = React.useState<string>('');
   const [deliveryDistance, setDeliveryDistance] = React.useState<number | null>(null);
@@ -28,6 +31,24 @@ const Cart: React.FC<CartProps> = ({
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [addressInput, setAddressInput] = React.useState('');
   const [isCreatingOrder, setIsCreatingOrder] = React.useState(false);
+  
+  // Новые состояния для выбора типа доставки
+  const [deliveryType, setDeliveryType] = React.useState<DeliveryType>('individual');
+  const [deliveryDate, setDeliveryDate] = React.useState<any>(null);
+  const [deliveryTimeSlot, setDeliveryTimeSlot] = React.useState<string | null>(null);
+
+  // Обработчик изменения даты - сохраняем весь объект
+  const handleDateChange = (dateValue: any) => {
+    const { getAvailableDeliveryDates } = require('../types');
+    const dates = getAvailableDeliveryDates();
+    const dateObj = dates.find((d: any) => d.value === dateValue);
+    setDeliveryDate(dateObj);
+  };
+
+  // Синхронизация корзины с пропсами
+  React.useEffect(() => {
+    // Обновляем локальное состояние только если items изменились
+  }, [items]);
 
   
   const getAddressSuggestions = React.useCallback(async (query: string) => {
@@ -139,16 +160,60 @@ const Cart: React.FC<CartProps> = ({
   const totalWithDelivery = total;
 
   const handleCheckout = async () => {
-    if (isCreatingOrder) return; // Предотвращаем повторные клики
+    if (isCreatingOrder) return;
     
     if (!user || user.role !== 'customer') {
       alert('Войдите как покупатель для оформления заказа');
       return;
     }
     
+    // Проверяем активный групповой заказ
+    const activeGroupOrderId = localStorage.getItem('activeGroupOrderId');
+    if (activeGroupOrderId && onCreateGroupOrder) {
+      try {
+        // Добавляем товары к участнику
+        const groupOrder = await onCreateGroupOrder({
+          groupOrderId: activeGroupOrderId,
+          userId: user.id,
+          items: items.map(item => ({
+            productId: item.product.id,
+            productName: item.product.name,
+            quantity: item.quantity,
+            price: item.product.price
+          })),
+          total
+        });
+        
+        items.forEach(item => onUpdateQuantity(item.product.id, 0));
+        localStorage.removeItem('activeGroupOrderId');
+        onClose();
+        
+        // Используем код заказа для перехода
+        if (groupOrder && groupOrder.code) {
+          window.location.href = `/group-order/${groupOrder.code}`;
+        } else {
+          alert('Товары добавлены в совместный заказ!');
+        }
+        return;
+      } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Совместный заказ не найден. Возможно, он был удален.');
+        localStorage.removeItem('activeGroupOrderId');
+        return;
+      }
+    }
+    
     if (!selectedAddress || selectedAddress.trim() === '') {
       alert('Выберите адрес доставки');
       return;
+    }
+    
+    // Для групповой доставки требуется выбор даты и времени
+    if (deliveryType === 'auto_group') {
+      if (!deliveryDate || !deliveryTimeSlot) {
+        alert('Для групповой доставки выберите дату и время');
+        return;
+      }
     }
     
     if (deliveryDistance === 0 && selectedAddress) {
@@ -182,6 +247,9 @@ const Cart: React.FC<CartProps> = ({
         
         const pavilionDeliveryFee = 0; // Доставку добавляет менеджер
         
+        // ВСЕ заказы идут на проверку менеджеру (наличие товара, цена)
+        const orderStatus = 'pending';
+        
         const order = {
           customerId: user.id,
           items: [
@@ -195,20 +263,25 @@ const Cart: React.FC<CartProps> = ({
             // Доставку добавляет менеджер
           ],
           total: pavilionTotal + pavilionDeliveryFee,
-          status: 'pending' as const,
+          status: orderStatus as 'pending',
           createdAt: new Date(),
           deliveryAddress: selectedAddress || 'г. Москва, ул. Примерная, д. 123, кв. 45',
-          pavilionNumber
+          pavilionNumber,
+          // Новые поля для групповой доставки
+          deliveryType: deliveryType,
+          deliveryDate: deliveryDate?.date,
+          deliveryTimeSlot: deliveryTimeSlot || undefined
         };
-
+        
         console.log('Creating order for pavilion:', pavilionNumber, order);
-        const result = await onCreateOrder(order);
-        console.log('Order created:', result);
-        return result;
+        const createdOrder = await onCreateOrder(order);
+        console.log('Order created successfully');
+        return createdOrder;
       });
 
       const results = await Promise.all(orderPromises);
       console.log('All orders created:', results);
+      
       alert('Заказы успешно созданы!');
       onClose();
     } catch (error) {
@@ -354,6 +427,16 @@ const Cart: React.FC<CartProps> = ({
           padding: '24px',
           borderTop: '1px solid #f0f0f0'
         }}>
+          {/* Выбор типа доставки */}
+          <DeliveryDateSelector
+            selectedDate={deliveryDate?.value}
+            selectedTimeSlot={deliveryTimeSlot}
+            selectedDeliveryType={deliveryType}
+            onDateChange={handleDateChange}
+            onTimeSlotChange={setDeliveryTimeSlot}
+            onDeliveryTypeChange={setDeliveryType}
+          />
+          
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
               Адрес доставки:
@@ -493,7 +576,8 @@ const Cart: React.FC<CartProps> = ({
             style={{ 
               width: '100%',
               opacity: isCreatingOrder ? 0.7 : 1,
-              cursor: isCreatingOrder ? 'not-allowed' : 'pointer'
+              cursor: isCreatingOrder ? 'not-allowed' : 'pointer',
+              marginBottom: '12px'
             }}
           >
             {isCreatingOrder ? (
@@ -505,6 +589,68 @@ const Cart: React.FC<CartProps> = ({
               'Оформить заказ'
             )}
           </button>
+          
+          {onCreateGroupOrder && deliveryType === 'neighbor_group' && (
+            <button
+              onClick={async () => {
+                if (!user || user.role !== 'customer') {
+                  alert('Войдите как покупатель для создания совместного заказа');
+                  return;
+                }
+                if (!selectedAddress) {
+                  alert('Выберите адрес доставки');
+                  return;
+                }
+                if (!deliveryDate || !deliveryTimeSlot) {
+                  alert('Выберите дату и время доставки');
+                  return;
+                }
+                
+                try {
+                  console.log('Creating group order with:', { deliveryDate, deliveryTimeSlot });
+                  const groupOrder = await onCreateGroupOrder({
+                    items: items.map(item => ({
+                      productId: item.product.id,
+                      productName: item.product.name,
+                      quantity: item.quantity,
+                      price: item.product.price
+                    })),
+                    total,
+                    address: selectedAddress,
+                    deliveryDate: deliveryDate?.date || deliveryDate,
+                    deliveryTimeSlot,
+                    deliveryPoolId: `pool_${deliveryDate?.date || deliveryDate}_${deliveryTimeSlot}`
+                  });
+                  console.log('Group order created:', groupOrder);
+                  
+                  // Очищаем корзину через родительский компонент
+                  items.forEach(item => onUpdateQuantity(item.product.id, 0));
+                  
+                  // Закрываем корзину и переходим на страницу заказа
+                  onClose();
+                  setTimeout(() => {
+                    window.location.href = `/group-order/${groupOrder.code}`;
+                  }, 100);
+                } catch (error) {
+                  console.error('Ошибка создания заказа:', error);
+                  alert('Ошибка создания заказа. Попробуйте еще раз.');
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              👥 Создать совместный заказ
+            </button>
+          )}
         </div>
       )}
     </div>

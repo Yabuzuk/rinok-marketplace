@@ -658,6 +658,29 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   Заказы павильона {user.pavilionNumber}
                 </h2>
 
+                {/* Информационное сообщение */}
+                <div style={{
+                  marginBottom: '24px',
+                  padding: '16px',
+                  background: '#e3f2fd',
+                  borderRadius: '8px',
+                  border: '1px solid #2196f3',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px'
+                }}>
+                  <div style={{ fontSize: '20px' }}>ℹ️</div>
+                  <div>
+                    <div style={{ fontWeight: '600', marginBottom: '4px', color: '#1976d2' }}>
+                      Управление заказами передано менеджеру
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#0d47a1' }}>
+                      Теперь менеджер подтверждает заказы, добавляет стоимость доставки и отправляет их покупателям. 
+                      Вы можете только просматривать заказы и отмечать их как собранные после оплаты.
+                    </div>
+                  </div>
+                </div>
+
                 {sellerOrders.length === 0 ? (
                   <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
                     <Package size={48} style={{ margin: '0 auto 16px', opacity: 0.5, color: '#666' }} />

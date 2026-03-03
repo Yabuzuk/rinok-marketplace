@@ -21,6 +21,7 @@ import PavilionPage from './pages/PavilionPage';
 import LegalPage from './pages/LegalPage';
 import TestCancelPayment from './pages/TestCancelPayment';
 import LandingPage from './pages/LandingPage';
+import GroupOrderPage from './pages/GroupOrderPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 
@@ -29,6 +30,7 @@ import { sendNotification as sendNotificationUtil } from './utils/notifications'
 
 import { firebaseApi } from './utils/firebaseApi';
 import './styles/tailwind.css';
+import './styles/animations.css';
 
 
 
@@ -48,6 +50,8 @@ const AppContent: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [deliveryPools, setDeliveryPools] = useState<any[]>([]); // Пулы доставки
+  const [groupOrders, setGroupOrders] = useState<any[]>([]); // Совместные заказы
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -91,6 +95,17 @@ const AppContent: React.FC = () => {
     // Инициализация OneSignal
     initOneSignal();
     
+    // Запуск планировщика пулов
+    const { startPoolScheduler } = require('./services/poolScheduler');
+    startPoolScheduler(
+      handlePoolAutoClose,
+      handleDeliveryPaymentExpire,
+      () => deliveryPools,
+      () => orders,
+      handlePoolClosingWarning,
+      handlePaymentWarning
+    );
+    
     // Периодическая перезагрузка данных каждые 10 секунд для мобильных
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     // Периодическая перезагрузка данных каждые 30 секунд
@@ -102,7 +117,11 @@ const AppContent: React.FC = () => {
       loadData();
     }, 30000); // 30 секунд для экономии квоты
     
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      const { stopPoolScheduler } = require('./services/poolScheduler');
+      stopPoolScheduler();
+    };
   }, []);
 
   // Подписка пользователя на уведомления при входе
@@ -123,19 +142,371 @@ const AppContent: React.FC = () => {
     }
   }, [currentUser]);
 
+  // Функции управления пулами доставки
+  const createOrGetPool = (date: string, timeSlotId: string) => {
+    const poolId = `pool_${date}_${timeSlotId}`;
+    const existingPool = deliveryPools.find(p => p.id === poolId);
+    
+    if (existingPool) {
+      return existingPool;
+    }
+    
+    // Находим временной слот
+    const { DELIVERY_TIME_SLOTS } = require('./types');
+    const slot = DELIVERY_TIME_SLOTS.find((s: any) => s.id === timeSlotId);
+    
+    if (!slot) return null;
+    
+    const newPool = {
+      id: poolId,
+      date: date,
+      timeSlot: timeSlotId,
+      closeTime: `${date}T${slot.closeTime}:00`,
+      status: 'open' as const,
+      orders: [],
+      groupOrders: []
+    };
+    
+    setDeliveryPools(prev => [...prev, newPool]);
+    return newPool;
+  };
+  
+  const addOrderToPool = (poolId: string, orderId: string) => {
+    setDeliveryPools(prev => prev.map(pool => {
+      if (pool.id === poolId) {
+        return {
+          ...pool,
+          orders: [...pool.orders, orderId]
+        };
+      }
+      return pool;
+    }));
+  };
+  
+  const closePool = (poolId: string) => {
+    setDeliveryPools(prev => prev.map(pool => {
+      if (pool.id === poolId) {
+        return { ...pool, status: 'closed' as const };
+      }
+      return pool;
+    }));
+  };
+
+  // Функции управления групповыми заказами
+  const handleCreateGroupOrder = async (data: any) => {
+    // Если передан groupOrderId - добавляем товары к участнику
+    if (data.groupOrderId) {
+      const groupOrder = groupOrders.find(g => g.id === data.groupOrderId);
+      if (!groupOrder) throw new Error('Заказ не найден');
+      
+      // Проверяем, есть ли уже этот участник
+      const existingParticipant = groupOrder.participants.find((p: any) => p.userId === data.userId);
+      
+      let updatedParticipants;
+      if (existingParticipant) {
+        // Обновляем существующего участника
+        updatedParticipants = groupOrder.participants.map((p: any) => {
+          if (p.userId === data.userId) {
+            return {
+              ...p,
+              items: [...p.items, ...data.items],
+              total: p.total + data.total
+            };
+          }
+          return p;
+        });
+      } else {
+        // Добавляем нового участника
+        const user = users.find(u => u.id === data.userId) || currentUser;
+        updatedParticipants = [
+          ...groupOrder.participants,
+          {
+            userId: data.userId,
+            userName: user?.name || 'Участник',
+            items: data.items,
+            total: data.total,
+            productsPaid: false,
+            deliveryPaid: false
+          }
+        ];
+      }
+      
+      await firebaseApi.updateGroupOrder(data.groupOrderId, { participants: updatedParticipants });
+      await loadData();
+      
+      // Возвращаем обновленный заказ
+      const updatedGroupOrder = await firebaseApi.getGroupOrders();
+      return updatedGroupOrder.find((g: any) => g.id === data.groupOrderId) || groupOrder;
+    }
+    
+    // Создаем новый групповой заказ
+    const { generateGroupCode } = require('./utils/groupOrderUtils');
+    const code = generateGroupCode();
+    
+    // Вычисляем время закрытия пула
+    const { DELIVERY_TIME_SLOTS } = require('./types');
+    const slot = DELIVERY_TIME_SLOTS.find((s: any) => s.id === data.deliveryTimeSlot);
+    const poolCloseTime = slot ? `${data.deliveryDate}T${slot.closeTime}:00` : null;
+    
+    const newGroupOrder = {
+      code,
+      address: data.address,
+      deliveryDate: data.deliveryDate,
+      deliveryTimeSlot: data.deliveryTimeSlot,
+      deliveryPoolId: data.deliveryPoolId,
+      poolCloseTime,
+      organizerId: currentUser?.id,
+      organizerName: currentUser?.name,
+      participants: [{
+        userId: currentUser?.id,
+        userName: currentUser?.name,
+        items: data.items,
+        total: data.total,
+        productsPaid: false,
+        deliveryPaid: false
+      }],
+      status: 'open',
+      createdAt: new Date().toISOString()
+    };
+    
+    console.log('Creating group order with poolCloseTime:', poolCloseTime, 'from slot:', slot);
+    
+    try {
+      const createdOrder = await firebaseApi.createGroupOrder(newGroupOrder);
+      console.log('Group order created:', createdOrder);
+      setGroupOrders(prev => [...prev, createdOrder]);
+      return createdOrder;
+    } catch (error) {
+      console.error('Ошибка создания группового заказа:', error);
+      alert('Ошибка создания заказа');
+      throw error;
+    }
+  };
+
+  const handleJoinGroupOrder = async (code: string, userId: string, items: any[], total: number) => {
+    const groupOrder = groupOrders.find(g => g.code === code);
+    if (!groupOrder || groupOrder.status !== 'open') return null;
+    
+    const user = users.find(u => u.id === userId) || currentUser;
+    const newParticipant = {
+      userId,
+      userName: user?.name || 'Участник',
+      items,
+      total,
+      productsPaid: false,
+      deliveryPaid: false
+    };
+    
+    setGroupOrders(prev => prev.map(g => 
+      g.code === code 
+        ? { ...g, participants: [...g.participants, newParticipant] }
+        : g
+    ));
+    
+    // Уведомляем организатора о новом участнике
+    await sendNotificationUtil(
+      [groupOrder.organizerId],
+      'ОптБазар',
+      `${user?.name || 'Новый участник'} присоединился к вашему совместному заказу ${code}`
+    ).catch(console.error);
+    
+    return groupOrder;
+  };
+
+  const handleLeaveGroupOrder = async (groupOrderId: string, userId: string) => {
+    const groupOrder = groupOrders.find(g => g.id === groupOrderId);
+    if (!groupOrder) return;
+    
+    const participant = groupOrder.participants.find((p: any) => p.userId === userId);
+    if (participant?.productsPaid) return;
+    
+    const updatedParticipants = groupOrder.participants.filter((p: any) => p.userId !== userId);
+    await firebaseApi.updateGroupOrder(groupOrderId, { participants: updatedParticipants });
+    await loadData();
+  };
+
+  const handlePayProducts = async (groupOrderId: string, userId: string) => {
+    const updatedParticipants = groupOrders.find(g => g.id === groupOrderId)?.participants.map((p: any) => 
+      p.userId === userId ? { ...p, productsPaid: true } : p
+    );
+    
+    if (updatedParticipants) {
+      await firebaseApi.updateGroupOrder(groupOrderId, { participants: updatedParticipants });
+      await loadData();
+    }
+    
+    const groupOrder = groupOrders.find(g => g.id === groupOrderId);
+    if (groupOrder) {
+      // Проверяем, все ли оплатили товары
+      const allPaid = groupOrder.participants.every((p: any) => 
+        p.userId === userId || p.productsPaid
+      );
+      
+      if (allPaid) {
+        // Уведомляем менеджера
+        const managers = users.filter(u => u.role === 'manager');
+        await sendNotificationUtil(
+          managers.map(m => m.id),
+          'ОптБазар',
+          `Все участники оплатили товары в заказе ${groupOrder.code}`
+        ).catch(console.error);
+      }
+    }
+  };
+
+  const handlePayDelivery = async (groupOrderId: string, userId: string) => {
+    const updatedParticipants = groupOrders.find(g => g.id === groupOrderId)?.participants.map((p: any) => 
+      p.userId === userId ? { ...p, deliveryPaid: true } : p
+    );
+    
+    if (updatedParticipants) {
+      await firebaseApi.updateGroupOrder(groupOrderId, { participants: updatedParticipants });
+      await loadData();
+    }
+    
+    const groupOrder = groupOrders.find(g => g.id === groupOrderId);
+    if (groupOrder) {
+      // Проверяем, все ли оплатили доставку
+      const allPaid = groupOrder.participants.every((p: any) => 
+        p.userId === userId || p.deliveryPaid
+      );
+      
+      if (allPaid) {
+        // Уведомляем менеджера
+        const managers = users.filter(u => u.role === 'manager');
+        await sendNotificationUtil(
+          managers.map(m => m.id),
+          'ОптБазар',
+          `Все участники оплатили доставку в заказе ${groupOrder.code}. Можно отправлять!`
+        ).catch(console.error);
+      }
+    }
+  };
+
+  // Предупреждение о закрытии пула (за 30 минут)
+  const handlePoolClosingWarning = async (poolId: string, participants: string[]) => {
+    if (participants.length > 0) {
+      await sendNotificationUtil(
+        participants,
+        'ОптБазар',
+        `⚠️ Пул доставки закроется через 30 минут! Успейте оформить заказ`
+      ).catch(console.error);
+    }
+  };
+
+  // Напоминание об оплате (за 5 минут)
+  const handlePaymentWarning = async (orderId: string, customerId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+      await sendNotificationUtil(
+        [customerId],
+        'ОптБазар',
+        `⏰ Осталось 5 минут для оплаты доставки заказа №${order.id.slice(-6)}!`
+      ).catch(console.error);
+    }
+  };
+
+  // Автоматическое закрытие пула
+  const handlePoolAutoClose = (poolId: string) => {
+    closePool(poolId);
+    
+    // Уведомляем всех участников пула
+    const pool = deliveryPools.find(p => p.id === poolId);
+    if (pool) {
+      const poolOrders = orders.filter(o => pool.orders.includes(o.id));
+      const customerIds = Array.from(new Set(poolOrders.map(o => o.customerId).filter(Boolean)));
+      
+      if (customerIds.length > 0) {
+        sendNotificationUtil(
+          customerIds,
+          'ОптБазар',
+          `Пул доставки закрыт. Менеджер скоро рассчитает стоимость доставки`
+        ).catch(console.error);
+      }
+    }
+  };
+
+  // Истечение таймера оплаты доставки
+  const handleDeliveryPaymentExpire = async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order || !order.groupOrderId) return;
+
+    const groupOrder = groupOrders.find(g => g.id === order.groupOrderId);
+    if (!groupOrder) return;
+
+    // Находим неоплативших участников
+    const unpaidParticipants = groupOrder.participants.filter(
+      (p: any) => p.productsPaid && !p.deliveryPaid
+    );
+
+    if (unpaidParticipants.length === 0) return;
+
+    // Исключаем неоплативших
+    const { calculateDeliveryShares } = require('./utils/groupOrderUtils');
+    const remainingParticipants = groupOrder.participants.filter(
+      (p: any) => !unpaidParticipants.find((up: any) => up.userId === p.userId)
+    );
+
+    if (remainingParticipants.length === 0) {
+      // Все не оплатили - отменяем заказ
+      setGroupOrders(prev => prev.map(g => 
+        g.id === groupOrder.id ? { ...g, status: 'cancelled' } : g
+      ));
+      return;
+    }
+
+    // Пересчитываем доли доставки
+    const newShares = calculateDeliveryShares(
+      remainingParticipants,
+      groupOrder.deliveryPrice || 0
+    );
+
+    setGroupOrders(prev => prev.map(g => {
+      if (g.id === groupOrder.id) {
+        return {
+          ...g,
+          participants: remainingParticipants,
+          deliveryShares: newShares
+        };
+      }
+      return g;
+    }));
+
+    // Уведомляем исключенных
+    for (const participant of unpaidParticipants) {
+      await sendNotificationUtil(
+        [participant.userId],
+        'ОптБазар',
+        `Вы исключены из совместного заказа ${groupOrder.code} за неоплату доставки. Средства за товары будут возвращены`
+      ).catch(console.error);
+    }
+
+    // Уведомляем оставшихся о пересчете
+    const remainingIds = remainingParticipants.map((p: any) => p.userId);
+    if (remainingIds.length > 0) {
+      await sendNotificationUtil(
+        remainingIds,
+        'ОптБазар',
+        `Доставка пересчитана для заказа ${groupOrder.code}. Проверьте новую сумму`
+      ).catch(console.error);
+    }
+  };
+
 
 
   const loadData = async () => {
     try {
-      const [productsData, ordersData, usersData] = await Promise.all([
+      const [productsData, ordersData, usersData, groupOrdersData] = await Promise.all([
         firebaseApi.getProducts(),
         firebaseApi.getOrders(),
-        firebaseApi.getUsers()
+        firebaseApi.getUsers(),
+        firebaseApi.getGroupOrders()
       ]);
       
       setProducts(productsData || []);
       setOrders(ordersData || []);
       setUsers(usersData || []);
+      setGroupOrders(groupOrdersData || []);
       
       setDeliveries([]);
     } catch (error) {
@@ -143,6 +514,7 @@ const AppContent: React.FC = () => {
       setProducts([]);
       setOrders([]);
       setUsers([]);
+      setGroupOrders([]);
       setDeliveries([]);
     } finally {
       setLoading(false);
@@ -399,10 +771,8 @@ const AppContent: React.FC = () => {
         // Определяем получателей и сообщения по схеме
         switch (status) {
           case 'confirmed':
-            // 2: Продавец подтвердил заказ → Менеджер получает уведомление
-            const confirmedManagers = users.filter(u => u.role === 'manager');
-            confirmedManagers.forEach(manager => recipients.push(manager.id));
-            message = `Заказ №${order.id.slice(-6)} подтвержден продавцом, требуется добавить доставку`;
+            // 2: Менеджер подтвердил наличие товара (только для индивидуальных)
+            // Групповые сразу идут на payment_pending
             break;
             
           case 'payment_pending':
@@ -434,13 +804,30 @@ const AppContent: React.FC = () => {
               recipients.push(manager.id);
             });
             message = `Заказ №${order.id.slice(-6)} собран продавцом, готов к отправке`;
+            
+            // Уведомляем покупателя
+            if (order.customerId) {
+              await sendNotificationUtil(
+                [order.customerId],
+                'ОптБазар',
+                `📦 Ваш заказ №${order.id.slice(-6)} собран и готов к отправке`
+              ).catch(console.error);
+            }
             break;
             
           case 'delivering':
             // 6: Менеджер отправил в доставку
             if (order.customerId) {
               recipients.push(order.customerId);
-              message = `Заказ №${order.id.slice(-6)} передан в доставку`;
+              message = `🚚 Заказ №${order.id.slice(-6)} передан в доставку. Скоро будет у вас!`;
+            }
+            break;
+            
+          case 'delivered':
+            // 7: Заказ доставлен
+            if (order.customerId) {
+              recipients.push(order.customerId);
+              message = `✅ Заказ №${order.id.slice(-6)} доставлен! Приятного аппетита!`;
             }
             break;
         }
@@ -497,6 +884,14 @@ const AppContent: React.FC = () => {
       const order = await firebaseApi.createOrder(orderData);
       console.log('Order created, adding to state:', order);
       setOrders(prev => [...prev, order]);
+      
+      // Добавляем заказ в пул, если это групповая доставка
+      if (orderData.deliveryType === 'auto_group' && orderData.deliveryDate && orderData.deliveryTimeSlot) {
+        const pool = createOrGetPool(orderData.deliveryDate, orderData.deliveryTimeSlot);
+        if (pool) {
+          addOrderToPool(pool.id, order.id);
+        }
+      }
       
       // Отправляем push-уведомление продавцу
       if (orderData.pavilionNumber) {
@@ -599,6 +994,25 @@ const AppContent: React.FC = () => {
             handleAddToCart(product, 1);
             setIsCartOpen(true);
           }}
+          onJoinGroupOrder={(code) => {
+            if (!currentUser || currentUser.role !== 'customer') {
+              alert('Войдите как покупатель для присоединения к заказу');
+              return;
+            }
+            
+            const groupOrder = groupOrders.find(g => g.code === code);
+            if (!groupOrder) {
+              alert('Совместный заказ не найден');
+              return;
+            }
+            
+            if (groupOrder.status !== 'open') {
+              alert('Заказ уже закрыт для новых участников');
+              return;
+            }
+            
+            navigate(`/group-order/${code}`);
+          }}
         />
         
         <AuthModal 
@@ -686,6 +1100,18 @@ const AppContent: React.FC = () => {
               } 
             />
             <Route path="/landing" element={<LandingPage />} />
+            <Route 
+              path="/group-order/:code" 
+              element={
+                <GroupOrderPage
+                  groupOrders={groupOrders}
+                  currentUser={currentUser}
+                  onPayProducts={handlePayProducts}
+                  onPayDelivery={handlePayDelivery}
+                  onLeaveGroupOrder={handleLeaveGroupOrder}
+                />
+              }
+            />
             
             <Route 
               path="/pavilion/:pavilionNumber" 
@@ -717,6 +1143,7 @@ const AppContent: React.FC = () => {
                     user={currentUser}
                     orders={orders}
                     users={users}
+                    groupOrders={groupOrders}
                     onUpdateProfile={async (updates) => {
                       try {
                         await firebaseApi.updateUser(currentUser.id, updates);
@@ -900,6 +1327,7 @@ const AppContent: React.FC = () => {
                     user={currentUser}
                     orders={orders}
                     users={users}
+                    deliveryPools={deliveryPools}
                     onUpdateOrderStatus={handleUpdateOrderStatus}
                     onUpdateOrder={async (orderId, updates) => {
                       try {
@@ -981,6 +1409,7 @@ const AppContent: React.FC = () => {
           user={currentUser}
           onUpdateQuantity={handleUpdateCartQuantity}
           onCreateOrder={handleCreateOrder}
+          onCreateGroupOrder={handleCreateGroupOrder}
         />
 
         <PWAInstallPrompt />
