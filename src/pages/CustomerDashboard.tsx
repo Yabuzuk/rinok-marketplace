@@ -478,6 +478,27 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
                               onClick={async (e) => {
                                 e.stopPropagation();
                                 
+                                // 🚨 ТЕСТОВЫЙ РЕЖИМ - пропускаем реальную оплату
+                                const isTestMode = process.env.REACT_APP_TEST_MODE === 'true';
+                                
+                                if (isTestMode) {
+                                  // Имитируем успешную оплату
+                                  const isDeliveryPayment = order.status === 'delivery_pending';
+                                  const newStatus = isDeliveryPayment ? 'paid' : 
+                                    (order.deliveryType === 'auto_group' || order.deliveryType === 'neighbor_group') ? 'products_paid' : 'paid';
+                                  
+                                  try {
+                                    await onUpdateOrder?.(order.id, {
+                                      status: newStatus,
+                                      paidAt: new Date().toISOString()
+                                    } as any);
+                                    alert('✅ [ТЕСТ] Оплата успешна!');
+                                  } catch (error) {
+                                    alert('Ошибка обновления статуса');
+                                  }
+                                  return;
+                                }
+                                
                                 // Проверяем тип оплаты
                                 const isDeliveryPayment = order.status === 'delivery_pending';
                                 const isGroupOrder = order.deliveryType === 'auto_group' || order.deliveryType === 'neighbor_group';

@@ -77,8 +77,8 @@ export const DeliveryPoolsTab: React.FC<DeliveryPoolsTabProps> = ({ pools, order
                     <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
                       {formatPoolName(pool)}
                     </h4>
-                    <p style={{ fontSize: '14px', color: '#666' }}>
-                      Заказов в пуле: {poolOrders.length}
+                    <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#666' }}>
+                      Заказов в пуле: {poolOrders.length} • Общий вес: {poolOrders.reduce((sum: number, d: any) => sum + (d.order.totalWeight || 0), 0).toFixed(1)} кг
                     </p>
                   </div>
                   
@@ -97,6 +97,26 @@ export const DeliveryPoolsTab: React.FC<DeliveryPoolsTabProps> = ({ pools, order
                           targetTime={pool.closeTime}
                           showIcon={false}
                         />
+                        <button
+                          onClick={async () => {
+                            const { firebaseApi } = await import('../utils/firebaseApi');
+                            const updatedPool = { ...pool, status: 'closed' as const };
+                            await firebaseApi.createOrUpdatePool(updatedPool);
+                            window.location.reload();
+                          }}
+                          style={{
+                            marginTop: '8px',
+                            padding: '4px 12px',
+                            fontSize: '12px',
+                            background: '#ff9800',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔒 Закрыть пул
+                        </button>
                       </div>
                     ) : (
                       <div style={{
@@ -120,40 +140,51 @@ export const DeliveryPoolsTab: React.FC<DeliveryPoolsTabProps> = ({ pools, order
                 ) : (
                   <div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
-                      {poolOrders.map((details: any) => (
-                        <div 
-                          key={details.order.id}
-                          style={{
-                            padding: '12px',
-                            background: '#f9f9f9',
-                            borderRadius: '8px',
-                            border: '1px solid #e0e0e0'
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                              <div style={{ fontWeight: '600', marginBottom: '4px' }}>
-                                {details.customerName} - {details.customerPhone}
+                      {poolOrders.map((details: any) => {
+                        const isPaid = details.order.status === 'products_paid' || details.order.status === 'paid';
+                        const hasDelivery = details.order.deliveryPrice && details.order.deliveryPrice > 0;
+                        return (
+                          <div 
+                            key={details.order.id}
+                            style={{
+                              padding: '12px',
+                              background: isPaid ? '#e8f5e9' : '#fff3e0',
+                              borderRadius: '8px',
+                              border: isPaid ? '1px solid #4caf50' : '1px solid #ff9800'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+                                  {isPaid ? '✅' : '⏳'} {details.customerName} - {details.customerPhone}
+                                </div>
+                                <div style={{ fontSize: '14px', color: '#666' }}>
+                                  {details.order.deliveryAddress}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
+                                  Вес: {(details.order.totalWeight || 0).toFixed(1)} кг
+                                  {hasDelivery && ` • Доставка: ${details.order.deliveryPrice} ₽`}
+                                </div>
                               </div>
-                              <div style={{ fontSize: '14px', color: '#666' }}>
-                                {details.order.deliveryAddress}
-                              </div>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '16px', fontWeight: '700', color: '#4caf50' }}>
-                                {details.order.total} ₽
-                              </div>
-                              <div style={{ fontSize: '12px', color: '#666' }}>
-                                Заказ #{details.order.id.slice(-6)}
+                              <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontSize: '16px', fontWeight: '700', color: isPaid ? '#4caf50' : '#ff9800' }}>
+                                  {details.order.total} ₽
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#666' }}>
+                                  Заказ #{details.order.id.slice(-6)}
+                                </div>
+                                <div style={{ fontSize: '11px', fontWeight: '600', color: isPaid ? '#2e7d32' : '#e65100' }}>
+                                  {isPaid ? 'Оплачено' : 'Ожидает оплаты'}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     
                     {/* Форма расчета доставки для закрытых пулов */}
-                    {pool.status === 'closed' && (
+                    {pool.status === 'closed' && poolOrders.some((d: any) => d.order.status !== 'delivery_pending' && d.order.status !== 'paid') && (
                       <div style={{
                         marginTop: '16px',
                         padding: '16px',
@@ -173,7 +204,7 @@ export const DeliveryPoolsTab: React.FC<DeliveryPoolsTabProps> = ({ pools, order
                           fontSize: '13px',
                           color: '#1565c0'
                         }}>
-                          💡 Стоимость доставки автоматически распределится пропорционально стоимости товаров в каждом заказе
+                          💡 Стоимость доставки распределится пропорционально весу товаров в каждом заказе
                         </div>
                         
                         <div style={{ marginBottom: '12px' }}>
@@ -201,14 +232,14 @@ export const DeliveryPoolsTab: React.FC<DeliveryPoolsTabProps> = ({ pools, order
                         
                         {deliveryCosts[pool.id] > 0 && (
                           <div style={{ marginBottom: '12px', fontSize: '13px', color: '#666' }}>
-                            <div style={{ fontWeight: '600', marginBottom: '8px' }}>Автоматическое распределение:</div>
+                            <div style={{ fontWeight: '600', marginBottom: '8px' }}>Автоматическое распределение по весу:</div>
                             {poolOrders.map((details: any) => {
-                              const totalOrdersAmount = poolOrders.reduce((sum: number, d: any) => sum + d.order.total, 0);
-                              const share = Math.round((details.order.total / totalOrdersAmount) * deliveryCosts[pool.id]);
-                              const percentage = Math.round((details.order.total / totalOrdersAmount) * 100);
+                              const totalWeight = poolOrders.reduce((sum: number, d: any) => sum + (d.order.totalWeight || 0), 0);
+                              const share = totalWeight > 0 ? Math.round((details.order.totalWeight || 0) / totalWeight * deliveryCosts[pool.id]) : 0;
+                              const percentage = totalWeight > 0 ? Math.round((details.order.totalWeight || 0) / totalWeight * 100) : 0;
                               return (
                                 <div key={details.order.id} style={{ marginBottom: '4px' }}>
-                                  • Заказ #{details.order.id.slice(-6)}: {share} ₽ ({percentage}%)
+                                  • Заказ #{details.order.id.slice(-6)}: {share} ₽ ({percentage}% от {(details.order.totalWeight || 0).toFixed(1)} кг)
                                 </div>
                               );
                             })}
@@ -224,7 +255,12 @@ export const DeliveryPoolsTab: React.FC<DeliveryPoolsTabProps> = ({ pools, order
                             }
                             
                             try {
-                              const totalOrdersAmount = poolOrders.reduce((sum: number, d: any) => sum + d.order.total, 0);
+                              const totalWeight = poolOrders.reduce((sum: number, d: any) => sum + (d.order.totalWeight || 0), 0);
+                              
+                              if (totalWeight === 0) {
+                                alert('Невозможно рассчитать доставку: общий вес заказов равен 0');
+                                return;
+                              }
                               
                               // Устанавливаем дедлайн оплаты (25 минут от текущего момента)
                               const deadline = new Date();
@@ -232,9 +268,9 @@ export const DeliveryPoolsTab: React.FC<DeliveryPoolsTabProps> = ({ pools, order
                               
                               const customerIds: string[] = [];
                               
-                              // Автоматически распределяем доставку пропорционально
+                              // Автоматически распределяем доставку пропорционально весу
                               for (const details of poolOrders) {
-                                const share = Math.round((details.order.total / totalOrdersAmount) * deliveryCosts[pool.id]);
+                                const share = Math.round((details.order.totalWeight || 0) / totalWeight * deliveryCosts[pool.id]);
                                 await onUpdateOrder?.(details.order.id, {
                                   deliveryPrice: share,
                                   status: 'delivery_pending',

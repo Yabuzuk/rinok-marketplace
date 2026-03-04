@@ -5,11 +5,15 @@ interface ParticipantCardProps {
   participant: GroupOrderParticipant;
   isOrganizer?: boolean;
   deliveryShare?: number;
+  isCurrentUser?: boolean;
+  onRemoveItem?: (itemIndex: number) => void;
 }
 
 export const ParticipantCard: React.FC<ParticipantCardProps> = ({ 
   participant, 
-  isOrganizer = false 
+  isOrganizer = false,
+  isCurrentUser = false,
+  onRemoveItem
 }) => {
   return (
     <div style={{
@@ -57,8 +61,31 @@ export const ParticipantCard: React.FC<ParticipantCardProps> = ({
         <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #ddd' }}>
           <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>Товары:</div>
           {participant.items.map((item, idx) => (
-            <div key={idx} style={{ fontSize: '13px', color: '#333', marginBottom: '3px' }}>
-              • {item.productName} × {item.quantity} = {item.price * item.quantity}₽
+            <div key={idx} style={{ 
+              fontSize: '13px', 
+              color: '#333', 
+              marginBottom: '3px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span>• {item.productName} × {item.quantity} = {item.price * item.quantity}₽</span>
+              {isCurrentUser && !participant.productsPaid && onRemoveItem && (
+                <button
+                  onClick={() => onRemoveItem(idx)}
+                  style={{
+                    background: '#EF4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Удалить
+                </button>
+              )}
             </div>
           ))}
         </div>

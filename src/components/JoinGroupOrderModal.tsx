@@ -35,9 +35,9 @@ const JoinGroupOrderModal: React.FC<JoinGroupOrderModalProps> = ({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 1000,
+      zIndex: 9999,
       padding: '20px'
-    }}>
+    }} onClick={onClose}>
       <div style={{
         background: 'white',
         borderRadius: '16px',
@@ -45,7 +45,7 @@ const JoinGroupOrderModal: React.FC<JoinGroupOrderModalProps> = ({
         maxWidth: '400px',
         width: '100%',
         position: 'relative'
-      }}>
+      }} onClick={(e) => e.stopPropagation()}>
         <button
           onClick={onClose}
           style={{

@@ -141,6 +141,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
       case 'manager':
         return [
           { icon: <FileText size={20} />, label: 'Новые', onClick: () => onDashboardClick('orders'), badge: undefined },
+          { icon: <Users size={20} />, label: 'Пулы', onClick: () => onDashboardClick('pools'), badge: undefined },
           { icon: <Timer size={20} />, label: 'В работе', onClick: () => onDashboardClick?.('in-progress'), badge: undefined },
           { icon: <Package size={20} />, label: 'Архив', onClick: () => onDashboardClick?.('archive'), badge: undefined },
           { icon: <UserCircle size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }

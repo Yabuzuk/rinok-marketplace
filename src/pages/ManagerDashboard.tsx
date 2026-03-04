@@ -5,6 +5,7 @@ import ReceiptViewer from '../components/ReceiptViewer';
 import EditOrderModal from '../components/EditOrderModal';
 import { DeliveryPoolsTab } from '../components/DeliveryPoolsTab';
 import { calculateDeliveryPrice } from '../utils/yandexDelivery';
+import { firebaseApi } from '../utils/firebaseApi';
 
 interface ManagerDashboardProps {
   user: UserType;
@@ -35,6 +36,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
       if (event.detail) {
         const tabMap: { [key: string]: string } = {
           'orders': 'orders',
+          'pools': 'pools',
           'in-progress': 'in-progress',
           'archive': 'archive', 
           'profile': 'settings'
@@ -60,7 +62,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
   const confirmedOrders = orders.filter(order => order.status === 'confirmed');
   const confirmedIndividual = confirmedOrders.filter(order => order.deliveryType !== 'auto_group' && order.deliveryType !== 'neighbor_group');
   
-  const readyOrders = orders.filter(order => order.status === 'ready');
+  const readyOrders = orders.filter(order => order.status === 'ready' || order.status === 'paid');
   
   // Группировка confirmed индивидуальных заказов для добавления доставки
   const groupedConfirmedOrders = confirmedIndividual.reduce((groups, order) => {
@@ -303,9 +305,9 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
           <div style={{ flex: 1 }}>
             {activeTab === 'orders' && (
               <div>
-                {/* Раздел 0: Новые заказы для подтверждения */}
+                {/* Новые заказы для подтверждения */}
                 <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
-                  Новые заказы ({pendingOrders.length})
+                  📋 Новые заказы ({pendingOrders.length})
                 </h2>
 
                 {pendingOrders.length === 0 ? (
@@ -385,6 +387,21 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                                         status: 'payment_pending',
                                         managerId: user.id
                                       });
+                                      
+                                      // Добавляем заказ в пул
+                                      if (order.deliveryDate && order.deliveryTimeSlot) {
+                                        const poolId = `pool_${order.deliveryDate}_${order.deliveryTimeSlot}`;
+                                        const pool = deliveryPools.find(p => p.id === poolId);
+                                        
+                                        if (pool && !pool.orders.includes(order.id)) {
+                                          const updatedPool = {
+                                            ...pool,
+                                            orders: [...pool.orders, order.id]
+                                          };
+                                          await firebaseApi.createOrUpdatePool(updatedPool);
+                                        }
+                                      }
+                                      
                                       alert('Заказ отправлен на оплату товаров.');
                                     } catch (error) {
                                       alert('Ошибка отправки на оплату');
@@ -456,121 +473,9 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                   </div>
                 )}
 
-                {/* Раздел 1: Подтвержденные индивидуальные заказы для добавления доставки */}
+                {/* Готовые заказы для отправки в доставку */}
                 <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
-                  Добавить доставку - индивидуальные ({groupedConfirmedOrdersList.length})
-                </h2>
-
-                {groupedConfirmedOrdersList.length === 0 ? (
-                  <div className="card" style={{ textAlign: 'center', padding: '48px', marginBottom: '32px' }}>
-                    <Package size={48} style={{ margin: '0 auto 16px', opacity: 0.5, color: '#666' }} />
-                    <p style={{ color: '#666' }}>Нет индивидуальных заказов для добавления доставки</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '48px' }}>
-                    {groupedConfirmedOrdersList.map(group => (
-                      <div key={group.id} className="card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                          <div>
-                            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
-                              {group.customerName} - {group.customerPhone}
-                            </h3>
-                            <p style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
-                              Адрес: {group.deliveryAddress}
-                            </p>
-                            <p style={{ fontSize: '14px', color: '#666' }}>
-                              Павильоны: {Array.from(group.pavilions).join(', ')}
-                            </p>
-                          </div>
-                          
-                          <div style={{
-                            padding: '4px 12px',
-                            borderRadius: '12px',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            background: '#d1ecf1',
-                            color: '#0c5460'
-                          }}>
-                            Подтвержден продавцом
-                          </div>
-                        </div>
-
-                        <div style={{ marginBottom: '16px' }}>
-                          {group.allItems.map((item: any, index: number) => (
-                            <div key={index} style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              padding: '8px 0',
-                              borderBottom: index < group.allItems.length - 1 ? '1px solid #f0f0f0' : 'none'
-                            }}>
-                              <span>{item.productName} x {item.quantity}</span>
-                              <span style={{ fontWeight: '600' }}>{item.price * item.quantity} ₽</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
-                            Товары: {group.totalAmount} ₽
-                          </div>
-                          
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <button
-                              onClick={() => handleCalculateDelivery(group)}
-                              disabled={calculatingPrices[group.id]}
-                              style={{
-                                padding: '8px',
-                                border: '1px solid #ff6b35',
-                                borderRadius: '4px',
-                                background: 'white',
-                                cursor: calculatingPrices[group.id] ? 'wait' : 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                fontSize: '12px',
-                                color: '#ff6b35'
-                              }}
-                            >
-                              <Calculator size={14} />
-                              {calculatingPrices[group.id] ? '...' : 'Авто'}
-                            </button>
-                            <input
-                              type="number"
-                              min="0"
-                              placeholder="Доставка"
-                              value={deliveryPrices[group.id] || ''}
-                              onChange={(e) => setDeliveryPrices(prev => ({
-                                ...prev,
-                                [group.id]: Number(e.target.value)
-                              }))}
-                              style={{
-                                width: '100px',
-                                padding: '8px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '14px'
-                              }}
-                            />
-                            <button 
-                              className="btn btn-primary"
-                              onClick={() => setSelectedGroup(group)}
-                              style={{ 
-                                fontSize: '14px', 
-                                padding: '8px 16px'
-                              }}
-                            >
-                              Отправить на оплату
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Раздел 2: Готовые заказы для отправки в доставку */}
-                <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
-                  Отправить в доставку ({groupedReadyOrdersList.length})
+                  📦 Готовы к отправке ({groupedReadyOrdersList.length})
                 </h2>
 
                 {groupedReadyOrdersList.length === 0 ? (
@@ -709,7 +614,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
             {activeTab === 'in-progress' && (
               <div>
                 <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
-                  Заказы в работе ({inProgressOrders.length})
+                  🚚 В доставке ({inProgressOrders.length})
                 </h2>
 
                 {inProgressOrders.length === 0 ? (
@@ -802,7 +707,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
             {activeTab === 'archive' && (
               <div>
                 <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
-                  Архив заказов ({archivedOrders.length})
+                  ✅ Выполненные заказы ({archivedOrders.length})
                 </h2>
 
                 {archivedOrders.length === 0 ? (

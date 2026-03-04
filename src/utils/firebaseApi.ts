@@ -74,13 +74,18 @@ export const firebaseApi = {
 
   // Заказы
   async getOrders(): Promise<Order[]> {
-    const querySnapshot = await getDocs(
-      query(collection(db, 'orders'), orderBy('createdAt', 'desc'))
-    );
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Order));
+    try {
+      const querySnapshot = await getDocs(
+        query(collection(db, 'orders'), orderBy('createdAt', 'desc'))
+      );
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Order));
+    } catch (error) {
+      console.error('❌ Ошибка загрузки заказов:', error);
+      return [];
+    }
   },
 
   async createOrder(order: Omit<Order, 'id'>): Promise<Order> {
@@ -252,6 +257,31 @@ export const firebaseApi = {
     } catch (error) {
       console.error('❌ Ошибка поиска группового заказа:', error);
       return null;
+    }
+  },
+
+  // Пулы доставки
+  async getDeliveryPools(): Promise<any[]> {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'deliveryPools'));
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('❌ Ошибка загрузки пулов доставки:', error);
+      return [];
+    }
+  },
+
+  async createOrUpdatePool(pool: any): Promise<any> {
+    try {
+      const docRef = doc(db, 'deliveryPools', pool.id);
+      await setDoc(docRef, pool);
+      return pool;
+    } catch (error) {
+      console.error('❌ Ошибка сохранения пула:', error);
+      throw error;
     }
   }
 };

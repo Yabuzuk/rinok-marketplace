@@ -31,6 +31,7 @@ const Cart: React.FC<CartProps> = ({
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [addressInput, setAddressInput] = React.useState('');
   const [isCreatingOrder, setIsCreatingOrder] = React.useState(false);
+  const [isCreatingGroupOrder, setIsCreatingGroupOrder] = React.useState(false);
   
   // Новые состояния для выбора типа доставки
   const [deliveryType, setDeliveryType] = React.useState<DeliveryType>('individual');
@@ -208,12 +209,10 @@ const Cart: React.FC<CartProps> = ({
       return;
     }
     
-    // Для групповой доставки требуется выбор даты и времени
-    if (deliveryType === 'auto_group') {
-      if (!deliveryDate || !deliveryTimeSlot) {
-        alert('Для групповой доставки выберите дату и время');
-        return;
-      }
+    // Для доставки в пуле требуется выбор времени
+    if (deliveryType === 'auto_group' && !deliveryTimeSlot) {
+      alert('Выберите время доставки');
+      return;
     }
     
     if (deliveryDistance === 0 && selectedAddress) {
@@ -244,6 +243,7 @@ const Cart: React.FC<CartProps> = ({
 
       const orderPromises = Object.entries(itemsByPavilion).map(async ([pavilionNumber, pavilionItems]) => {
         const pavilionTotal = pavilionItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+        const totalWeight = pavilionItems.reduce((sum, item) => sum + item.quantity, 0);
         
         const pavilionDeliveryFee = 0; // Доставку добавляет менеджер
         
@@ -263,6 +263,7 @@ const Cart: React.FC<CartProps> = ({
             // Доставку добавляет менеджер
           ],
           total: pavilionTotal + pavilionDeliveryFee,
+          totalWeight,
           status: orderStatus as 'pending',
           createdAt: new Date(),
           deliveryAddress: selectedAddress || 'г. Москва, ул. Примерная, д. 123, кв. 45',
@@ -427,7 +428,7 @@ const Cart: React.FC<CartProps> = ({
           padding: '24px',
           borderTop: '1px solid #f0f0f0'
         }}>
-          {/* Выбор типа доставки */}
+          {/* Выбор времени доставки */}
           <DeliveryDateSelector
             selectedDate={deliveryDate?.value}
             selectedTimeSlot={deliveryTimeSlot}
@@ -441,10 +442,42 @@ const Cart: React.FC<CartProps> = ({
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
               Адрес доставки:
             </label>
-            {user?.addresses && user.addresses.length > 0 ? (
-              <select 
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
                 value={selectedAddress}
-                onChange={(e) => setSelectedAddress(e.target.value)}
+                onChange={async (e) => {
+                  setSelectedAddress(e.target.value);
+                  if (e.target.value.length >= 3) {
+                    try {
+                      const response = await fetch(
+                        `https://suggest-maps.yandex.ru/v1/suggest?` +
+                        `apikey=41a4deeb-0548-4d8e-b897-3c4a6bc08032&` +
+                        `text=${encodeURIComponent('Новосибирск ' + e.target.value)}&` +
+                        `results=5&` +
+                        `type=house`
+                      );
+                      
+                      if (response.ok) {
+                        const data = await response.json();
+                        const suggestions = data.results?.map((item: any) => {
+                          const title = item.title?.text || item.text || '';
+                          const subtitle = item.subtitle?.text || '';
+                          return subtitle ? `${title}, ${subtitle}` : title;
+                        }) || [];
+                        setCartAddressSuggestions(suggestions.slice(0, 5));
+                        setShowCartSuggestions(true);
+                      }
+                    } catch (error) {
+                      console.error('Ошибка получения подсказок:', error);
+                    }
+                  } else {
+                    setCartAddressSuggestions([]);
+                    setShowCartSuggestions(false);
+                  }
+                }}
+                onBlur={() => setTimeout(() => setShowCartSuggestions(false), 200)}
+                placeholder="Введите адрес доставки в Новосибирске"
                 style={{
                   width: '100%',
                   padding: '8px 12px',
@@ -452,96 +485,113 @@ const Cart: React.FC<CartProps> = ({
                   borderRadius: '8px',
                   fontSize: '14px'
                 }}
-              >
-                {user.addresses.map((address, index) => (
-                  <option key={index} value={address}>
-                    {address}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="text"
-                  value={selectedAddress}
-                  onChange={async (e) => {
-                    setSelectedAddress(e.target.value);
-                    if (e.target.value.length >= 3) {
-                      try {
-                        const response = await fetch(
-                          `https://suggest-maps.yandex.ru/v1/suggest?` +
-                          `apikey=41a4deeb-0548-4d8e-b897-3c4a6bc08032&` +
-                          `text=${encodeURIComponent('Новосибирск ' + e.target.value)}&` +
-                          `results=5&` +
-                          `type=house`
-                        );
-                        
-                        if (response.ok) {
-                          const data = await response.json();
-                          const suggestions = data.results?.map((item: any) => {
-                            const title = item.title?.text || item.text || '';
-                            const subtitle = item.subtitle?.text || '';
-                            return subtitle ? `${title}, ${subtitle}` : title;
-                          }) || [];
-                          setCartAddressSuggestions(suggestions.slice(0, 5));
-                          setShowCartSuggestions(true);
-                        }
-                      } catch (error) {
-                        console.error('Ошибка получения подсказок:', error);
-                      }
-                    } else {
-                      setCartAddressSuggestions([]);
-                      setShowCartSuggestions(false);
-                    }
-                  }}
-                  onBlur={() => setTimeout(() => setShowCartSuggestions(false), 200)}
-                  placeholder="Введите адрес доставки в Новосибирске"
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '8px',
-                    fontSize: '14px'
-                  }}
-                />
-                {showCartSuggestions && cartAddressSuggestions.length > 0 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    background: 'white',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    zIndex: 1001,
-                    maxHeight: '150px',
-                    overflowY: 'auto'
-                  }}>
-                    {cartAddressSuggestions.map((suggestion, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          padding: '8px 12px',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          borderBottom: index < cartAddressSuggestions.length - 1 ? '1px solid #f0f0f0' : 'none'
-                        }}
-                        onMouseDown={() => {
-                          setSelectedAddress(suggestion);
-                          setShowCartSuggestions(false);
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-                      >
-                        {suggestion}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+              />
+              {showCartSuggestions && cartAddressSuggestions.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  background: 'white',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  zIndex: 1001,
+                  maxHeight: '150px',
+                  overflowY: 'auto'
+                }}>
+                  {cartAddressSuggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        padding: '8px 12px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        borderBottom: index < cartAddressSuggestions.length - 1 ? '1px solid #f0f0f0' : 'none'
+                      }}
+                      onMouseDown={() => {
+                        setSelectedAddress(suggestion);
+                        setShowCartSuggestions(false);
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                    >
+                      {suggestion}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
+          
+          {/* Кнопка групповой доставки с соседями */}
+          {deliveryTimeSlot && deliveryTimeSlot !== 'now' && onCreateGroupOrder && (
+            <button
+              onClick={async () => {
+                if (isCreatingGroupOrder) return;
+                
+                if (!user || user.role !== 'customer') {
+                  alert('Войдите как покупатель для создания совместного заказа');
+                  return;
+                }
+                if (!selectedAddress) {
+                  alert('Выберите адрес доставки');
+                  return;
+                }
+                
+                setIsCreatingGroupOrder(true);
+                try {
+                  const groupOrder = await onCreateGroupOrder({
+                    items: items.map(item => ({
+                      productId: item.product.id,
+                      productName: item.product.name,
+                      quantity: item.quantity,
+                      price: item.product.price
+                    })),
+                    total,
+                    address: selectedAddress,
+                    deliveryDate: deliveryDate?.date || deliveryDate,
+                    deliveryTimeSlot,
+                    deliveryPoolId: `pool_${deliveryDate?.date || deliveryDate}_${deliveryTimeSlot}`
+                  });
+                  
+                  items.forEach(item => onUpdateQuantity(item.product.id, 0));
+                  onClose();
+                  setTimeout(() => {
+                    window.location.href = `/group-order/${groupOrder.code}`;
+                  }, 100);
+                } catch (error) {
+                  console.error('Ошибка создания заказа:', error);
+                  alert('Ошибка создания заказа. Попробуйте еще раз.');
+                } finally {
+                  setIsCreatingGroupOrder(false);
+                }
+              }}
+              disabled={isCreatingGroupOrder}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: isCreatingGroupOrder ? '#9E9E9E' : 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: isCreatingGroupOrder ? 'not-allowed' : 'pointer',
+                opacity: isCreatingGroupOrder ? 0.7 : 1,
+                marginBottom: '12px'
+              }}
+            >
+              {isCreatingGroupOrder ? (
+                <>
+                  <span style={{ marginRight: '8px' }}>⏳</span>
+                  Создаем заказ...
+                </>
+              ) : (
+                'Оформить совместный заказ'
+              )}
+            </button>
+          )}
           
           <div style={{ marginBottom: '16px' }}>
             <div style={{
@@ -589,68 +639,6 @@ const Cart: React.FC<CartProps> = ({
               'Оформить заказ'
             )}
           </button>
-          
-          {onCreateGroupOrder && deliveryType === 'neighbor_group' && (
-            <button
-              onClick={async () => {
-                if (!user || user.role !== 'customer') {
-                  alert('Войдите как покупатель для создания совместного заказа');
-                  return;
-                }
-                if (!selectedAddress) {
-                  alert('Выберите адрес доставки');
-                  return;
-                }
-                if (!deliveryDate || !deliveryTimeSlot) {
-                  alert('Выберите дату и время доставки');
-                  return;
-                }
-                
-                try {
-                  console.log('Creating group order with:', { deliveryDate, deliveryTimeSlot });
-                  const groupOrder = await onCreateGroupOrder({
-                    items: items.map(item => ({
-                      productId: item.product.id,
-                      productName: item.product.name,
-                      quantity: item.quantity,
-                      price: item.product.price
-                    })),
-                    total,
-                    address: selectedAddress,
-                    deliveryDate: deliveryDate?.date || deliveryDate,
-                    deliveryTimeSlot,
-                    deliveryPoolId: `pool_${deliveryDate?.date || deliveryDate}_${deliveryTimeSlot}`
-                  });
-                  console.log('Group order created:', groupOrder);
-                  
-                  // Очищаем корзину через родительский компонент
-                  items.forEach(item => onUpdateQuantity(item.product.id, 0));
-                  
-                  // Закрываем корзину и переходим на страницу заказа
-                  onClose();
-                  setTimeout(() => {
-                    window.location.href = `/group-order/${groupOrder.code}`;
-                  }, 100);
-                } catch (error) {
-                  console.error('Ошибка создания заказа:', error);
-                  alert('Ошибка создания заказа. Попробуйте еще раз.');
-                }
-              }}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
-            >
-              👥 Создать совместный заказ
-            </button>
-          )}
         </div>
       )}
     </div>

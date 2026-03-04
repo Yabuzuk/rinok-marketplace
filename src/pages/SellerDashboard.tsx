@@ -675,8 +675,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       Управление заказами передано менеджеру
                     </div>
                     <div style={{ fontSize: '14px', color: '#0d47a1' }}>
-                      Теперь менеджер подтверждает заказы, добавляет стоимость доставки и отправляет их покупателям. 
-                      Вы можете только просматривать заказы и отмечать их как собранные после оплаты.
+                      Менеджер подтверждает заказы и управляет доставкой. Вы можете только просматривать заказы и чеки об оплате.
                     </div>
                   </div>
                 </div>
@@ -839,83 +838,6 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                               </div>
                             )}
                           </div>
-                          
-                          {order.status === 'pending' && (
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <button 
-                                className="btn btn-secondary"
-                                style={{ 
-                                  fontSize: '14px', 
-                                  padding: '8px 16px'
-                                }}
-                                onClick={() => setEditingOrder(order)}
-                              >
-                                <Edit size={14} style={{ marginRight: '4px' }} />
-                                Редактировать
-                              </button>
-                              <button 
-                                className="btn btn-primary"
-                                style={{ 
-                                  fontSize: '14px', 
-                                  padding: '8px 16px',
-                                  opacity: loadingOrders[order.id] ? 0.7 : 1
-                                }}
-                                onClick={() => handleOrderStatusUpdate(order.id, 'confirmed')}
-                                disabled={!!loadingOrders[order.id]}
-                              >
-                                {loadingOrders[order.id] === 'confirmed' ? (
-                                  <>
-                                    <span style={{ marginRight: '8px' }}>⏳</span>
-                                    Подтверждаем...
-                                  </>
-                                ) : (
-                                  'Подтвердить'
-                                )}
-                              </button>
-                              <button 
-                                className="btn btn-secondary"
-                                style={{ 
-                                  fontSize: '14px', 
-                                  padding: '8px 16px', 
-                                  color: '#f44336',
-                                  opacity: loadingOrders[order.id] ? 0.7 : 1
-                                }}
-                                onClick={() => handleOrderStatusUpdate(order.id, 'cancelled')}
-                                disabled={!!loadingOrders[order.id]}
-                              >
-                                {loadingOrders[order.id] === 'cancelled' ? (
-                                  <>
-                                    <span style={{ marginRight: '8px' }}>⏳</span>
-                                    Отменяем...
-                                  </>
-                                ) : (
-                                  'Отменить'
-                                )}
-                              </button>
-                            </div>
-                          )}
-                          
-                          {order.status === 'paid' && (
-                            <button 
-                              className="btn btn-primary"
-                              style={{ 
-                                fontSize: '14px', 
-                                padding: '8px 16px',
-                                opacity: loadingOrders[order.id] ? 0.7 : 1
-                              }}
-                              onClick={() => handleOrderStatusUpdate(order.id, 'ready')}
-                              disabled={!!loadingOrders[order.id]}
-                            >
-                              {loadingOrders[order.id] === 'ready' ? (
-                                <>
-                                  <span style={{ marginRight: '8px' }}>⏳</span>
-                                  Собираем...
-                                </>
-                              ) : (
-                                'Заказ собран'
-                              )}
-                            </button>
-                          )}
                         </div>
                       </div>
                     ))}

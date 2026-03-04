@@ -12,6 +12,7 @@ interface GroupOrderPageProps {
   onPayProducts: (groupOrderId: string, userId: string) => void;
   onPayDelivery: (groupOrderId: string, userId: string) => void;
   onLeaveGroupOrder: (groupOrderId: string, userId: string) => void;
+  onRemoveItemFromGroupOrder?: (groupOrderId: string, userId: string, itemIndex: number) => void;
 }
 
 const GroupOrderPage: React.FC<GroupOrderPageProps> = ({
@@ -19,7 +20,8 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = ({
   currentUser,
   onPayProducts,
   onPayDelivery,
-  onLeaveGroupOrder
+  onLeaveGroupOrder,
+  onRemoveItemFromGroupOrder
 }) => {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
@@ -128,6 +130,12 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(code || '');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', paddingBottom: '100px' }}>
       {/* Заголовок */}
@@ -181,12 +189,35 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = ({
           
           <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
             <button
+              onClick={handleCopyCode}
+              style={{
+                flex: 1,
+                padding: '12px',
+                background: copied ? '#10B981' : 'linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                fontSize: '16px',
+                fontWeight: '600',
+                transition: 'all 0.3s'
+              }}
+            >
+              {copied ? <Check size={20} /> : <Copy size={20} />}
+              {copied ? 'Скопировано!' : 'Копировать код'}
+            </button>
+            
+            <button
               onClick={handleShare}
               style={{
                 flex: 1,
                 padding: '12px',
-                background: 'linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%)',
-                color: 'white',
+                background: '#F3F4F6',
+                color: '#374151',
                 border: 'none',
                 borderRadius: '12px',
                 cursor: 'pointer',
@@ -201,7 +232,9 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = ({
               <Share2 size={20} />
               Поделиться
             </button>
-            
+          </div>
+          
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
             <button
               onClick={handleCopy}
               style={{
@@ -277,6 +310,12 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = ({
               participant={participant}
               isOrganizer={participant.userId === groupOrder.organizerId}
               deliveryShare={groupOrder.deliveryShares?.[participant.userId]}
+              isCurrentUser={participant.userId === currentUser?.id}
+              onRemoveItem={participant.userId === currentUser?.id && !participant.productsPaid && onRemoveItemFromGroupOrder ? (itemIndex) => {
+                if (window.confirm('Удалить этот товар?')) {
+                  onRemoveItemFromGroupOrder(groupOrder.id, currentUser.id, itemIndex);
+                }
+              } : undefined}
             />
           ))}
         </div>

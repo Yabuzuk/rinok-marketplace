@@ -41,6 +41,7 @@ export interface Product {
   reviews: number;
   minOrderQuantity: number;
   internalCode?: string; // Служебный номер для продавца
+  weight?: number; // Вес товара в кг
 }
 
 export interface PaymentInfo {
@@ -56,6 +57,7 @@ export interface Order {
   customerId: string;
   items: OrderItem[];
   total: number;
+  totalWeight?: number; // Общий вес заказа в кг
   status: 'pending' | 'confirmed' | 'seller_editing' | 'customer_approval' | 'manager_pricing' | 'payment_pending' | 'paid' | 'products_paid' | 'delivery_pending' | 'collecting' | 'ready' | 'in_delivery' | 'delivering' | 'delivered' | 'cancelled';
   deliveryPrice?: number;
   managerId?: string;
@@ -166,6 +168,7 @@ export interface GroupOrderParticipant {
   userEmail?: string;
   items: OrderItem[];
   productsTotal: number;
+  totalWeight?: number; // Общий вес заказа участника в кг
   productsPaid: boolean;
   productsPaidAt?: string;
   deliveryShare: number;

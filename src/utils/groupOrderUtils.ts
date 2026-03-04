@@ -10,18 +10,24 @@ export const generateGroupCode = (): string => {
   return code;
 };
 
-// Расчет долей доставки пропорционально стоимости товаров
+// Расчет долей доставки пропорционально весу заказа
 export const calculateDeliveryShares = (
   participants: GroupOrderParticipant[],
   totalDeliveryCost: number
 ): GroupOrderParticipant[] => {
-  const totalProductsCost = participants.reduce((sum, p) => sum + p.productsTotal, 0);
+  // Вычисляем вес для каждого участника (1 quantity = 1 kg)
+  const participantsWithWeight = participants.map(p => ({
+    ...p,
+    totalWeight: p.items.reduce((sum, item) => sum + item.quantity, 0)
+  }));
   
-  if (totalProductsCost === 0) return participants;
+  const totalWeight = participantsWithWeight.reduce((sum, p) => sum + p.totalWeight, 0);
+  
+  if (totalWeight === 0) return participantsWithWeight;
 
-  return participants.map(participant => ({
+  return participantsWithWeight.map(participant => ({
     ...participant,
-    deliveryShare: Math.round((participant.productsTotal / totalProductsCost) * totalDeliveryCost)
+    deliveryShare: Math.round((participant.totalWeight / totalWeight) * totalDeliveryCost)
   }));
 };
 

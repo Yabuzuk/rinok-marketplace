@@ -143,7 +143,7 @@ const AppContent: React.FC = () => {
   }, [currentUser]);
 
   // Функции управления пулами доставки
-  const createOrGetPool = (date: string, timeSlotId: string) => {
+  const createOrGetPool = async (date: string, timeSlotId: string) => {
     const poolId = `pool_${date}_${timeSlotId}`;
     const existingPool = deliveryPools.find(p => p.id === poolId);
     
@@ -167,29 +167,31 @@ const AppContent: React.FC = () => {
       groupOrders: []
     };
     
+    await firebaseApi.createOrUpdatePool(newPool);
     setDeliveryPools(prev => [...prev, newPool]);
     return newPool;
   };
   
-  const addOrderToPool = (poolId: string, orderId: string) => {
-    setDeliveryPools(prev => prev.map(pool => {
-      if (pool.id === poolId) {
-        return {
-          ...pool,
-          orders: [...pool.orders, orderId]
-        };
-      }
-      return pool;
-    }));
+  const addOrderToPool = async (poolId: string, orderId: string) => {
+    const pool = deliveryPools.find(p => p.id === poolId);
+    if (!pool) return;
+    
+    const updatedPool = {
+      ...pool,
+      orders: [...pool.orders, orderId]
+    };
+    
+    await firebaseApi.createOrUpdatePool(updatedPool);
+    setDeliveryPools(prev => prev.map(p => p.id === poolId ? updatedPool : p));
   };
   
-  const closePool = (poolId: string) => {
-    setDeliveryPools(prev => prev.map(pool => {
-      if (pool.id === poolId) {
-        return { ...pool, status: 'closed' as const };
-      }
-      return pool;
-    }));
+  const closePool = async (poolId: string) => {
+    const pool = deliveryPools.find(p => p.id === poolId);
+    if (!pool) return;
+    
+    const updatedPool = { ...pool, status: 'closed' as const };
+    await firebaseApi.createOrUpdatePool(updatedPool);
+    setDeliveryPools(prev => prev.map(p => p.id === poolId ? updatedPool : p));
   };
 
   // Функции управления групповыми заказами
@@ -321,6 +323,24 @@ const AppContent: React.FC = () => {
     if (participant?.productsPaid) return;
     
     const updatedParticipants = groupOrder.participants.filter((p: any) => p.userId !== userId);
+    await firebaseApi.updateGroupOrder(groupOrderId, { participants: updatedParticipants });
+    await loadData();
+  };
+
+  const handleRemoveItemFromGroupOrder = async (groupOrderId: string, userId: string, itemIndex: number) => {
+    const groupOrder = groupOrders.find(g => g.id === groupOrderId);
+    if (!groupOrder) return;
+    
+    const participant = groupOrder.participants.find((p: any) => p.userId === userId);
+    if (!participant || participant.productsPaid) return;
+    
+    const updatedItems = participant.items.filter((_: any, idx: number) => idx !== itemIndex);
+    const newTotal = updatedItems.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+    
+    const updatedParticipants = groupOrder.participants.map((p: any) => 
+      p.userId === userId ? { ...p, items: updatedItems, total: newTotal } : p
+    );
+    
     await firebaseApi.updateGroupOrder(groupOrderId, { participants: updatedParticipants });
     await loadData();
   };
@@ -496,17 +516,19 @@ const AppContent: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [productsData, ordersData, usersData, groupOrdersData] = await Promise.all([
+      const [productsData, ordersData, usersData, groupOrdersData, poolsData] = await Promise.all([
         firebaseApi.getProducts(),
         firebaseApi.getOrders(),
         firebaseApi.getUsers(),
-        firebaseApi.getGroupOrders()
+        firebaseApi.getGroupOrders(),
+        firebaseApi.getDeliveryPools()
       ]);
       
       setProducts(productsData || []);
       setOrders(ordersData || []);
       setUsers(usersData || []);
       setGroupOrders(groupOrdersData || []);
+      setDeliveryPools(poolsData || []);
       
       setDeliveries([]);
     } catch (error) {
@@ -515,6 +537,7 @@ const AppContent: React.FC = () => {
       setOrders([]);
       setUsers([]);
       setGroupOrders([]);
+      setDeliveryPools([]);
       setDeliveries([]);
     } finally {
       setLoading(false);
@@ -887,9 +910,9 @@ const AppContent: React.FC = () => {
       
       // Добавляем заказ в пул, если это групповая доставка
       if (orderData.deliveryType === 'auto_group' && orderData.deliveryDate && orderData.deliveryTimeSlot) {
-        const pool = createOrGetPool(orderData.deliveryDate, orderData.deliveryTimeSlot);
+        const pool = await createOrGetPool(orderData.deliveryDate, orderData.deliveryTimeSlot);
         if (pool) {
-          addOrderToPool(pool.id, order.id);
+          await addOrderToPool(pool.id, order.id);
         }
       }
       
@@ -1109,6 +1132,7 @@ const AppContent: React.FC = () => {
                   onPayProducts={handlePayProducts}
                   onPayDelivery={handlePayDelivery}
                   onLeaveGroupOrder={handleLeaveGroupOrder}
+                  onRemoveItemFromGroupOrder={handleRemoveItemFromGroupOrder}
                 />
               }
             />
