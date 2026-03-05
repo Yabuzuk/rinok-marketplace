@@ -198,6 +198,49 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
           </div>
         </div>
 
+        {/* Кнопки управления */}
+        <div style={{ marginBottom: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <button 
+            className="btn btn-secondary"
+            onClick={async () => {
+              if (!window.confirm('⚠️ ВНИМАНИЕ! Это удалит ВСЕ заказы, пулы доставки и совместные заказы из базы данных. Товары и пользователи останутся. Продолжить?')) return;
+              
+              try {
+                const { firebaseApi } = await import('../utils/firebaseApi');
+                
+                console.log('🗑️ Начинаем очистку базы заказов...');
+                
+                // Удаляем все заказы
+                for (const order of orders) {
+                  await firebaseApi.deleteOrder(order.id);
+                }
+                
+                // Очищаем localStorage
+                localStorage.removeItem('orders');
+                localStorage.removeItem('deliveryPools');
+                localStorage.removeItem('groupOrders');
+                
+                alert('✅ База заказов очищена! Страница будет перезагружена.');
+                window.location.reload();
+              } catch (error) {
+                console.error('Ошибка очистки базы:', error);
+                alert('❌ Ошибка очистки базы данных.');
+              }
+            }}
+            style={{
+              background: '#f44336',
+              color: 'white',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '600'
+            }}
+          >
+            🗑️ Очистить базу заказов
+          </button>
+        </div>
+
         {/* Кнопки управления скрыты */}
         <div style={{ marginBottom: '24px', display: 'none' }}>
           <button 

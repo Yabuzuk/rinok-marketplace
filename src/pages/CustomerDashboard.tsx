@@ -29,6 +29,32 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, orders, use
   const [editingSuggestions, setEditingSuggestions] = useState<string[]>([]);
   const [showEditingSuggestions, setShowEditingSuggestions] = useState(false);
 
+  useEffect(() => {
+    const handleTabSwitch = (event: any) => {
+      if (event.detail === 'group-orders') {
+        setActiveTab('groupOrders');
+      } else if (event.detail === 'orders') {
+        setActiveTab('orders');
+      }
+    };
+    window.addEventListener('switchCustomerTab', handleTabSwitch);
+    return () => window.removeEventListener('switchCustomerTab', handleTabSwitch);
+  }, []);
+
+  // Слушатель для переключения вкладок
+  useEffect(() => {
+    const handleTabSwitch = (event: any) => {
+      if (event.detail === 'group-orders') {
+        setActiveTab('groupOrders');
+      } else if (event.detail === 'orders') {
+        setActiveTab('orders');
+      }
+    };
+    
+    window.addEventListener('switchCustomerTab', handleTabSwitch);
+    return () => window.removeEventListener('switchCustomerTab', handleTabSwitch);
+  }, []);
+
   // Обработка результата платежа из URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

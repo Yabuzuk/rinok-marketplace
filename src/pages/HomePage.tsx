@@ -24,13 +24,13 @@ const categories = [
 const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }) => {
   const navigate = useNavigate();
   
-  // Фильтруем товары только от активных продавцов
+  // Фильтруем товары только от активных продавцов и с наличием на складе
   const activeProducts = products.filter(product => {
     const seller = users.find(u => 
       String(u.id) === String(product.sellerId) || 
       (u.pavilionNumber === product.pavilionNumber && u.role === 'seller')
     );
-    return seller && seller.sellerActive === true;
+    return seller && seller.sellerActive === true && product.stock > 0;
   });
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

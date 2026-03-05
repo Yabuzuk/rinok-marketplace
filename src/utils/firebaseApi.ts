@@ -128,6 +128,10 @@ export const firebaseApi = {
     await updateDoc(docRef, updates);
   },
 
+  async deleteOrder(id: string): Promise<void> {
+    await deleteDoc(doc(db, 'orders', id));
+  },
+
   // Пользователи
   async getUsers(): Promise<User[]> {
     try {

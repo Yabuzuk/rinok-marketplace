@@ -64,37 +64,53 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
       return () => clearInterval(interval);
     }
   }, [user]);
+  const [activeTab, setActiveTab] = React.useState('home');
+
   const renderNavigation = () => {
     if (!user) {
-      // Гостевое меню
       return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-1 z-50 flex justify-around items-center">
-          <NavButton icon={<Home size={20} />} label="Главная" onClick={onHomeClick} />
-          <NavButton icon={<Search size={20} />} label="Поиск" onClick={() => setShowSearch(true)} />
-          <NavButton 
-            icon={<ShoppingCart size={20} />} 
-            label="Корзина" 
-            badge={cartItemsCount}
-            onClick={onCartClick} 
-          />
-          <NavButton icon={<Menu size={20} />} label="Меню" onClick={() => setShowBurgerMenu(true)} />
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe z-50">
+          <div className="flex justify-around items-center py-3">
+            <NavButton 
+              emoji="🏠" 
+              onClick={() => { setActiveTab('home'); onHomeClick(); }}
+              isActive={activeTab === 'home'}
+            />
+            <NavButton 
+              emoji="🔍" 
+              onClick={() => { setActiveTab('search'); setShowSearch(true); }}
+              isActive={activeTab === 'search'}
+            />
+            <NavButton 
+              emoji="🛒" 
+              badge={cartItemsCount}
+              onClick={() => { setActiveTab('cart'); onCartClick(); }}
+              isActive={activeTab === 'cart'}
+            />
+            <NavButton 
+              emoji="☰" 
+              onClick={() => { setActiveTab('menu'); setShowBurgerMenu(true); }}
+              isActive={activeTab === 'menu'}
+            />
+          </div>
         </div>
       );
     }
 
-    // Меню для авторизованных пользователей
+    const menuItems = getMenuItems();
     return (
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-1 z-50 flex justify-around items-center">
-        {getMenuItems().map((item, index) => (
-          <NavButton
-            key={index}
-            icon={item.icon}
-            label={item.label}
-            badge={'badge' in item ? item.badge : undefined}
-            onClick={item.onClick}
-            isMain={'isMain' in item ? item.isMain : undefined}
-          />
-        ))}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe z-50">
+        <div className="flex justify-around items-center py-3">
+          {menuItems.map((item, index) => (
+            <NavButton
+              key={index}
+              emoji={'emoji' in item ? item.emoji : undefined}
+              badge={'badge' in item ? item.badge : undefined}
+              onClick={() => { setActiveTab(index.toString()); item.onClick(); }}
+              isActive={activeTab === index.toString()}
+            />
+          ))}
+        </div>
       </div>
     );
   };
@@ -104,47 +120,47 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
     switch (user.role) {
       case 'customer':
         return [
-          { icon: <Building2 size={20} />, label: 'Павильоны', onClick: () => setShowPavilions(true), badge: undefined },
-          { icon: <ShoppingCart size={20} />, label: 'Корзина', onClick: onCartClick, badge: cartItemsCount },
-          { icon: <Home size={28} />, label: 'Главная', onClick: onHomeClick, isMain: true, badge: undefined },
-          { icon: <FileText size={20} />, label: 'Заказы', onClick: onOrdersClick || (() => {}), badge: undefined },
-          { icon: <Menu size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
+          { emoji: '👥', label: 'Совместные', onClick: () => onDashboardClick('group-orders'), badge: undefined },
+          { emoji: '🛒', label: 'Корзина', onClick: onCartClick, badge: cartItemsCount },
+          { emoji: '🏠', label: 'Главная', onClick: onHomeClick, isMain: true, badge: undefined },
+          { emoji: '📋', label: 'Заказы', onClick: onOrdersClick || (() => {}), badge: undefined },
+          { emoji: '☰', label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
         ];
       
       case 'seller':
         return [
-          { icon: <TrendingUp size={20} />, label: 'Статистика', onClick: () => onDashboardClick('analytics'), badge: undefined },
-          { icon: <Box size={20} />, label: 'Товары', onClick: () => onDashboardClick('products'), badge: undefined },
-          { icon: <FileText size={20} />, label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: newOrdersCount > 0 ? newOrdersCount : undefined },
-          { icon: <Warehouse size={20} />, label: 'Склад', onClick: onWarehouseClick || (() => {}), badge: undefined },
-          { icon: <UserCircle size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
+          { emoji: '📊', label: 'Статистика', onClick: () => onDashboardClick('analytics'), badge: undefined },
+          { emoji: '📦', label: 'Товары', onClick: () => onDashboardClick('products'), badge: undefined },
+          { emoji: '📋', label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: newOrdersCount > 0 ? newOrdersCount : undefined },
+          { emoji: '🏪', label: 'Склад', onClick: onWarehouseClick || (() => {}), badge: undefined },
+          { emoji: '👤', label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
         ];
       
       case 'courier':
         return [
-          { icon: <CheckSquare size={20} />, label: 'Задачи', onClick: () => onDashboardClick('tasks'), badge: undefined },
-          { icon: <MapPin size={20} />, label: 'Маршрут', onClick: () => onDashboardClick('route'), badge: undefined },
-          { icon: <Truck size={20} />, label: 'Доставки', onClick: () => onDashboardClick('deliveries'), badge: undefined },
-          { icon: <Timer size={20} />, label: 'График', onClick: () => onDashboardClick('schedule'), badge: undefined },
-          { icon: <UserCircle size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
+          { emoji: '✅', label: 'Задачи', onClick: () => onDashboardClick('tasks'), badge: undefined },
+          { emoji: '📍', label: 'Маршрут', onClick: () => onDashboardClick('route'), badge: undefined },
+          { emoji: '🚚', label: 'Доставки', onClick: () => onDashboardClick('deliveries'), badge: undefined },
+          { emoji: '⏰', label: 'График', onClick: () => onDashboardClick('schedule'), badge: undefined },
+          { emoji: '👤', label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
         ];
       
       case 'admin':
         return [
-          { icon: <Box size={20} />, label: 'Товары', onClick: () => onDashboardClick('products'), badge: undefined },
-          { icon: <Users size={20} />, label: 'Пользователи', onClick: () => onDashboardClick('users'), badge: undefined },
-          { icon: <FileText size={20} />, label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: undefined },
-          { icon: <TrendingUp size={20} />, label: 'Статистика', onClick: () => onDashboardClick('dashboard'), badge: undefined },
-          { icon: <Menu size={20} />, label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
+          { emoji: '📦', label: 'Товары', onClick: () => onDashboardClick('products'), badge: undefined },
+          { emoji: '👥', label: 'Пользователи', onClick: () => onDashboardClick('users'), badge: undefined },
+          { emoji: '📋', label: 'Заказы', onClick: () => onDashboardClick('orders'), badge: undefined },
+          { emoji: '📊', label: 'Статистика', onClick: () => onDashboardClick('dashboard'), badge: undefined },
+          { emoji: '☰', label: 'Меню', onClick: () => setShowBurgerMenu(true), badge: undefined }
         ];
       
       case 'manager':
         return [
-          { icon: <FileText size={20} />, label: 'Новые', onClick: () => onDashboardClick('orders'), badge: undefined },
-          { icon: <Users size={20} />, label: 'Пулы', onClick: () => onDashboardClick('pools'), badge: undefined },
-          { icon: <Timer size={20} />, label: 'В работе', onClick: () => onDashboardClick?.('in-progress'), badge: undefined },
-          { icon: <Package size={20} />, label: 'Архив', onClick: () => onDashboardClick?.('archive'), badge: undefined },
-          { icon: <UserCircle size={20} />, label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
+          { emoji: '📋', label: 'Новые', onClick: () => onDashboardClick('orders'), badge: undefined },
+          { emoji: '👥', label: 'Пулы', onClick: () => onDashboardClick('pools'), badge: undefined },
+          { emoji: '⏰', label: 'В работе', onClick: () => onDashboardClick?.('in-progress'), badge: undefined },
+          { emoji: '📦', label: 'Архив', onClick: () => onDashboardClick?.('archive'), badge: undefined },
+          { emoji: '👤', label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
         ];
       
       default:
@@ -372,27 +388,50 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
 };
 
 const NavButton: React.FC<{
-  icon: React.ReactNode;
-  label: string;
+  emoji?: string;
+  icon?: React.ReactNode;
   badge?: number;
   onClick?: () => void;
-  isMain?: boolean;
-}> = ({ icon, label, badge, onClick, isMain }) => (
+  isActive?: boolean;
+}> = ({ emoji, icon, badge, onClick, isActive }) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center gap-1 bg-transparent border-none cursor-pointer rounded-lg relative ${
-      isMain ? 'px-3 py-2 min-w-20 scale-110' : 'px-2 py-1 min-w-15'
-    }`}
+    className="relative flex items-center justify-center bg-transparent border-none cursor-pointer transition-all duration-200"
+    style={{
+      WebkitTapHighlightColor: 'transparent',
+      width: '56px',
+      height: '56px'
+    }}
   >
-    <div className="relative">
-      {icon}
-      {badge !== undefined && (
-        <span className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center font-semibold">
-          {badge > 99 ? '99+' : badge}
+    <div 
+      className="absolute inset-0 rounded-2xl transition-all duration-300"
+      style={{
+        backgroundColor: isActive ? '#f3f3f3' : 'transparent',
+        transform: isActive ? 'scale(1)' : 'scale(0.8)',
+        opacity: isActive ? 1 : 0
+      }}
+    />
+    <div className="relative z-10">
+      {emoji ? (
+        <div 
+          className="text-3xl transition-all duration-200"
+          style={{
+            filter: isActive ? 'grayscale(0) brightness(1)' : 'grayscale(1) brightness(0.8) opacity(0.6)'
+          }}
+        >
+          {emoji}
+        </div>
+      ) : (
+        <div style={{ color: isActive ? '#000' : '#999' }}>
+          {icon}
+        </div>
+      )}
+      {badge !== undefined && badge > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full min-w-[18px] h-[18px] px-1.5 text-[10px] flex items-center justify-center font-bold">
+          {badge > 9 ? '9+' : badge}
         </span>
       )}
     </div>
-    <span className="text-xs text-slate-600">{label}</span>
   </button>
 );
 
