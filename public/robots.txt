@@ -1,30 +1,21 @@
 User-agent: *
 Allow: /
-
-# Основные страницы
-Allow: /
-Allow: /pavilion/*
-Allow: /orders
-
-# Запрещаем индексацию служебных страниц
-Disallow: /customer-dashboard
-Disallow: /seller-dashboard
+Allow: /landing
 Disallow: /admin-dashboard
-Disallow: /courier-dashboard
+Disallow: /seller-dashboard
+Disallow: /customer-dashboard
 Disallow: /manager-dashboard
+Disallow: /courier-dashboard
 
-# Разрешаем все статические ресурсы
-Allow: /static/
-Allow: *.css
-Allow: *.js
-Allow: *.png
-Allow: *.jpg
-Allow: *.jpeg
-Allow: *.gif
-Allow: *.svg
+Sitemap: https://оптбазар.рф/sitemap.xml
+Sitemap: https://asia-sib.web.app/sitemap.xml
 
-# Указываем sitemap (если будет создан)
-# Sitemap: https://your-domain.com/sitemap.xml
+# Основные поисковые боты
+User-agent: Googlebot
+Allow: /
 
-# Специальные инструкции для поисковых роботов
-Crawl-delay: 1
+User-agent: Yandex
+Allow: /
+
+User-agent: Bingbot
+Allow: /

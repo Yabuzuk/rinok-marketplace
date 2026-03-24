@@ -26,49 +26,6 @@
     <section class="delivery-info">
         <div class="container">
             
-            <!-- Типы доставки -->
-            <div class="tariffs-section">
-                <h2>Выберите свой тип доставки</h2>
-                <div class="tariffs-grid">
-                    <div class="tariff-card urgent">
-                        <div class="tariff-icon">
-                            <i class="fas fa-bolt"></i>
-                        </div>
-                        <h3>⚡ Срочная доставка</h3>
-                        <ul>
-                            <li>Доставка в течение 2-4 часов</li>
-                            <li>Оплата товаров + доставка сразу</li>
-                            <li>Индивидуальная доставка</li>
-                            <li>Полная стоимость доставки</li>
-                        </ul>
-                    </div>
-                    <div class="tariff-card economy">
-                        <div class="tariff-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <h3>🔄 Доставка в пуле</h3>
-                        <ul>
-                            <li>Выбираете удобное время</li>
-                            <li>Оплата товаров сейчас</li>
-                            <li>Доставка после закрытия пула</li>
-                            <li>Экономия 30-50% на доставке</li>
-                        </ul>
-                    </div>
-                    <div class="tariff-card highlight tomorrow">
-                        <div class="tariff-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h3>👥 Совместный заказ</h3>
-                        <ul>
-                            <li>Заказ с друзьями/соседями</li>
-                            <li>Делите стоимость доставки</li>
-                            <li>Один адрес доставки</li>
-                            <li>Экономия до 70% на доставке</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
             <!-- Срочная доставка -->
             <div class="info-card" style="margin-top: 60px;">
                 <div class="card-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
@@ -87,15 +44,15 @@
                     </div>
                     <div class="step">
                         <div class="step-number">2</div>
-                        <p>Выбираете "Сейчас"</p>
+                        <p>Нажимаете кнопку "⚡ Сейчас"</p>
                     </div>
                     <div class="step">
                         <div class="step-number">3</div>
-                        <p>Оплачиваете товары + доставку</p>
+                        <p>Менеджер проверяет наличие (5-10 мин)</p>
                     </div>
                     <div class="step">
                         <div class="step-number">4</div>
-                        <p>Менеджер собирает заказ</p>
+                        <p>Оплачиваете товары + доставку</p>
                     </div>
                     <div class="step">
                         <div class="step-number">5</div>
@@ -110,7 +67,7 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <h2>🔄 Доставка в пуле</h2>
-                <p>Экономьте 30-50% на доставке! Выбираете удобное время (11-13, 13-15, 15-17), оплачиваете только товары. После закрытия пула менеджер рассчитывает доставку по весу между всеми участниками пула.</p>
+                <p>Экономьте 30-50% на доставке! Выбираете удобное время (11-13, 13-15, 15-17), менеджер проверяет заказ и вы оплачиваете только товары. После закрытия пула (за 30 минут до времени) менеджер рассчитывает доставку по весу между всеми участниками пула и вы оплачиваете свою долю.</p>
             </div>
 
             <div class="group-order-section">
@@ -122,18 +79,22 @@
                     </div>
                     <div class="step">
                         <div class="step-number">2</div>
-                        <p>Оплачиваете только товары</p>
+                        <p>Менеджер проверяет заказ (5-10 мин)</p>
                     </div>
                     <div class="step">
                         <div class="step-number">3</div>
-                        <p>Пул закрывается за 30 минут до времени</p>
+                        <p>Оплачиваете только товары</p>
                     </div>
                     <div class="step">
                         <div class="step-number">4</div>
-                        <p>Менеджер делит доставку по весу</p>
+                        <p>Пул закрывается за 30 минут до времени</p>
                     </div>
                     <div class="step">
                         <div class="step-number">5</div>
+                        <p>Менеджер делит доставку по весу</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">6</div>
                         <p>Оплачиваете свою долю доставки</p>
                     </div>
                 </div>
@@ -150,32 +111,31 @@
                         <div>Ваша доля</div>
                     </div>
                     <div class="table-row highlight">
-                        <div>Вы</div>
-                        <div>5 кг</div>
-                        <div>25%</div>
-                        <div>800₽</div>
-                        <div>200₽</div>
+                        <div data-label="Участник">Вы</div>
+                        <div data-label="Вес заказа">5 кг</div>
+                        <div data-label="Доля веса">25%</div>
+                        <div data-label="Общая доставка">800₽</div>
+                        <div data-label="Ваша доля">200₽</div>
                     </div>
                     <div class="table-row">
-                        <div>Участник 2</div>
-                        <div>10 кг</div>
-                        <div>50%</div>
-                        <div>800₽</div>
-                        <div>400₽</div>
+                        <div data-label="Участник">Участник 2</div>
+                        <div data-label="Вес заказа">10 кг</div>
+                        <div data-label="Доля веса">50%</div>
+                        <div data-label="Общая доставка">800₽</div>
+                        <div data-label="Ваша доля">400₽</div>
                     </div>
                     <div class="table-row">
-                        <div>Участник 3</div>
-                        <div>5 кг</div>
-                        <div>25%</div>
-                        <div>800₽</div>
-                        <div>200₽</div>
+                        <div data-label="Участник">Участник 3</div>
+                        <div data-label="Вес заказа">5 кг</div>
+                        <div data-label="Доля веса">25%</div>
+                        <div data-label="Общая доставка">800₽</div>
+                        <div data-label="Ваша доля">200₽</div>
                     </div>
                     <div class="table-footer">
                         <div>Итого</div>
-                        <div>20 кг</div>
-                        <div>100%</div>
-                        <div>800₽</div>
-                        <div>800₽</div>
+                        <div data-label="Вес">20 кг</div>
+                        <div data-label="Доставка">800₽</div>
+                        <div data-label="Сумма">800₽</div>
                     </div>
                 </div>
                 <p class="calculation-note">Вместо 800₽ за индивидуальную доставку вы платите всего 200₽ — экономия 75%!</p>
@@ -187,7 +147,7 @@
                     <i class="fas fa-users"></i>
                 </div>
                 <h2>👥 Совместный заказ</h2>
-                <p>Максимальная экономия! Создайте заказ с друзьями, соседями или коллегами. Один человек создает заказ, остальные присоединяются по коду. Доставка на один адрес, стоимость делится по весу.</p>
+                <p>Максимальная экономия! Создайте заказ с друзьями, соседями или коллегами. Выбираете время доставки и нажимаете "Оформить совместный заказ". Получаете код, делитесь с друзьями. Каждый добавляет свои товары и оплачивает свою часть. Доставка на один адрес, стоимость делится по весу.</p>
             </div>
 
             <div class="group-order-section">
@@ -199,11 +159,11 @@
                     </div>
                     <div class="step">
                         <div class="step-number">2</div>
-                        <p>Нажимаете "Совместный заказ"</p>
+                        <p>Нажимаете "Оформить совместный заказ"</p>
                     </div>
                     <div class="step">
                         <div class="step-number">3</div>
-                        <p>Делитесь кодом с друзьями</p>
+                        <p>Получаете код и делитесь с друзьями</p>
                     </div>
                     <div class="step">
                         <div class="step-number">4</div>
@@ -211,7 +171,15 @@
                     </div>
                     <div class="step">
                         <div class="step-number">5</div>
-                        <p>Каждый оплачивает свою часть</p>
+                        <p>Менеджер проверяет все заказы</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">6</div>
+                        <p>Каждый оплачивает товары</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">7</div>
+                        <p>После закрытия пула оплачиваете доставку</p>
                     </div>
                 </div>
             </div>
@@ -227,39 +195,39 @@
                         <div>Итого</div>
                     </div>
                     <div class="table-row highlight">
-                        <div>Вы</div>
-                        <div>1500₽</div>
-                        <div>3 кг</div>
-                        <div>150₽</div>
-                        <div>1650₽</div>
+                        <div data-label="Участник">Вы</div>
+                        <div data-label="Товары">1500₽</div>
+                        <div data-label="Вес">3 кг</div>
+                        <div data-label="Доля доставки">150₽</div>
+                        <div data-label="Итого">1650₽</div>
                     </div>
                     <div class="table-row">
-                        <div>Сосед 1</div>
-                        <div>2000₽</div>
-                        <div>4 кг</div>
-                        <div>200₽</div>
-                        <div>2200₽</div>
+                        <div data-label="Участник">Сосед 1</div>
+                        <div data-label="Товары">2000₽</div>
+                        <div data-label="Вес">4 кг</div>
+                        <div data-label="Доля доставки">200₽</div>
+                        <div data-label="Итого">2200₽</div>
                     </div>
                     <div class="table-row">
-                        <div>Сосед 2</div>
-                        <div>2500₽</div>
-                        <div>5 кг</div>
-                        <div>250₽</div>
-                        <div>2750₽</div>
+                        <div data-label="Участник">Сосед 2</div>
+                        <div data-label="Товары">2500₽</div>
+                        <div data-label="Вес">5 кг</div>
+                        <div data-label="Доля доставки">250₽</div>
+                        <div data-label="Итого">2750₽</div>
                     </div>
                     <div class="table-row">
-                        <div>Сосед 3</div>
-                        <div>1000₽</div>
-                        <div>2 кг</div>
-                        <div>100₽</div>
-                        <div>1100₽</div>
+                        <div data-label="Участник">Сосед 3</div>
+                        <div data-label="Товары">1000₽</div>
+                        <div data-label="Вес">2 кг</div>
+                        <div data-label="Доля доставки">100₽</div>
+                        <div data-label="Итого">1100₽</div>
                     </div>
                     <div class="table-footer">
                         <div>Итого</div>
-                        <div>7000₽</div>
-                        <div>14 кг</div>
-                        <div>700₽</div>
-                        <div>7700₽</div>
+                        <div data-label="Товары">7000₽</div>
+                        <div data-label="Вес">14 кг</div>
+                        <div data-label="Доставка">700₽</div>
+                        <div data-label="Всего">7700₽</div>
                     </div>
                 </div>
                 <p class="calculation-note">Вместо 500₽ за индивидуальную доставку вы платите 150₽ — экономия 70%!</p>

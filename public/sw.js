@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rinok-v3';
+const CACHE_NAME = 'rinok-v4';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -38,6 +38,12 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  
+  // Не кэшируем внешние ресурсы (Supabase, Firebase и т.д.)
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) {
+    return; // Пропускаем внешние запросы
+  }
   
   event.respondWith(
     fetch(event.request)

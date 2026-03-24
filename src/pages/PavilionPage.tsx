@@ -9,9 +9,10 @@ interface PavilionPageProps {
   products: Product[];
   users: UserType[];
   onAddToCart: (product: Product, quantity?: number) => void;
+  userRole?: string | null;
 }
 
-const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCart }) => {
+const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCart, userRole }) => {
   const { pavilionNumber } = useParams<{ pavilionNumber: string }>();
   const navigate = useNavigate();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -142,6 +143,7 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
                   product={product}
                   onAddToCart={onAddToCart}
                   onProductClick={setSelectedProduct}
+                  userRole={userRole}
                 />
               </div>
             ))}
@@ -170,6 +172,7 @@ const PavilionPage: React.FC<PavilionPageProps> = ({ products, users, onAddToCar
           isOpen={!!selectedProduct}
           onClose={() => setSelectedProduct(null)}
           onAddToCart={onAddToCart}
+          userRole={userRole}
         />
 
         {/* Модальное окно информации о продавце */}

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { X, Plus, Minus, User, Users, RefreshCw } from 'lucide-react';
 import { CartItem, User as UserType, Order, DeliveryType } from '../types';
 import { DeliveryDateSelector } from './DeliveryDateSelector';
+import { getDisplayPrice } from '../utils/priceUtils';
 
 interface CartProps {
   isOpen: boolean;
@@ -155,7 +156,10 @@ const Cart: React.FC<CartProps> = ({
   
   if (!isOpen) return null;
 
-  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const total = items.reduce((sum, item) => {
+    const displayPrice = getDisplayPrice(item.product.price, user?.role);
+    return sum + displayPrice * item.quantity;
+  }, 0);
   
   const deliveryFee = 0; // Доставку добавляет менеджер
   const totalWithDelivery = total;
@@ -333,6 +337,7 @@ const Cart: React.FC<CartProps> = ({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {items.map(item => {
               const isInsufficientQuantity = item.quantity < item.product.minOrderQuantity;
+              const displayPrice = getDisplayPrice(item.product.price, user?.role);
               return (
               <div key={item.product.id} style={{
                 display: 'flex',
@@ -352,7 +357,7 @@ const Cart: React.FC<CartProps> = ({
                     {item.product.name}
                   </h4>
                   <p style={{ fontSize: '16px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
-                    {item.product.price} ₽
+                    {displayPrice} ₽
                   </p>
                   <p style={{ 
                     fontSize: '12px', 

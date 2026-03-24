@@ -70,7 +70,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
     if (!user) {
       return (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe z-50">
-          <div className="flex justify-around items-center py-3">
+          <div className="flex justify-around items-center py-1.5">
             <NavButton 
               emoji="🏠" 
               onClick={() => { setActiveTab('home'); onHomeClick(); }}
@@ -100,7 +100,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
     const menuItems = getMenuItems();
     return (
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe z-50">
-        <div className="flex justify-around items-center py-3">
+        <div className="flex justify-around items-center py-1.5">
           {menuItems.map((item, index) => (
             <NavButton
               key={index}
@@ -158,7 +158,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         return [
           { emoji: '📋', label: 'Новые', onClick: () => onDashboardClick('orders'), badge: undefined },
           { emoji: '👥', label: 'Пулы', onClick: () => onDashboardClick('pools'), badge: undefined },
-          { emoji: '⏰', label: 'В работе', onClick: () => onDashboardClick?.('in-progress'), badge: undefined },
+          { emoji: '🚚', label: 'В работе', onClick: () => onDashboardClick('in-progress'), badge: undefined },
           { emoji: '📦', label: 'Архив', onClick: () => onDashboardClick?.('archive'), badge: undefined },
           { emoji: '👤', label: 'Профиль', onClick: () => onDashboardClick('profile'), badge: undefined }
         ];
@@ -399,8 +399,8 @@ const NavButton: React.FC<{
     className="relative flex items-center justify-center bg-transparent border-none cursor-pointer transition-all duration-200"
     style={{
       WebkitTapHighlightColor: 'transparent',
-      width: '56px',
-      height: '56px'
+      width: '48px',
+      height: '48px'
     }}
   >
     <div 
@@ -414,7 +414,7 @@ const NavButton: React.FC<{
     <div className="relative z-10">
       {emoji ? (
         <div 
-          className="text-3xl transition-all duration-200"
+          className="text-2xl transition-all duration-200"
           style={{
             filter: isActive ? 'grayscale(0) brightness(1)' : 'grayscale(1) brightness(0.8) opacity(0.6)'
           }}

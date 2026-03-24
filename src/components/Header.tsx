@@ -26,11 +26,26 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
   return (
     <>
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        {/* Информационная строка с названием */}
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-1.5">
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium flex items-center gap-1.5">
+                <span className="text-sm">⏰</span>
+                Заказы 9:00-17:00
+              </span>
+              <span className="text-base font-bold whitespace-nowrap">Азия-Сибирь</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Основная шапка: логотип и кнопки */}
+        <div className="max-w-5xl mx-auto px-4 py-2">
+          <div className="flex items-center justify-between gap-3">
+            {/* Логотип */}
             <div 
               onClick={onHomeClick}
-              className="w-8 h-8 rounded-lg cursor-pointer hover:scale-105 transition-transform overflow-hidden"
+              className="w-10 h-10 rounded-lg cursor-pointer hover:scale-105 transition-transform overflow-hidden flex-shrink-0"
             >
               <img 
                 src="/icon-192x192.png" 
@@ -38,10 +53,9 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-red-600 to-blue-600 bg-clip-text text-transparent">Азия-Сибирь</span>
-          </div>
-
-          <div className="flex items-center gap-2">
+            
+            {/* Кнопки */}
+            <div className="flex items-center gap-2">
             {user?.role === 'customer' && onJoinGroupOrder && (
               <button
                 onClick={() => setShowJoinModal(true)}
@@ -66,6 +80,7 @@ const Header: React.FC<HeaderProps> = ({ user, cartItemsCount, onAuthClick, onCa
                 Войти
               </button>
             )}
+            </div>
           </div>
         </div>
       </header>

@@ -1,39 +1,140 @@
 import { supabase } from './supabase';
-import { User, Product, Order } from '../types';
+import { Product, Order, User } from '../types';
 
-// API для пользователей
+// Products API
 export const supabaseApi = {
-  // Пользователи
-  async getUsers(): Promise<User[]> {
+  // ========== PRODUCTS ==========
+  async getProducts(): Promise<Product[]> {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('createdAt', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return [];
+    }
+  },
+
+  async createProduct(product: Omit<Product, 'id'>): Promise<Product> {
+    const newProduct = {
+      ...product,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+
     const { data, error } = await supabase
-      .from('users')
-      .select('*');
-    
+      .from('products')
+      .insert([newProduct])
+      .select()
+      .single();
+
     if (error) throw error;
-    return data || [];
+    return data;
+  },
+
+  async updateProduct(id: string, updates: Partial<Product>): Promise<void> {
+    const { error } = await supabase
+      .from('products')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  async deleteProduct(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  // ========== ORDERS ==========
+  async getOrders(): Promise<Order[]> {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('createdAt', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      return [];
+    }
+  },
+
+  async createOrder(order: Omit<Order, 'id'>): Promise<Order> {
+    const newOrder = {
+      ...order,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase
+      .from('orders')
+      .insert([newOrder])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateOrder(id: string, updates: Partial<Order>): Promise<void> {
+    const { error } = await supabase
+      .from('orders')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  // ========== USERS ==========
+  async getUsers(): Promise<User[]> {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('createdAt', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return [];
+    }
   },
 
   async createUser(user: User): Promise<User> {
+    const newUser = {
+      ...user,
+      createdAt: new Date().toISOString()
+    };
+
     const { data, error } = await supabase
       .from('users')
-      .insert([user])
+      .insert([newUser])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
 
-  async updateUser(id: string, updates: Partial<User>): Promise<User> {
-    const { data, error } = await supabase
+  async updateUser(id: string, updates: Partial<User>): Promise<void> {
+    const { error } = await supabase
       .from('users')
       .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-    
+      .eq('id', id);
+
     if (error) throw error;
-    return data;
   },
 
   async deleteUser(id: string): Promise<void> {
@@ -41,7 +142,7 @@ export const supabaseApi = {
       .from('users')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
   },
 
@@ -51,159 +152,148 @@ export const supabaseApi = {
       .select('*')
       .eq('email', email)
       .single();
-    
-    if (error && error.code !== 'PGRST116') throw error;
-    return data || null;
+
+    if (error) return null;
+    return data;
   },
 
-  // Товары
-  async getProducts(): Promise<Product[]> {
+  // ========== GROUP ORDERS ==========
+  async getGroupOrders(): Promise<any[]> {
     try {
       const { data, error } = await supabase
-        .from('products')
+        .from('group_orders')
         .select('*')
         .order('createdAt', { ascending: false });
       
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-      
-      console.log('Products loaded:', data?.length || 0);
+      if (error) throw error;
       return data || [];
     } catch (error) {
-      console.error('getProducts error:', error);
+      console.error('Error fetching group orders:', error);
       return [];
     }
   },
 
-  async createProduct(product: Omit<Product, 'id'>): Promise<Product> {
-    const productWithId = {
-      ...product,
-      id: Date.now().toString()
+  async createGroupOrder(groupOrder: any): Promise<any> {
+    const newGroupOrder = {
+      ...groupOrder,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
     };
 
     const { data, error } = await supabase
-      .from('products')
-      .insert([productWithId])
+      .from('group_orders')
+      .insert([newGroupOrder])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
 
-  async updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
-    const { data, error } = await supabase
-      .from('products')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  },
-
-  async deleteProduct(id: string): Promise<void> {
+  async updateGroupOrder(id: string, updates: any): Promise<void> {
     const { error } = await supabase
-      .from('products')
-      .delete()
+      .from('group_orders')
+      .update(updates)
       .eq('id', id);
-    
+
     if (error) throw error;
   },
 
-  // Заказы
-  async getOrders(): Promise<Order[]> {
-    const { data: orders, error: ordersError } = await supabase
-      .from('orders')
-      .select('*')
-      .order('createdAt', { ascending: false });
-    
-    if (ordersError) throw ordersError;
-
-    // Получаем позиции для каждого заказа
-    const ordersWithItems = await Promise.all(
-      (orders || []).map(async (order) => {
-        const { data: items, error: itemsError } = await supabase
-          .from('order_items')
-          .select('*')
-          .eq('orderId', order.id);
-        
-        if (itemsError) throw itemsError;
-        
-        return {
-          ...order,
-          deliveryPrice: order.deliveryprice,
-          managerId: order.managerid,
-          items: items || []
-        };
-      })
-    );
-
-    return ordersWithItems;
-  },
-
-  async createOrder(order: Omit<Order, 'id'>): Promise<Order> {
-    const orderWithId = {
-      ...order,
-      id: Date.now().toString()
-    };
-
-    // Создаем заказ
-    const { data: orderData, error: orderError } = await supabase
-      .from('orders')
-      .insert([{
-        id: orderWithId.id,
-        customerId: orderWithId.customerId,
-        total: orderWithId.total,
-        status: orderWithId.status,
-        deliveryAddress: orderWithId.deliveryAddress,
-        pavilionNumber: orderWithId.pavilionNumber,
-        courierId: orderWithId.courierId,
-        createdAt: orderWithId.createdAt
-      }])
-      .select()
-      .single();
-    
-    if (orderError) throw orderError;
-
-    // Создаем позиции заказа
-    if (orderWithId.items && orderWithId.items.length > 0) {
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(
-          orderWithId.items.map(item => ({
-            orderId: orderWithId.id,
-            productId: item.productId,
-            productName: item.productName,
-            quantity: item.quantity,
-            price: item.price
-          }))
-        );
+  // ========== DELIVERY POOLS ==========
+  async getDeliveryPools(): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('delivery_pools')
+        .select('*')
+        .order('createdAt', { ascending: false });
       
-      if (itemsError) throw itemsError;
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching delivery pools:', error);
+      return [];
     }
-
-    return orderWithId;
   },
 
-  async updateOrder(id: string, updates: Partial<Order>): Promise<Order> {
-    const { data, error } = await supabase
-      .from('orders')
-      .update({
-        status: updates.status,
-        courierId: updates.courierId,
-        pavilionNumber: updates.pavilionNumber,
-        deliveryprice: updates.deliveryPrice,
-        managerid: updates.managerId
-      })
-      .eq('id', id)
-      .select()
-      .single();
-    
+  async createOrUpdatePool(pool: any): Promise<void> {
+    const { error } = await supabase
+      .from('delivery_pools')
+      .upsert([pool]);
+
     if (error) throw error;
-    return data;
+  },
+
+  // ========== ANALYTICS ==========
+  async trackVisit(visit?: any): Promise<void> {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Проверяем, есть ли запись за сегодня
+      const { data: existing } = await supabase
+        .from('analytics')
+        .select('*')
+        .eq('date', today)
+        .single();
+
+      if (existing) {
+        // Обновляем существующую запись
+        await supabase
+          .from('analytics')
+          .update({ 
+            visits: existing.visits + 1,
+            uniqueVisitors: existing.uniqueVisitors + 1 
+          })
+          .eq('id', existing.id);
+      } else {
+        // Создаём новую запись
+        await supabase
+          .from('analytics')
+          .insert([{
+            id: Date.now().toString(),
+            date: today,
+            visits: 1,
+            uniqueVisitors: 1,
+            createdAt: new Date().toISOString()
+          }]);
+      }
+    } catch (error) {
+      console.error('Error tracking visit:', error);
+    }
+  },
+
+  async getVisitorStats(startDate: string, endDate: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('analytics')
+        .select('*')
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching visitor stats:', error);
+      return [];
+    }
+  },
+
+  async getAnalytics(days: number = 30): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('analytics')
+        .select('*')
+        .order('date', { ascending: false })
+        .limit(days);
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      return [];
+    }
   }
 };
+
+// Экспортируем как firebaseApi для совместимости
+export const firebaseApi = supabaseApi;

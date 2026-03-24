@@ -8,6 +8,7 @@ interface HomePageProps {
   products: Product[];
   onAddToCart: (product: Product, quantity?: number) => void;
   users?: any[];
+  userRole?: string | null;
 }
 
 const categories = [
@@ -21,7 +22,7 @@ const categories = [
   { id: 'pavilion', name: 'Павильон', icon: '🏢' }
 ];
 
-const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }) => {
+const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [], userRole }) => {
   const navigate = useNavigate();
   
   // Фильтруем товары только от активных продавцов и с наличием на складе
@@ -111,6 +112,40 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
   return (
     <div className="min-h-screen pt-6 bg-slate-50">
       <div className="max-w-5xl mx-auto px-4 space-y-6">
+
+        {/* Banner */}
+        <div className="relative rounded-xl overflow-hidden shadow-lg">
+          <img 
+            src="/banner.jpg" 
+            alt="ОптБазар" 
+            className="w-full h-auto"
+            style={{ maxHeight: '200px', objectFit: 'cover' }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent flex flex-col items-center justify-end pb-6 px-4">
+            <div className="text-center mb-4">
+              <h2 className="text-white text-lg md:text-2xl font-bold mb-1 drop-shadow-lg">
+                Больше знаешь — меньше чек!
+              </h2>
+              <p className="text-white/90 text-sm drop-shadow-md">
+                Наши советы для умных покупок и экономии
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <a 
+                href="/zakaz/" 
+                className="px-6 py-2 bg-white text-slate-900 rounded-lg font-semibold hover:bg-slate-100 transition-colors shadow-lg"
+              >
+                О покупках
+              </a>
+              <a 
+                href="/dostavka/" 
+                className="px-6 py-2 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors shadow-lg"
+              >
+                О доставке
+              </a>
+            </div>
+          </div>
+        </div>
 
         {/* Categories */}
         <div className="bg-white rounded-xl border border-slate-200 p-4">
@@ -212,6 +247,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
                 product={product}
                 onAddToCart={onAddToCart}
                 onProductClick={handleProductClick}
+                userRole={userRole}
               />
             ))}
           </div>
@@ -229,6 +265,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onAddToCart, users = [] }
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onAddToCart={handleAddToCartFromModal}
+          userRole={userRole}
         />
       </div>
     </div>

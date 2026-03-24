@@ -19,11 +19,13 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     if (product && isOpen) {
       setImagePreview(product.image);
       setSelectedImage(null);
+      setImageError(false);
       // Фокус на первое поле через небольшую задержку
       setTimeout(() => {
         const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
@@ -244,17 +246,26 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                   height: '100px',
                   borderRadius: '8px',
                   overflow: 'hidden',
-                  border: '1px solid #d4c4b0'
+                  border: '1px solid #d4c4b0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: '#f0e6d6'
                 }}>
-                  <img 
-                    src={imagePreview} 
-                    alt="Предпросмотр"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
-                  />
+                  {!imageError ? (
+                    <img 
+                      src={imagePreview} 
+                      alt="Предпросмотр"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <div style={{ fontSize: '32px' }}>📦</div>
+                  )}
                 </div>
               )}
             </div>

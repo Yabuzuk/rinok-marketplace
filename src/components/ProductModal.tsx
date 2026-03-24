@@ -2,19 +2,37 @@ import React, { useState } from 'react';
 import { X, Plus, Minus, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
+import { getDisplayPrice } from '../utils/priceUtils';
 
 interface ProductModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: Product, quantity: number) => void;
+  userRole?: string | null;
 }
 
-const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, onAddToCart }) => {
+const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, onAddToCart, userRole }) => {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
+  const [imageError, setImageError] = useState(false);
 
   if (!isOpen || !product) return null;
+
+  const displayPrice = getDisplayPrice(product.price, userRole);
+  
+  const getImageUrl = (image: string) => {
+    if (!image) return null;
+    if (image.startsWith('http')) return image;
+    if (image.startsWith('data:')) return image;
+    if (image.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+      return `http://100.127.227.15:8000/storage/v1/object/public/product-images/${image}`;
+    }
+    return null;
+  };
+  
+  const imageUrl = getImageUrl(product.image);
+  const isEmoji = product.image && product.image.length <= 4 && !imageUrl;
 
   const handleAddToCart = () => {
     if (quantity < product.minOrderQuantity) {
@@ -95,17 +113,27 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
           borderRadius: '12px',
           overflow: 'hidden',
           marginBottom: '16px',
-          background: '#f0e6d6'
+          background: '#f0e6d6',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
-          <img 
-            src={product.image} 
-            alt={product.name}
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover' 
-            }}
-          />
+          {imageUrl && !imageError ? (
+            <img 
+              src={imageUrl} 
+              alt={product.name}
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover' 
+              }}
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div style={{ fontSize: '64px' }}>
+              {isEmoji ? product.image : '📦'}
+            </div>
+          )}
         </div>
 
         <h2 style={{
@@ -125,7 +153,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
           color: '#4caf50',
           marginBottom: '12px'
         }}>
-          {product.price} ₽
+          {displayPrice} ₽
         </div>
 
         <p style={{
@@ -262,7 +290,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
               padding: '10px'
             }}
           >
-            Добавить в корзину • {(product.price * quantity).toLocaleString()} ₽
+            Добавить в корзину • {(displayPrice * quantity).toLocaleString()} ₽
           </button>
           
           {product.pavilionNumber && (

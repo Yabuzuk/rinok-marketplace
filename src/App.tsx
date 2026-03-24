@@ -22,13 +22,15 @@ import LegalPage from './pages/LegalPage';
 import TestCancelPayment from './pages/TestCancelPayment';
 import LandingPage from './pages/LandingPage';
 import GroupOrderPage from './pages/GroupOrderPage';
+import StorageTestPage from './pages/StorageTestPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 
 import { initOneSignal, subscribeUser, sendNotification } from './services/onesignal';
 import { sendNotification as sendNotificationUtil } from './utils/notifications';
+import { trackVisit } from './utils/analytics';
 
-import { firebaseApi } from './utils/firebaseApi';
+import { firebaseApi } from './utils/supabaseApi';
 import './styles/tailwind.css';
 import './styles/animations.css';
 
@@ -91,6 +93,9 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    
+    // Записываем посещение
+    trackVisit();
     
     // Инициализация OneSignal
     initOneSignal();
@@ -1119,6 +1124,7 @@ const AppContent: React.FC = () => {
                   products={products}
                   onAddToCart={handleAddToCart}
                   users={users}
+                  userRole={currentUser?.role}
                 />
               } 
             />
@@ -1144,6 +1150,7 @@ const AppContent: React.FC = () => {
                   products={products}
                   users={users}
                   onAddToCart={handleAddToCart}
+                  userRole={currentUser?.role}
                 />
               } 
             />
@@ -1418,6 +1425,7 @@ const AppContent: React.FC = () => {
             
             <Route path="/legal" element={<LegalPage />} />
             <Route path="/test-cancel" element={<TestCancelPayment />} />
+            <Route path="/storage-test" element={<StorageTestPage />} />
           </Routes>
           )}
         </main>

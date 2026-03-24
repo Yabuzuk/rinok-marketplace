@@ -287,5 +287,66 @@ export const firebaseApi = {
       console.error('❌ Ошибка сохранения пула:', error);
       throw error;
     }
+  },
+
+  // Аналитика посещений
+  async trackVisit(visit: any): Promise<void> {
+    try {
+      await addDoc(collection(db, 'visits'), visit);
+    } catch (error) {
+      console.error('❌ Ошибка записи посещения:', error);
+    }
+  },
+
+  async getVisitorStats(startDate: string, endDate: string): Promise<any[]> {
+    try {
+      const q = query(
+        collection(db, 'visits'),
+        where('date', '>=', startDate),
+        where('date', '<=', endDate),
+        orderBy('date', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      
+      // Группируем по датам
+      const statsByDate: { [key: string]: any } = {};
+      const uniqueVisitors = new Set<string>();
+      
+      querySnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        const date = data.date;
+        
+        if (!statsByDate[date]) {
+          statsByDate[date] = {
+            date,
+            uniqueVisitors: new Set(),
+            totalPageViews: 0,
+            newVisitors: 0,
+            returningVisitors: 0
+          };
+        }
+        
+        statsByDate[date].uniqueVisitors.add(data.visitorId);
+        statsByDate[date].totalPageViews++;
+        
+        if (data.isNew) {
+          statsByDate[date].newVisitors++;
+        } else {
+          statsByDate[date].returningVisitors++;
+        }
+      });
+      
+      // Преобразуем в массив
+      return Object.values(statsByDate).map((stat: any) => ({
+        date: stat.date,
+        uniqueVisitors: stat.uniqueVisitors.size,
+        totalPageViews: stat.totalPageViews,
+        newVisitors: stat.newVisitors,
+        returningVisitors: stat.returningVisitors
+      }));
+    } catch (error) {
+      console.error('❌ Ошибка получения статистики:', error);
+      return [];
+    }
   }
 };

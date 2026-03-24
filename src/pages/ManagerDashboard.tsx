@@ -5,6 +5,7 @@ import ReceiptViewer from '../components/ReceiptViewer';
 import EditOrderModal from '../components/EditOrderModal';
 import { DeliveryPoolsTab } from '../components/DeliveryPoolsTab';
 import { calculateDeliveryPrice } from '../utils/yandexDelivery';
+import VisitorStatsTab from '../components/VisitorStatsTab';
 import { firebaseApi } from '../utils/firebaseApi';
 
 interface ManagerDashboardProps {
@@ -782,11 +783,24 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
               </div>
             )}
 
-            {activeTab === 'settings' && (
+{activeTab === 'settings' && (
               <div>
                 <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px' }}>
                   Личный кабинет менеджера
                 </h2>
+                
+                {/* Статистика посещений */}
+                <div style={{ marginBottom: '32px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                    📊 Статистика посещений
+                  </h3>
+                  <VisitorStatsTab />
+                </div>
+                
+                {/* Профиль менеджера */}
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                  👤 Профиль
+                </h3>
                 <div className="card">
                   <div style={{ 
                     display: 'flex', 
