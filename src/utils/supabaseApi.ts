@@ -9,7 +9,7 @@ export const supabaseApi = {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .order('createdat', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -23,7 +23,7 @@ export const supabaseApi = {
     const newProduct = {
       ...product,
       id: Date.now().toString(),
-      createdAt: new Date().toISOString()
+      createdat: new Date().toISOString()
     };
 
     const { data, error } = await supabase
@@ -60,7 +60,7 @@ export const supabaseApi = {
       const { data, error } = await supabase
         .from('orders')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .order('createdat', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -74,7 +74,7 @@ export const supabaseApi = {
     const newOrder = {
       ...order,
       id: Date.now().toString(),
-      createdAt: new Date().toISOString()
+      createdat: new Date().toISOString()
     };
 
     const { data, error } = await supabase
@@ -102,7 +102,7 @@ export const supabaseApi = {
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .order('createdat', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -115,7 +115,7 @@ export const supabaseApi = {
   async createUser(user: User): Promise<User> {
     const newUser = {
       ...user,
-      createdAt: new Date().toISOString()
+      createdat: new Date().toISOString()
     };
 
     const { data, error } = await supabase
@@ -163,7 +163,7 @@ export const supabaseApi = {
       const { data, error } = await supabase
         .from('group_orders')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .order('createdat', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -177,7 +177,7 @@ export const supabaseApi = {
     const newGroupOrder = {
       ...groupOrder,
       id: Date.now().toString(),
-      createdAt: new Date().toISOString()
+      createdat: new Date().toISOString()
     };
 
     const { data, error } = await supabase
@@ -205,7 +205,7 @@ export const supabaseApi = {
       const { data, error } = await supabase
         .from('delivery_pools')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .order('createdat', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -253,7 +253,7 @@ export const supabaseApi = {
             date: today,
             visits: 1,
             uniqueVisitors: 1,
-            createdAt: new Date().toISOString()
+            createdat: new Date().toISOString()
           }]);
       }
     } catch (error) {
