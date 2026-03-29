@@ -486,14 +486,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, products, users
 
               <div style={{ marginBottom: '16px' }}>
                 <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
-                  Товары ({(order.items || []).length}):
+                  Товары ({(() => {
+                    try {
+                      const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+                      return Array.isArray(items) ? items.length : 0;
+                    } catch {
+                      return 0;
+                    }
+                  })()}):
                 </h4>
                 <div style={{ fontSize: '14px', color: '#666' }}>
-                  {(order.items || []).map((item, index) => (
-                    <div key={index} style={{ marginBottom: '4px' }}>
-                      {item.productName} × {item.quantity} = {item.price * item.quantity} ₽
-                    </div>
-                  ))}
+                  {(() => {
+                    try {
+                      const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+                      return Array.isArray(items) ? items.map((item: any, index: number) => (
+                        <div key={index} style={{ marginBottom: '4px' }}>
+                          {item.productName} × {item.quantity} = {item.price * item.quantity} ₽
+                        </div>
+                      )) : <div>Нет товаров</div>;
+                    } catch (e) {
+                      return <div>Ошибка загрузки товаров</div>;
+                    }
+                  })()}
                 </div>
               </div>
 

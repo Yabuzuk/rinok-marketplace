@@ -37,11 +37,12 @@ export interface Product {
   pavilionNumber: string;
   description: string;
   stock: number;
-  rating: number;
-  reviews: number;
+  rating?: number;
+  reviews?: number;
   minOrderQuantity: number;
   internalCode?: string; // Служебный номер для продавца
   weight?: number; // Вес товара в кг
+  createdAt?: string;
 }
 
 export interface PaymentInfo {

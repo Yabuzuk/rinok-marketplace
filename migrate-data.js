@@ -1,84 +1,173 @@
-const { supabaseApi } = require('./src/utils/supabaseApi');
-const { firebaseApi } = require('./src/utils/firebaseApi');
+const { initializeApp } = require('firebase/app');
+const { getFirestore, collection, getDocs } = require('firebase/firestore');
+const { createClient } = require('@supabase/supabase-js');
 
-const migrateData = async () => {
-  console.log('🚀 Начинаем миграцию данных из Supabase в Firebase...');
-  
-  try {
-    // 1. Миграция пользователей
-    console.log('📥 Загружаем пользователей из Supabase...');
-    const supabaseUsers = await supabaseApi.getUsers();
-    console.log(`Найдено ${supabaseUsers.length} пользователей`);
-    
-    let migratedUsers = 0;
-    for (const user of supabaseUsers) {
-      try {
-        await firebaseApi.createUser(user);
-        console.log(`✅ Пользователь ${user.name} (${user.role}) перенесен`);
-        migratedUsers++;
-      } catch (error) {
-        if (error?.code === 'already-exists') {
-          console.log(`⚠️ Пользователь ${user.name} уже существует`);
-        } else {
-          console.log(`❌ Ошибка переноса пользователя ${user.name}:`, error?.message);
-        }
-      }
-    }
-    
-    // 2. Миграция товаров
-    console.log('📦 Загружаем товары из Supabase...');
-    const supabaseProducts = await supabaseApi.getProducts();
-    console.log(`Найдено ${supabaseProducts.length} товаров`);
-    
-    let migratedProducts = 0;
-    for (const product of supabaseProducts) {
-      try {
-        await firebaseApi.createProduct(product);
-        console.log(`✅ Товар ${product.name} (павильон ${product.pavilionNumber}) перенесен`);
-        migratedProducts++;
-      } catch (error) {
-        if (error?.code === 'already-exists') {
-          console.log(`⚠️ Товар ${product.name} уже существует`);
-        } else {
-          console.log(`❌ Ошибка переноса товара ${product.name}:`, error?.message);
-        }
-      }
-    }
-    
-    // 3. Миграция заказов
-    console.log('📋 Загружаем заказы из Supabase...');
-    const supabaseOrders = await supabaseApi.getOrders();
-    console.log(`Найдено ${supabaseOrders.length} заказов`);
-    
-    let migratedOrders = 0;
-    for (const order of supabaseOrders) {
-      try {
-        await firebaseApi.createOrder(order);
-        console.log(`✅ Заказ ${order.id} на сумму ${order.total}₽ перенесен`);
-        migratedOrders++;
-      } catch (error) {
-        if (error?.code === 'already-exists') {
-          console.log(`⚠️ Заказ ${order.id} уже существует`);
-        } else {
-          console.log(`❌ Ошибка переноса заказа ${order.id}:`, error?.message);
-        }
-      }
-    }
-    
-    console.log('\n🎉 Миграция завершена!');
-    console.log(`📊 Статистика:`);
-    console.log(`   Пользователи: ${migratedUsers}/${supabaseUsers.length}`);
-    console.log(`   Товары: ${migratedProducts}/${supabaseProducts.length}`);
-    console.log(`   Заказы: ${migratedOrders}/${supabaseOrders.length}`);
-    
-  } catch (error) {
-    console.error('❌ Критическая ошибка миграции:', error);
-  }
+// Firebase config (из вашего проекта)
+const firebaseConfig = {
+  apiKey: "AIzaSyADaZYOM7nOITKBlfn0jhtwtTBI7RbB_m8",
+  authDomain: "kalaktika-app.firebaseapp.com",
+  projectId: "kalaktika-app",
+  storageBucket: "kalaktika-app.firebasestorage.app",
+  messagingSenderId: "735114029908",
+  appId: "1:735114029908:web:8155afa0b285ce8c06f6c1",
+  measurementId: "G-T7JLSH3WQS"
 };
 
-// Запуск миграции
-migrateData().then(() => {
-  console.log('Миграция завершена. Можно закрыть скрипт.');
-}).catch((error) => {
-  console.error('Ошибка запуска миграции:', error);
-});
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Supabase config
+const supabaseUrl = 'http://31.130.133.18/supabase';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlLWRlbW8iLCJpYXQiOjE2NDE3NjkyMDAsImV4cCI6MTc5OTUzNTYwMH0.F_rDxRTPE8OU83L_CNgEGXfmirMXmMMugT29Cvc8ygQ';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function migrateProducts() {
+  console.log('📦 Migrating products...');
+  
+  const snapshot = await getDocs(collection(db, 'products'));
+  const products = [];
+  
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    products.push({
+      id: doc.id,
+      name: data.name,
+      price: data.price,
+      category: data.category,
+      description: data.description || '',
+      stock: data.stock || 0,
+      minorderquantity: data.minOrderQuantity || 1,
+      image: data.image || '',
+      sellerid: data.sellerId || null,
+      pavilionnumber: data.pavilionNumber || null,
+      internalcode: data.internalCode || null,
+      createdat: data.createdAt || new Date().toISOString()
+    });
+  });
+  
+  console.log(`Found ${products.length} products`);
+  
+  if (products.length > 0) {
+    const { data, error } = await supabase
+      .from('products')
+      .insert(products);
+    
+    if (error) {
+      console.error('Error inserting products:', error);
+    } else {
+      console.log('✅ Products migrated successfully');
+    }
+  }
+}
+
+async function migrateOrders() {
+  console.log('📦 Migrating orders...');
+  
+  const snapshot = await getDocs(collection(db, 'orders'));
+  const orders = [];
+  
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    orders.push({
+      id: doc.id,
+      customerid: data.userId || data.customerId,
+      items: JSON.stringify(data.items),
+      total: data.total,
+      status: data.status,
+      deliveryaddress: data.deliveryAddress || '',
+      deliverydate: data.deliveryDate || null,
+      deliverytimeslot: data.deliveryTimeSlot || null,
+      deliverytype: data.deliveryType || null,
+      deliveryprice: data.deliveryPrice || null,
+      pavilionnumber: data.pavilionNumber || null,
+      grouporderid: data.groupOrderId || null,
+      courierid: data.courierId || null,
+      ismodified: data.isModified || false,
+      customerapproved: data.customerApproved || false,
+      createdat: data.createdAt || new Date().toISOString()
+    });
+  });
+  
+  console.log(`Found ${orders.length} orders`);
+  
+  if (orders.length > 0) {
+    const { data, error } = await supabase
+      .from('orders')
+      .insert(orders);
+    
+    if (error) {
+      console.error('Error inserting orders:', error);
+    } else {
+      console.log('✅ Orders migrated successfully');
+    }
+  }
+}
+
+async function migrateUsers() {
+  console.log('📦 Migrating users...');
+  
+  const snapshot = await getDocs(collection(db, 'users'));
+  const users = [];
+  
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    
+    // Пропускаем пользователей без email
+    if (!data.email) {
+      console.log(`Skipping user ${doc.id} - no email`);
+      return;
+    }
+    
+    // Конвертируем Firestore Timestamp в ISO string
+    let createdAt = new Date().toISOString();
+    if (data.createdAt) {
+      if (data.createdAt.toDate) {
+        createdAt = data.createdAt.toDate().toISOString();
+      } else if (data.createdAt.seconds) {
+        createdAt = new Date(data.createdAt.seconds * 1000).toISOString();
+      } else if (typeof data.createdAt === 'string') {
+        createdAt = data.createdAt;
+      }
+    }
+    
+    users.push({
+      id: doc.id,
+      email: data.email,
+      name: data.name || 'User',
+      role: data.role || 'customer',
+      pavilionnumber: data.pavilionNumber || null,
+      blocked: data.blocked || false,
+      addresses: JSON.stringify(data.addresses || []),
+      createdat: createdAt
+    });
+  });
+  
+  console.log(`Found ${users.length} users`);
+  
+  if (users.length > 0) {
+    const { data, error } = await supabase
+      .from('users')
+      .insert(users);
+    
+    if (error) {
+      console.error('Error inserting users:', error);
+    } else {
+      console.log('✅ Users migrated successfully');
+    }
+  }
+}
+
+async function main() {
+  try {
+    await migrateProducts();
+    await migrateOrders();
+    await migrateUsers();
+    console.log('🎉 Migration completed!');
+    process.exit(0);
+  } catch (error) {
+    console.error('Migration failed:', error);
+    process.exit(1);
+  }
+}
+
+main();

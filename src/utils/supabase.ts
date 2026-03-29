@@ -6,6 +6,65 @@ const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Функция для сжатия изображения
+const compressImage = async (file: File, maxWidth: number = 800, maxHeight: number = 800, quality: number = 0.8): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Вычисляем новые размеры с сохранением пропорций
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), {
+                type: 'image/webp',
+                lastModified: Date.now(),
+              });
+              console.log('🗜️ Сжатие:', {
+                original: `${(file.size / 1024).toFixed(2)} KB`,
+                compressed: `${(compressedFile.size / 1024).toFixed(2)} KB`,
+                ratio: `${((1 - compressedFile.size / file.size) * 100).toFixed(1)}%`
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error('Ошибка сжатия изображения'));
+            }
+          },
+          'image/webp',
+          quality
+        );
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+};
+
 // Функция для загрузки файлов (изображения + PDF)
 export const uploadImage = async (file: File, bucket: string = 'product-images'): Promise<string | null> => {
   try {
@@ -15,6 +74,12 @@ export const uploadImage = async (file: File, bucket: string = 'product-images')
       type: file.type
     });
     
+    // Сжимаем изображение если это картинка
+    let fileToUpload = file;
+    if (file.type.startsWith('image/')) {
+      fileToUpload = await compressImage(file);
+    }
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;
     
@@ -22,7 +87,7 @@ export const uploadImage = async (file: File, bucket: string = 'product-images')
     
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(fileName, file, {
+      .upload(fileName, fileToUpload, {
         cacheControl: '3600',
         upsert: false
       });

@@ -85,9 +85,12 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
       };
     }
     
+    const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+    const filteredItems = Array.isArray(items) ? items.filter((item: any) => item.productId !== 'delivery') : [];
+    
     groups[key].orders.push(order);
-    groups[key].totalAmount += order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0);
-    groups[key].allItems.push(...order.items.filter(item => item.productId !== 'delivery'));
+    groups[key].totalAmount += filteredItems.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+    groups[key].allItems.push(...filteredItems);
     groups[key].pavilions.add(order.pavilionNumber);
     
     return groups;
@@ -113,9 +116,12 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
       };
     }
     
+    const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+    const filteredItems = Array.isArray(items) ? items.filter((item: any) => item.productId !== 'delivery') : [];
+    
     groups[key].orders.push(order);
-    groups[key].totalAmount += order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0);
-    groups[key].allItems.push(...order.items.filter(item => item.productId !== 'delivery'));
+    groups[key].totalAmount += filteredItems.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+    groups[key].allItems.push(...filteredItems);
     groups[key].pavilions.add(order.pavilionNumber);
     
     // Собираем все чеки из группы
@@ -348,12 +354,12 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                           </div>
 
                           <div style={{ marginBottom: '16px' }}>
-                            {order.items.map((item, index) => (
+                            {(() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (order.items || []); return Array.isArray(items) ? items : []; })().map((item: any, index: number) => (
                               <div key={index} style={{ 
                                 display: 'flex', 
                                 justifyContent: 'space-between', 
                                 padding: '8px 0',
-                                borderBottom: index < order.items.length - 1 ? '1px solid #f0f0f0' : 'none'
+                                borderBottom: index < (() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (order.items || []); return Array.isArray(items) ? items.length : 0; })() - 1 ? '1px solid #f0f0f0' : 'none'
                               }}>
                                 <span>{item.productName} x {item.quantity}</span>
                                 <span style={{ fontWeight: '600' }}>{item.price * item.quantity} ₽</span>
@@ -653,7 +659,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                         </div>
 
                         <div style={{ marginBottom: '16px' }}>
-                          {order.items.filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
+                          {(() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (order.items || []); return Array.isArray(items) ? items.filter((item: any) => item.productId !== "delivery") : []; })().map((item, index, filteredItems) => (
                             <div key={index} style={{ 
                               display: 'flex', 
                               justifyContent: 'space-between', 
@@ -680,7 +686,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
-                            Итого: {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽
+                            Итого: {(() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (order.items || []); return Array.isArray(items) ? items.filter((item: any) => item.productId !== "delivery") : []; })().reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽
                           </div>
                           
                           <button 
@@ -746,7 +752,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                         </div>
 
                         <div style={{ marginBottom: '16px' }}>
-                          {order.items.filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
+                          {(() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (order.items || []); return Array.isArray(items) ? items.filter((item: any) => item.productId !== "delivery") : []; })().map((item, index, filteredItems) => (
                             <div key={index} style={{ 
                               display: 'flex', 
                               justifyContent: 'space-between', 
@@ -773,7 +779,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50' }}>
-                            Итого: {order.items.filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽
+                            Итого: {(() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (order.items || []); return Array.isArray(items) ? items.filter((item: any) => item.productId !== "delivery") : []; })().reduce((sum, item) => sum + item.price * item.quantity, 0) + (order.deliveryPrice || 0)} ₽
                           </div>
                         </div>
                       </div>
@@ -962,3 +968,6 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
 };
 
 export default ManagerDashboard;
+
+
+

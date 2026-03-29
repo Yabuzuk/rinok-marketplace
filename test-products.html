@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Products</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Products Test</h1>
+    <button onclick="testProducts()">Load Products</button>
+    <pre id="result"></pre>
+
+    <script>
+        const supabase = window.supabase.createClient(
+            window.location.origin + '/supabase',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlLWRlbW8iLCJpYXQiOjE2NDE3NjkyMDAsImV4cCI6MTc5OTUzNTYwMH0.F_rDxRTPE8OU83L_CNgEGXfmirMXmMMugT29Cvc8ygQ'
+        );
+
+        async function testProducts() {
+            const result = document.getElementById('result');
+            result.textContent = 'Loading...';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .limit(5);
+                
+                if (error) {
+                    result.textContent = 'Error: ' + JSON.stringify(error, null, 2);
+                } else {
+                    result.textContent = 'Success! Found ' + data.length + ' products:\n\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (err) {
+                result.textContent = 'Exception: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

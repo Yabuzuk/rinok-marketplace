@@ -97,7 +97,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       return String(order.pavilionNumber) === String(user.pavilionNumber);
     }
     // Иначе определяем по товарам в заказе
-    return order.items?.some(item => {
+    return (() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (order.items || []); return Array.isArray(items) ? items : []; })(); return Array.isArray(items) ? items : []; })().some(item => {
       const product = products.find(p => p.id === item.productId);
       return product && String(product.pavilionNumber) === String(user.pavilionNumber);
     }) || false;
@@ -179,7 +179,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
       return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
     })
     .reduce((sum, order) => {
-      const orderTotal = (order.items || [])
+      const orderTotal = (() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (order.items || []); return Array.isArray(items) ? items : []; })()
         .filter(item => item.productId !== 'delivery')
         .reduce((itemSum, item) => itemSum + item.price * item.quantity, 0);
       return sum + orderTotal;
@@ -748,7 +748,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         </div>
 
                         <div style={{ marginBottom: '16px' }}>
-                          {(order.items || []).filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
+                          {(() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (order.items || []); return Array.isArray(items) ? items : []; })().filter(item => item.productId !== 'delivery').map((item, index, filteredItems) => (
                             <div key={index} style={{ 
                               display: 'flex', 
                               justifyContent: 'space-between', 
@@ -825,7 +825,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div>
                             <div style={{ fontSize: '18px', fontWeight: '700', color: '#4caf50', marginBottom: '4px' }}>
-                              Итого: {(order.items || []).filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽
+                              Итого: {(() => { const items = typeof order.items === "string" ? JSON.parse(order.items) : (order.items || []); return Array.isArray(items) ? items : []; })().filter(item => item.productId !== 'delivery').reduce((sum, item) => sum + item.price * item.quantity, 0)} ₽
                             </div>
                             {/* Статус оплаты */}
                             {order.payments?.[user.pavilionNumber || ''] && (
@@ -1473,3 +1473,4 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({
 };
 
 export default SellerDashboard;
+
