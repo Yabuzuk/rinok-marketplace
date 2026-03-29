@@ -1,7 +1,16 @@
 {
+  "buildCommand": "echo 'No build needed for API only'",
+  "outputDirectory": "api",
+  "installCommand": "echo 'No install needed'",
   "build": {
     "env": {
       "CI": "false"
+    }
+  },
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
     }
   },
   "headers": [

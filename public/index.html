@@ -137,20 +137,7 @@
         },
       }
     </script>
-    <script>
-      // Регистрация Service Worker
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered: ', registration);
-            })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
-      }
-    </script>
+    <!-- Service Worker регистрируется через OneSignal -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -162,14 +149,30 @@
         // Автоматически подписываем пользователя при входе
         window.subscribeUserToNotifications = async function(userId, userRole) {
           try {
+            // Проверяем, не залогинен ли уже этот пользователь
+            const currentExternalId = await OneSignal.User.PushSubscription.id;
+            
+            // Если уже залогинен с этим ID, пропускаем
+            if (currentExternalId && window.lastLoggedUserId === userId) {
+              console.log('✅ OneSignal: Already subscribed:', userId, userRole);
+              return;
+            }
+            
             // Запрашиваем разрешение на уведомления
             await OneSignal.Notifications.requestPermission();
             
+            // Используем External User ID для связи с вашей БД
             await OneSignal.login(userId);
+            
+            // Добавляем теги для фильтрации
             await OneSignal.User.addTags({
               user_role: userRole,
               user_id: userId
             });
+            
+            // Сохраняем ID последнего залогиненного пользователя
+            window.lastLoggedUserId = userId;
+            
             console.log('✅ OneSignal: User subscribed:', userId, userRole);
           } catch (error) {
             console.warn('⚠️ OneSignal: Subscription failed:', error);

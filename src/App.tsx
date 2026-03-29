@@ -26,7 +26,7 @@ import StorageTestPage from './pages/StorageTestPage';
 import { User, Product, CartItem, Order, Delivery } from './types';
 
 
-import { initOneSignal, subscribeUser, sendNotification } from './services/onesignal';
+import { initOneSignal } from './services/onesignal';
 import { sendNotification as sendNotificationUtil } from './utils/notifications';
 import { trackVisit } from './utils/analytics';
 
@@ -70,7 +70,8 @@ const AppContent: React.FC = () => {
         if (order.pavilionNumber) {
           return String(order.pavilionNumber) === String(currentUser.pavilionNumber);
         }
-        return order.items?.some(item => {
+        const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+        return items.some((item: any) => {
           const product = products.find(p => p.id === item.productId);
           return product && String(product.pavilionNumber) === String(currentUser.pavilionNumber);
         }) || false;
@@ -141,9 +142,6 @@ const AppContent: React.FC = () => {
       if (window.subscribeUserToNotifications) {
         window.subscribeUserToNotifications(currentUser.id, currentUser.role);
       }
-      
-      // Старая подписка (для совместимости)
-      subscribeUser(currentUser.id);
     }
   }, [currentUser]);
 
@@ -921,20 +919,22 @@ const AppContent: React.FC = () => {
         }
       }
       
-      // Отправляем push-уведомление продавцу
-      if (orderData.pavilionNumber) {
-        const seller = users.find(u => u.role === 'seller' && u.pavilionNumber === orderData.pavilionNumber);
-        
-        if (seller) {
-          try {
-            await sendNotificationUtil([seller.id], 'ОптБазар - Новый заказ!', `Поступил новый заказ на сумму ${orderData.total}₽`);
-            console.log('✅ Push-уведомление отправлено продавцу');
-          } catch (notificationError) {
-            console.error('❌ Ошибка отправки уведомления продавцу:', notificationError);
-          }
-        } else {
-          console.warn('⚠️ Seller not found for pavilion:', orderData.pavilionNumber);
+      // Отправляем push-уведомление всем менеджерам
+      const managers = users.filter(u => u.role === 'manager');
+      
+      if (managers.length > 0) {
+        try {
+          await sendNotificationUtil(
+            managers.map(m => m.id), 
+            'ОптБазар - Новый заказ!', 
+            `Поступил новый заказ на сумму ${orderData.total}₽ от павильона ${orderData.pavilionNumber}`
+          );
+          console.log('✅ Push-уведомление отправлено менеджерам:', managers.length);
+        } catch (notificationError) {
+          console.error('❌ Ошибка отправки уведомления менеджерам:', notificationError);
         }
+      } else {
+        console.warn('⚠️ Менеджеры не найдены');
       }
       
       console.log('Calling loadData to refresh orders...');

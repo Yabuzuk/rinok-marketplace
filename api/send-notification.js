@@ -43,13 +43,14 @@ export default async function handler(req, res) {
       app_id: ONESIGNAL_APP_ID,
       headings: { en: title, ru: title },
       contents: { en: message, ru: message },
-      web_url: 'https://asia-sib.web.app'
+      web_url: 'https://xn--80aabz6agll.xn--p1ai'
     }
     
     // Если указаны конкретные пользователи, отправляем им
     if (userIds && userIds.length > 0) {
+      // Используем External User IDs (ID из вашей базы данных)
       notificationData.include_external_user_ids = userIds
-      console.log('Sending to specific users:', userIds)
+      console.log('Sending to specific users (External IDs):', userIds)
     } else {
       // Иначе отправляем всем подписанным
       notificationData.included_segments = ['Subscribed Users']
